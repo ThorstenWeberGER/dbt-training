@@ -2,7 +2,7 @@
 theme: default
 background: '#f9f8f5'
 title: 'Module 01 — What is dbt and Why We Use It'
-info: Bloomwell Data & Analytics · dbt Training · Tier 1 Beginner
+info: dbt Training · Tier 1 Beginner
 highlighter: shiki
 lineNumbers: false
 transition: slide-left
@@ -12,7 +12,7 @@ fonts:
 ---
 
 <div class="h-full flex flex-col justify-center pl-2">
-  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">Bloomwell Data & Analytics · dbt Training</div>
+  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">dbt Training</div>
   <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono px-3 py-1 rounded-full w-fit mb-6">
     🟢 Beginner · Module 01 · 90 min
   </div>
@@ -20,7 +20,7 @@ fonts:
     What is dbt<br>and Why<br>We Use It
   </h1>
   <p class="text-slate-400 text-base max-w-sm leading-relaxed">
-    From raw SQL chaos to tested, documented, versioned transformations at Bloomwell.
+    From raw SQL chaos to tested, documented, versioned transformations.
   </p>
 </div>
 
@@ -74,7 +74,7 @@ Three months later: **broken**. A column was renamed. No tests. No docs. Two ana
 <!--
 This is not a hypothetical. Ask the group: "has this happened to you?" Give them 30 seconds to share.
 
-Use a real Bloomwell example: HubSpot raw data lands in BRONZE.HUBSPOT.contacts. Before dbt, someone would query it directly — hardcoded schema, no tests, no lineage. A column rename in the Lambda pipeline breaks everything silently.
+Use a concrete example: HubSpot raw data lands in BRONZE.HUBSPOT.contacts. Before dbt, someone would query it directly — hardcoded schema, no tests, no lineage. A column rename in the Lambda pipeline breaks everything silently.
 
 Don't rush this slide. The pain needs to feel real before the solution means anything.
 -->

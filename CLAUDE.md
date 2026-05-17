@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Purpose
 
-This is a **dbt training curriculum** for the Bloomwell Health data team — not an actual dbt project. It teaches dbt Core + Snowflake from foundations to production patterns, using Bloomwell's real data stack as the running example throughout.
+This is a **dbt training curriculum** for the data team — not an actual dbt project. It teaches dbt Core + Snowflake from foundations to production patterns, using the project's data stack as the running example throughout.
 
 ## No Build System
 
@@ -37,7 +37,7 @@ When adding or editing module content, use Modules 1–7 as the style and depth 
 Every detailed lesson (`module_0X_what_is_*.md`) follows this structure:
 
 1. **Opening Recap** — retrieval practice from the previous module
-2. **Theory Block** — concept explanation with Bloomwell-specific examples
+2. **Theory Block** — concept explanation with examples
 3. **Live Demo** — real code walkthrough (often with deliberate mistakes to find)
 4. **Hands-on Exercise** — participants write code independently
 5. **Debrief** — 3-bullet summary + stress-testing understanding
@@ -45,9 +45,9 @@ Every detailed lesson (`module_0X_what_is_*.md`) follows this structure:
 
 Slides files (`module_0X_slides.md`) mirror the same content in deck/speaker-notes format.
 
-## Bloomwell Data Stack
+## Data Stack
 
-All examples and exercises reference Bloomwell's actual architecture:
+All examples and exercises reference the project's architecture:
 
 ```
 HubSpot / Source Systems
@@ -60,4 +60,4 @@ HubSpot / Source Systems
 
 **Naming conventions used throughout:** `dim_*` (dimensions), `fct_*` (facts), `bridge_*` (bridge tables), `mrt_*` (marts/gold). Silver and Gold models require mandatory grain statements, column-level docs, and tests on `_key` columns (`unique` + `not_null`).
 
-**Bloomwell dbt profile target:** `BLOOMWELL_DEV` database, schema pattern `TESTING__dev_{yourname}`, role `TRANSFORMER_DEV`, Snowflake external browser auth.
+**dbt profile target:** `SILVER_DEV` database, schema pattern `TESTING__dev_{yourname}`, role `TRANSFORMER_DEV`, Snowflake external browser auth.

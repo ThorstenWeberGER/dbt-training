@@ -9,10 +9,10 @@
 | Time | Duration | Topic | Learning Goal | Mode | Participant Activity | Materials | Trainer Notes | Checkpoint |
 |---|---|---|---|---|---|---|---|---|
 | 00:00 | 10 min | Welcome & overview | Understand what this module covers and what success looks like | Present | Listen, ask questions | This doc | Set expectations: "by end of session you can explain dbt to a colleague in plain language" | Verbal: "what do you already know about dbt?" |
-| 00:10 | 20 min | The problem dbt solves | Understand why raw SQL pipelines break at scale | Present + Discussion | Ask questions, share own pain points | Whiteboard / slides | Use a real Bloomwell example: HubSpot raw data → `BRONZE.HUBSPOT.contacts` → how it used to be queried ad hoc | "Name one pain point you have today with data transformations" |
-| 00:30 | 15 min | What dbt actually is | Understand what dbt does — and does not do | Present | Listen, annotate | Slide: dbt stack diagram | Common confusion: dbt is NOT a database, scheduler, or ETL tool. It transforms data already in Snowflake | "Is Bloomwell on dbt Core or dbt Cloud? What's the difference?" |
-| 00:45 | 15 min | Live demo: project structure | Recognise the key files and folders in the Bloomwell project | Demo | Watch, no coding | VS Code with dbt project open | Show real project: `dbt_project.yml`, `models/`, `macros/`, `tests/`. Don't explain every file — just build a mental map. Make one deliberate navigation mistake and correct it. | "Point to where a Silver model lives" |
-| 01:00 | 25 min | Exercise: explore and document | Navigate the project and find real examples | Practice | Independent exploration | Bloomwell dbt project (read-only) | Give worksheet below. Circulate but don't answer immediately — let participants struggle for 2 min first | All 4 worksheet questions answered correctly |
+| 00:10 | 20 min | The problem dbt solves | Understand why raw SQL pipelines break at scale | Present + Discussion | Ask questions, share own pain points | Whiteboard / slides | Use a concrete example: HubSpot raw data → `BRONZE.HUBSPOT.contacts` → how it used to be queried ad hoc | "Name one pain point you have today with data transformations" |
+| 00:30 | 15 min | What dbt actually is | Understand what dbt does — and does not do | Present | Listen, annotate | Slide: dbt stack diagram | Common confusion: dbt is NOT a database, scheduler, or ETL tool. It transforms data already in Snowflake | "Are we on dbt Core or dbt Cloud? What's the difference?" |
+| 00:45 | 15 min | Live demo: project structure | Recognise the key files and folders in the dbt project | Demo | Watch, no coding | VS Code with dbt project open | Show real project: `dbt_project.yml`, `models/`, `macros/`, `tests/`. Don't explain every file — just build a mental map. Make one deliberate navigation mistake and correct it. | "Point to where a Silver model lives" |
+| 01:00 | 25 min | Exercise: explore and document | Navigate the project and find real examples | Practice | Independent exploration | dbt project (read-only) | Give worksheet below. Circulate but don't answer immediately — let participants struggle for 2 min first | All 4 worksheet questions answered correctly |
 | 01:25 | 10 min | Debrief + 3-bullet summary | Consolidate learning | Debrief | Discuss, write down summary | Whiteboard | Reveal the 3 bullets only after participants share their own first | "Explain dbt in one sentence to a non-technical colleague" |
 
 ---
@@ -34,7 +34,7 @@ This is how most data teams operate without a transformation framework.
 3. **No documentation** — tribal knowledge about what `fct_prescription.amount` actually means
 4. **No dependency management** — nobody knows what breaks when a source column changes
 
-### What this looks like at Bloomwell today
+### What this looks like in practice
 
 - HubSpot pipeline stages are ingested via Lambda → `BRONZE.HUBSPOT.pipeline_stages`
 - Silver models (`dim_pipeline`, `dim_pipeline_stage`) transform and clean that data
@@ -58,7 +58,7 @@ dbt is a **transformation framework** that lets you write SQL `SELECT` statement
 **dbt does not:**
 - Extract data from sources (that's your Lambda / Fivetran / Airbyte)
 - Load data into Snowflake (that's already done before dbt runs)
-- Schedule itself (that's Airflow or another orchestrator)
+- Schedule itself (that's your orchestrator)
 - Store any data itself
 
 ### dbt Core vs dbt Cloud
@@ -66,13 +66,13 @@ dbt is a **transformation framework** that lets you write SQL `SELECT` statement
 | | dbt Core | dbt Cloud |
 |---|---|---|
 | What it is | Open-source CLI tool | Hosted platform with IDE, scheduler, CI |
-| What Bloomwell uses | ✅ dbt Core | ❌ Not used |
+| What we use | ✅ dbt Core | ❌ Not used |
 | How we run it | CLI: `dbt run`, `dbt test`, `dbt build` | N/A |
-| How we schedule it | Airflow on AWS ECS | N/A |
+| How we schedule it | your orchestrator | N/A |
 
 Everything in this training applies to **dbt Core only**.
 
-### The dbt stack at Bloomwell
+### The dbt stack
 
 ```mermaid
 flowchart TD
@@ -104,7 +104,7 @@ dbt owns everything from Staging downward.
 
 ## Live Demo Script (15 min)
 
-Open VS Code with the Bloomwell dbt project. Walk through:
+Open VS Code with the dbt project. Walk through:
 
 1. `dbt_project.yml` — project name, model paths, default materialisation config
 2. `models/` directory — show Bronze staging, Silver, Gold folder structure
@@ -118,7 +118,7 @@ Do not run `dbt run`. That belongs in Module 02 after setup is confirmed.
 
 ## Exercise Worksheet (25 min)
 
-Answer all four questions using only the Bloomwell dbt project — no Googling.
+Answer all four questions using only the dbt project — no Googling.
 
 **Q1.** What is the project name defined in `dbt_project.yml`?
 
@@ -137,7 +137,7 @@ Answer all four questions using only the Bloomwell dbt project — no Googling.
 After participants share their own answers, confirm these three:
 
 1. dbt transforms data that is **already in Snowflake** — it does not extract or load
-2. At Bloomwell, dbt owns Bronze Staging → Silver → Gold; Lambda handles ingestion
+2. In this project, dbt owns Bronze Staging → Silver → Gold; Lambda handles ingestion
 3. Every model is a `SELECT` statement; dbt handles the `CREATE TABLE` / `CREATE VIEW` around it
 
 ---
@@ -146,8 +146,8 @@ After participants share their own answers, confirm these three:
 
 - [dbt Core documentation](https://docs.getdbt.com/docs/introduction)
 - [What is dbt? (official overview)](https://docs.getdbt.com/docs/introduction#what-is-dbt)
-- Bloomwell internal: `bloomwell-conventions` skill — layer ownership, naming rules
-- Bloomwell internal: `references/go_live_checklist.md` — read before first PR
+- Internal: `conventions` skill — layer ownership, naming rules
+- Internal: `references/go_live_checklist.md` — read before first PR
 
 ---
 
@@ -158,4 +158,4 @@ Participants should be able to answer these at the start of the next session —
 1. What does `dbt_project.yml` configure?
 2. What is the difference between dbt Core and dbt Cloud?
 3. dbt does NOT do three things — name them.
-4. Which layer does dbt own at Bloomwell?
+4. Which layer does dbt own in this project?
