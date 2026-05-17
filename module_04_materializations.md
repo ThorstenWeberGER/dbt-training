@@ -224,32 +224,74 @@ Snowflake handles the incremental refresh automatically — you write a plain `S
 
 ## Exercise (25 min)
 
-Three models are misconfigured. For each one: identify the problem, explain why it's wrong, write the corrected config block.
+> **Project context:** `stg_hubspot__contacts.sql` exists from Module 03. This session fixes a broken pre-built model and adds two more staging models, completing two thirds of the staging layer.
 
-**Model 1 — `stg_hubspot__pipeline_stages.sql`**
+### Task 1 — Fix `stg_hubspot__pipeline_stages.sql`
+
+Open `models/staging/hubspot/stg_hubspot__pipeline_stages.sql`. There is one configuration problem. Find it, fix it with a one-line change, and explain in one sentence why that materialisation is wrong for staging.
+
+After fixing the config, make sure the model selects all five columns from the source (`pipeline_stage_id`, `stage_name`, `is_closed`, `pipeline_id`, `_ingested_at`), renaming `_ingested_at` → `ingested_at`.
+
+<details>
+<summary>The bug and fix</summary>
+
+The model has `materialized='table'`. Staging models are always views — they are a lightweight alias over Bronze with no storage cost. The fix:
+
 ```sql
-{{ config(materialized='table') }}
+{{ config(materialized='view') }}
 
-SELECT pipeline_stage_id, stage_name, is_closed
+SELECT
+    pipeline_stage_id,
+    stage_name,
+    is_closed,
+    pipeline_id,
+    _ingested_at AS ingested_at
 FROM {{ source('hubspot', 'pipeline_stages') }}
 ```
 
-**Model 2 — `fct_daily_ticket_volume.sql`** (processes 50M rows daily)
+</details>
+
+### Task 2 — Write `stg_hubspot__deals.sql`
+
+Create `models/staging/hubspot/stg_hubspot__deals.sql`.
+
+The Bronze source (`BRONZE.HUBSPOT.deals`) has: `deal_id`, `deal_name`, `pipeline_id`, `close_date`, `_ingested_at`.
+
+Requirements: view materialization; source via `{{ source('hubspot', 'deals') }}`; select all five columns; rename `close_date` → `expected_close_date` and `_ingested_at` → `ingested_at`.
+
+<details>
+<summary>Expected model</summary>
+
 ```sql
-{{ config(materialized='table') }}
+{{ config(materialized='view') }}
 
 SELECT
-    ticket_date,
-    COUNT(*) AS ticket_count
-FROM {{ ref('dim_ticket') }}
-GROUP BY 1
+    deal_id,
+    deal_name,
+    pipeline_id,
+    close_date   AS expected_close_date,
+    _ingested_at AS ingested_at
+FROM {{ source('hubspot', 'deals') }}
 ```
 
-**Model 3 — `dim_contact.sql`** (incremental)
+</details>
+
+### Task 3 — Run all staging models
+
+```bash
+dbt run --select staging.*
+```
+
+Three models should show `OK`. Verify all three exist as views in your dev schema in Snowflake.
+
+### Bonus — Find the two bugs
+
+The model below has two problems. Identify both without running the code.
+
 ```sql
 {{ config(
-    materialized = 'incremental',
-    unique_key   = 'contact_key',
+    materialized     = 'incremental',
+    unique_key       = 'contact_key',
     on_schema_change = 'ignore'
 ) }}
 
@@ -261,10 +303,13 @@ FROM {{ ref('stg_hubspot__contacts') }}
 {{ endif }}
 ```
 
-**Expected answers:**
-1. Staging must be `view`, not `table`
-2. 50M rows rebuilt nightly as `table` is expensive — should be `incremental` with `unique_key = 'ticket_date'` (or a surrogate key)
-3. Two bugs: `on_schema_change = 'ignore'` should be `'sync_all_columns'`; `{{ if }}` should be `{% if %}` and `{{ endif }}` should be `{% endif %}`
+<details>
+<summary>The two bugs</summary>
+
+1. `on_schema_change = 'ignore'` silently drops new columns from the target table. Use `'sync_all_columns'`.
+2. `{{ if }}` / `{{ endif }}` are expression delimiters and render their content as literal text in the compiled SQL. Control flow requires statement delimiters: `{% if %}` / `{% endif %}`.
+
+</details>
 
 ---
 

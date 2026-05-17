@@ -207,19 +207,68 @@ deals:    26 hours 15 minutes ago — ERROR
 
 ## Exercise (25 min)
 
-### Task
+> **Project context:** Three staging models exist from Module 04. The final staging model (`stg_hubspot__owners`) and its source declaration are missing. This session completes the staging layer.
 
-You are adding a new HubSpot source: the `owners` table (`BRONZE.HUBSPOT.owners`). It has a `_ingested_at` timestamp column and is updated every 12 hours.
+### Task 1 — Extend `sources.yml`
 
-**Step 1:** Add the `owners` table to `sources.yml` with appropriate freshness thresholds (warn at 14 hours, error at 25 hours).
+Open `models/staging/hubspot/sources.yml`. The file currently declares `contacts` and `deals` under the `hubspot` source block.
 
-**Step 2:** Write a staging model `stg_hubspot__owners.sql` that:
-- References the source correctly (not hardcoded)
-- Selects: `owner_id`, `first_name`, `last_name`, `email`, `_ingested_at`
-- Renames `_ingested_at` to `ingested_at` (strip the underscore)
-- Is materialized as a view
+Add `owners` to the same source. The table lives at `BRONZE.HUBSPOT.owners`, is loaded every 12 hours via the `_ingested_at` column, and should warn after 14 hours and error after 25 hours.
 
-**Step 3:** Run `dbt compile --select stg_hubspot__owners` and verify the compiled output references the correct Bronze table (`BRONZE.HUBSPOT.owners`).
+<details>
+<summary>Entry to add</summary>
+
+```yaml
+      - name: owners
+        loaded_at_field: _ingested_at
+        freshness:
+          warn_after:  {count: 14, period: hour}
+          error_after: {count: 25, period: hour}
+```
+
+</details>
+
+### Task 2 — Write `stg_hubspot__owners.sql`
+
+Create `models/staging/hubspot/stg_hubspot__owners.sql`.
+
+The Bronze source (`BRONZE.HUBSPOT.owners`) has: `owner_id`, `first_name`, `last_name`, `email`, `_ingested_at`.
+
+Requirements: view materialization; `{{ source('hubspot', 'owners') }}`; all five columns; rename `_ingested_at` → `ingested_at`.
+
+<details>
+<summary>Expected model</summary>
+
+```sql
+{{ config(materialized='view') }}
+
+SELECT
+    owner_id,
+    first_name,
+    last_name,
+    email,
+    _ingested_at AS ingested_at
+FROM {{ source('hubspot', 'owners') }}
+```
+
+</details>
+
+### Task 3 — Compile and verify
+
+```bash
+dbt compile --select stg_hubspot__owners
+```
+
+Open the compiled output. Confirm it references `BRONZE.HUBSPOT.owners` — not a path you typed by hand.
+
+### Task 4 — Run all staging and check freshness
+
+```bash
+dbt run --select staging.*
+dbt source freshness
+```
+
+Four staging models should run `OK`. The freshness report shows whether `owners` data is current. Read the output: which sources passed, warned, or errored?
 
 ---
 

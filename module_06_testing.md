@@ -229,29 +229,143 @@ These are checked on every Silver and Gold PR:
 
 ## Exercise (30 min)
 
-### Task
+> **Project context:** Full staging layer complete. Silver models exist but `models/silver/schema.yml` does not yet exist. This session creates it with a full test suite.
 
-You are reviewing `fct_prescription.sql`. It has no tests. Add the correct tests to `schema.yml`.
+### Task 1 — Create `models/silver/schema.yml` with tests for `fct_prescription`
+
+Create the file. Add a `version: 2` header and a `models:` block for `fct_prescription`.
 
 The model has these columns:
 
-| Column | Type | Description |
-|---|---|---|
-| `prescription_key` | Surrogate PK | MD5 hash |
-| `patient_key` | FK → `dim_patient` | — |
-| `doctor_key` | FK → `dim_doctor` | — |
-| `prescription_date` | Date | — |
-| `medication_type` | String | One of: `tablet`, `liquid`, `injection`, `topical` |
-| `dosage_amount` | Number | Can be null if not yet confirmed |
-| `notes` | String | Optional free text |
+| Column | Type | Required test(s) | Severity |
+|---|---|---|---|
+| `prescription_key` | Surrogate PK | unique + not_null | error |
+| `patient_key` | FK → `dim_patient.patient_key` | not_null + relationships | error |
+| `doctor_key` | FK → `dim_doctor.doctor_key` | not_null + relationships | error |
+| `prescription_date` | Date | not_null | error |
+| `medication_type` | String | accepted_values: tablet, liquid, injection, topical | error |
+| `dosage_amount` | Number | not_null | warn (nulls expected when dose unconfirmed) |
+| `notes` | String | none | — |
 
-**Step 1:** Write the full `schema.yml` block for `fct_prescription` with all required tests.
+### Task 2 — Run the tests
 
-**Step 2:** Add one `warn`-severity test for `dosage_amount` (not_null with warn).
+```bash
+dbt test --select fct_prescription
+```
 
-**Step 3:** Run `dbt test --select fct_prescription`. Then deliberately introduce a duplicate `prescription_key` in your dev environment and run again. Document what the failure output says.
+All 7 tests pass on the clean dataset. Note which tests ran and under which model name they appear in the output.
 
-**Step 4 (singular test):** Write a singular test file `tests/assert_fct_prescription_no_zero_dosage.sql` that fails if any `prescription_key` has a `dosage_amount` of exactly `0` (zero is different from null — a zero dosage is a data error). Use the `GROUP BY ... HAVING` pattern. Run it with `dbt test --select test_type:singular`.
+### Task 3 — Break a test deliberately
+
+Insert a duplicate row in your dev schema:
+
+```sql
+INSERT INTO SILVER_DEV.TESTING__dev_yourname.fct_prescription
+SELECT * FROM SILVER_DEV.TESTING__dev_yourname.fct_prescription
+WHERE prescription_key = 'rx-001';
+```
+
+Run `dbt test --select fct_prescription` again. Read the failure output:
+- Which test failed?
+- How many rows were returned?
+- Copy the test SQL from the output and run it manually in Snowsight.
+
+Restore clean data:
+
+```bash
+dbt run --select fct_prescription
+```
+
+### Task 4 — Write a singular test
+
+Create `tests/assert_fct_prescription_no_zero_dosage.sql`.
+
+Return rows where `dosage_amount = 0`. Zero is a data error (impossible to dispense nothing). Null is allowed (dose pending confirmation). If this query returns any rows, the test fails.
+
+Run it:
+
+```bash
+dbt test --select test_type:singular
+```
+
+### Task 5 — Run `dbt build` across the Silver layer
+
+```bash
+dbt build --select silver.*
+```
+
+Watch the DAG order. Each model is followed immediately by its tests. If `dim_patient` fails a test, `fct_prescription` — which depends on it — is never built.
+
+<details>
+<summary>Expected schema.yml</summary>
+
+```yaml
+version: 2
+
+models:
+  - name: fct_prescription
+    columns:
+      - name: prescription_key
+        tests:
+          - unique:
+              config:
+                severity: error
+          - not_null:
+              config:
+                severity: error
+      - name: patient_key
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              to: ref('dim_patient')
+              field: patient_key
+              config:
+                severity: error
+      - name: doctor_key
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              to: ref('dim_doctor')
+              field: doctor_key
+              config:
+                severity: error
+      - name: prescription_date
+        tests:
+          - not_null:
+              config:
+                severity: error
+      - name: medication_type
+        tests:
+          - accepted_values:
+              values: [tablet, liquid, injection, topical]
+              config:
+                severity: error
+      - name: dosage_amount
+        tests:
+          - not_null:
+              config:
+                severity: warn
+```
+
+</details>
+
+<details>
+<summary>Expected singular test</summary>
+
+```sql
+-- tests/assert_fct_prescription_no_zero_dosage.sql
+SELECT
+    prescription_key,
+    dosage_amount
+FROM {{ ref('fct_prescription') }}
+WHERE dosage_amount = 0
+```
+
+</details>
 
 ---
 

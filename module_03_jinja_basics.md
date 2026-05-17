@@ -173,12 +173,14 @@ This pattern is especially common inside incremental models to limit dev scans. 
 
 ## Exercise (20 min)
 
-### Task 1 — Read and predict compiled output
+> **Project context:** This exercise starts your staging layer. By the end you will have one working staging model.
 
-Given this model, write what the compiled SQL will look like for the **prod** target:
+### Task 1 — Predict compiled output before writing anything
+
+Given this model, write what the compiled SQL will look like for the **dev** target before running anything:
 
 ```sql
-{{ config(materialized='table') }}
+{{ config(materialized='view') }}
 
 SELECT
     c.contact_id,
@@ -189,26 +191,63 @@ LEFT JOIN {{ ref('dim_pipeline') }} p
     ON c.pipeline_id = p.hubspot_pipeline_id
 ```
 
-Expected answer:
-```sql
-CREATE OR REPLACE TABLE SILVER.PUBLIC.your_model_name AS
+What does `{{ source('hubspot', 'contacts') }}` compile to? What does `{{ ref('dim_pipeline') }}` compile to? What happens to the `{{ config() }}` block?
 
-SELECT
-    c.contact_id,
-    c.email,
-    p.pipeline_name
-FROM BRONZE.HUBSPOT.contacts c
-LEFT JOIN SILVER.PUBLIC.dim_pipeline p
-    ON c.pipeline_id = p.hubspot_pipeline_id
+<details>
+<summary>Expected compiled SQL (dev target)</summary>
+
+```sql
+CREATE OR REPLACE VIEW SILVER_DEV.TESTING__dev_yourname.your_model_name AS (
+
+  SELECT
+      c.contact_id,
+      c.email,
+      p.pipeline_name
+  FROM BRONZE.HUBSPOT.contacts c
+  LEFT JOIN SILVER_DEV.TESTING__dev_yourname.dim_pipeline p
+      ON c.pipeline_id = p.hubspot_pipeline_id
+
+)
 ```
 
-### Task 2 — Write from scratch
+The `{{ config() }}` block disappears — it becomes DDL wrapper, not inline SQL. Note: if you join `dim_pipeline` without `WHERE is_current = true`, contacts assigned to `hs-pipeline-003` will return two rows (the renamed pipeline has two SCD2 versions in the data).
 
-Write a model called `stg_hubspot__deals.sql` that:
-- References the `hubspot` source, `deals` table
-- Selects: `deal_id`, `deal_name`, `pipeline_id`, `close_date`
-- Renames `close_date` to `expected_close_date`
-- Is materialised as a `view`
+</details>
+
+### Task 2 — Write `stg_hubspot__contacts.sql`
+
+Create `models/staging/hubspot/stg_hubspot__contacts.sql`.
+
+The Bronze source (`BRONZE.HUBSPOT.contacts`) has: `contact_id`, `email`, `pipeline_id`, `_ingested_at`.
+
+Requirements:
+- Materialise as a `view`
+- Reference the source via `{{ source('hubspot', 'contacts') }}`
+- Select all four columns; rename `_ingested_at` → `ingested_at`
+
+Then run:
+
+```bash
+dbt compile --select stg_hubspot__contacts
+```
+
+Open `target/compiled/analytics/models/staging/hubspot/stg_hubspot__contacts.sql`. Confirm that `{{ source('hubspot', 'contacts') }}` compiled to `BRONZE.HUBSPOT.contacts`.
+
+<details>
+<summary>Expected model</summary>
+
+```sql
+{{ config(materialized='view') }}
+
+SELECT
+    contact_id,
+    email,
+    pipeline_id,
+    _ingested_at AS ingested_at
+FROM {{ source('hubspot', 'contacts') }}
+```
+
+</details>
 
 ---
 

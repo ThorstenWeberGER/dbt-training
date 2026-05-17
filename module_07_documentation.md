@@ -180,27 +180,47 @@ The DAG is the fastest way to answer: "if I change `dim_patient`, what downstrea
 
 ## Exercise (20 min)
 
-### Task
+> **Project context:** `models/silver/schema.yml` exists from Module 06 with tests only. This session extends it with descriptions and grain statements, completing the CI requirements for Silver.
 
-The model `dim_pipeline` exists in Silver with no documentation. Using what you know about HubSpot pipeline stages, write a complete `schema.yml` entry for it.
+### Task 1 — Add documentation to `fct_prescription`
 
-The model has these columns:
+In the existing `models/silver/schema.yml`, add a `description:` field to the `fct_prescription` model. The description must include:
+- A grain statement: what does one row represent?
+- One sentence on what the model is used for
+
+Then add `description:` to each column that already has tests.
+
+### Task 2 — Document `dim_pipeline`
+
+Add a new model entry for `dim_pipeline` to `schema.yml`. This is an SCD2 model — look at `data/silver/dim_pipeline.csv` to see a concrete example: `hs-pipeline-003` appears twice, showing the before and after of a pipeline rename.
 
 | Column | Type | Role |
 |---|---|---|
-| `pipeline_key` | Integer | Surrogate PK |
-| `hubspot_pipeline_id` | String | Business key from HubSpot |
+| `pipeline_key` | Surrogate PK | Unique per pipeline version |
+| `hubspot_pipeline_id` | String | Business key — stable across SCD2 versions |
 | `pipeline_name` | String | Human-readable name |
-| `is_active` | Boolean | Whether pipeline is currently in use |
-| `dbt_valid_from` | Timestamp | SCD2 validity start |
-| `dbt_valid_to` | Timestamp | SCD2 validity end (NULL = current record) |
-| `is_current` | Boolean | True if this is the active version of the record |
+| `is_active` | Boolean | Whether pipeline is in use |
+| `dbt_valid_from` | Timestamp | When this version became effective |
+| `dbt_valid_to` | Timestamp | When superseded. NULL = current |
+| `is_current` | Boolean | True if `dbt_valid_to IS NULL` |
 
-**Requirements:**
-- Write a grain statement (hint: this is SCD2 — grain includes validity period)
-- Write descriptions for all 7 columns
-- Add appropriate tests to `pipeline_key`, `hubspot_pipeline_id`, and `is_current`
-- After writing, run `dbt docs generate` and verify the model appears correctly in the docs site
+Requirements:
+- Grain statement that explains the SCD2 pattern
+- Description for every column
+- Tests: `pipeline_key` (unique + not_null, error), `is_current` (not_null, error)
+
+### Task 3 — Generate and browse the docs
+
+```bash
+dbt docs generate
+dbt docs serve
+```
+
+In the browser:
+1. Navigate to `fct_prescription`. Confirm the grain statement appears in the model description.
+2. Navigate to `dim_pipeline`. Click into the DAG. Find the lineage upstream to Bronze.
+3. Click the `dbt_valid_to` column. Confirm your description renders.
+4. Trace the full lineage from `BRONZE.HUBSPOT.contacts` through to `fct_prescription`.
 
 ---
 
