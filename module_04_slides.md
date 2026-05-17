@@ -1,0 +1,355 @@
+---
+theme: default
+background: '#f9f8f5'
+title: 'Module 04 — Materializations'
+highlighter: shiki
+lineNumbers: false
+transition: slide-left
+fonts:
+  sans: 'DM Sans'
+  mono: 'JetBrains Mono'
+---
+
+<div class="h-full flex flex-col justify-center pl-2">
+  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">Bloomwell Data & Analytics · dbt Training</div>
+  <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono px-3 py-1 rounded-full w-fit mb-6">
+    🟢 Beginner · Module 04 · 90 min
+  </div>
+  <h1 class="text-6xl font-bold text-slate-900 leading-[1.05] mb-6">
+    Materializations
+  </h1>
+  <p class="text-slate-400 text-sm max-w-sm">
+    The most consequential decision in any dbt project. Drives cost, performance, freshness, and pipeline reliability at Bloomwell.
+  </p>
+</div>
+
+<!--
+Recap prep questions from Module 03 — cold, no notes:
+1. What does {{ ref('dim_patient') }} compile to in your dev environment?
+2. What is the difference between {{ }} and {% %}?
+3. When would you use {{ config() }} instead of setting materialisation in dbt_project.yml?
+4. What does {{ this }} refer to?
+
+Probe {{ this }} specifically — it connects directly to today's is_incremental() content.
+-->
+
+---
+
+# The Four Materializations
+
+<div class="mt-4">
+
+| Materialization | What dbt creates | Full rebuild? | Use case |
+|---|---|---|---|
+| `view` | `CREATE OR REPLACE VIEW` | ✅ view def only | Staging, lightweight transforms |
+| `table` | `DROP + CREATE TABLE AS SELECT` | ✅ full rebuild | Small Gold marts, reference tables |
+| `incremental` | `MERGE INTO` or `INSERT` | ❌ new/changed rows only | Large Silver facts, append-heavy |
+| `ephemeral` | Nothing (becomes a CTE) | N/A | Intermediate steps, no table needed |
+
+</div>
+
+<div class="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+  <strong>The decision matters because Snowflake charges per compute.</strong> A 50M-row Gold mart rebuilt as a <code>table</code> every night is expensive. The same model as <code>incremental</code> processes only new rows — a fraction of the cost.
+</div>
+
+<!--
+Don't go deep on each one yet — this slide is the overview. Depth comes on the next three slides.
+
+The cost framing is important. "Which materialization should I use?" is not an academic question — it has direct operational cost implications at Bloomwell.
+
+Ask: "Name the four materializations" — they should be able to list them after this slide.
+-->
+
+---
+
+# `view` and `table` — The Simple Two
+
+<div class="grid grid-cols-2 gap-8 mt-4">
+<div>
+
+**view**
+
+```sql
+-- dbt compiles to:
+CREATE OR REPLACE VIEW
+  BLOOMWELL_DEV.TESTING__dev_thorsten.stg_hubspot__contacts
+AS
+SELECT contact_id, email, created_at
+FROM BLOOMWELL.BRONZE.HUBSPOT.contacts
+```
+
+<div class="mt-3 space-y-2 text-sm">
+  <div class="flex gap-2"><span class="text-emerald-600">✓</span> Always reflects latest source data</div>
+  <div class="flex gap-2"><span class="text-emerald-600">✓</span> Zero storage cost</div>
+  <div class="flex gap-2"><span class="text-red-500">✗</span> Recomputes on every query — slow for complex transforms</div>
+</div>
+
+<div class="mt-3 bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-700">
+  <strong>Bloomwell:</strong> All staging models. Views are cheap wrappers — rename, cast, nothing more.
+</div>
+
+</div>
+<div>
+
+**table**
+
+```sql
+-- dbt compiles to:
+DROP TABLE IF EXISTS BLOOMWELL.SILVER.dim_pipeline;
+CREATE TABLE BLOOMWELL.SILVER.dim_pipeline AS
+SELECT ...
+```
+
+<div class="mt-3 space-y-2 text-sm">
+  <div class="flex gap-2"><span class="text-emerald-600">✓</span> Fast to query — no recomputation</div>
+  <div class="flex gap-2"><span class="text-red-500">✗</span> Full rebuild on every run — expensive for large tables</div>
+</div>
+
+<div class="mt-3 bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-700">
+  <strong>Bloomwell:</strong> Gold marts (small aggregates) and Silver dimensions (medium size, nightly rebuild acceptable).
+</div>
+
+</div>
+</div>
+
+<!--
+Show the DDL live in VS Code using dbt compile — let them see what dbt actually generates.
+
+Key question: "Why would you never use materialized='table' for Bronze at Bloomwell?" → Bronze is append-only, owned by Lambda — dbt doesn't touch it. And even if it did, a full rebuild of a Bronze table containing years of HubSpot history would be catastrophically expensive.
+
+The DROP TABLE in the table materialization is worth flagging explicitly: if the run fails mid-way, you have a dropped table and no replacement. That's another reason large facts should be incremental.
+-->
+
+---
+
+# `incremental` — The Critical One
+
+```sql {all|1-5|7-9|11-13|all}
+{{ config(
+    materialized     = 'incremental',
+    unique_key       = 'contact_key',
+    on_schema_change = 'sync_all_columns'   -- Bloomwell standard
+) }}
+
+SELECT contact_key, hubspot_contact_id, email, updated_at
+FROM {{ ref('stg_hubspot__contacts') }}
+
+{% if is_incremental() %}
+    WHERE updated_at > (SELECT MAX(updated_at) FROM {{ this }})
+{% endif %}
+```
+
+<div class="grid grid-cols-2 gap-4 mt-4">
+<div class="bg-white border border-slate-200 rounded-lg p-3 text-sm">
+  <div class="font-semibold text-slate-700 mb-1">First run</div>
+  <code>is_incremental()</code> = False → WHERE skipped → full load → table created
+</div>
+<div class="bg-white border border-slate-200 rounded-lg p-3 text-sm">
+  <div class="font-semibold text-slate-700 mb-1">Subsequent runs</div>
+  <code>is_incremental()</code> = True → WHERE applies → MERGE only new/changed rows
+</div>
+</div>
+
+<!--
+Use line highlights: click through config block, then SELECT, then the {% if %} block.
+
+The unique_key is the match condition for the MERGE statement. Without it, dbt can only INSERT — it can't update existing rows. Show the compiled MERGE SQL in target/compiled/ so they see what Snowflake actually receives.
+
+on_schema_change: explain 'ignore' (default, silent data bug) vs 'sync_all_columns' (Bloomwell standard). 'ignore' means if you add a column to your SELECT, it silently disappears from the table. That's a production data quality issue that can go undetected for weeks.
+-->
+
+---
+
+# The Compiled MERGE Statement
+
+**What Snowflake actually receives for an incremental model:**
+
+```sql
+MERGE INTO BLOOMWELL.SILVER.dim_contact AS DBT_INTERNAL_DEST
+USING (
+    SELECT contact_key, hubspot_contact_id, email, updated_at
+    FROM BLOOMWELL_DEV.TESTING__dev_thorsten.stg_hubspot__contacts
+    WHERE updated_at > (SELECT MAX(updated_at) FROM BLOOMWELL.SILVER.dim_contact)
+) AS DBT_INTERNAL_SOURCE
+ON DBT_INTERNAL_DEST.contact_key = DBT_INTERNAL_SOURCE.contact_key
+
+WHEN MATCHED THEN UPDATE SET
+    hubspot_contact_id = DBT_INTERNAL_SOURCE.hubspot_contact_id,
+    email              = DBT_INTERNAL_SOURCE.email,
+    updated_at         = DBT_INTERNAL_SOURCE.updated_at
+
+WHEN NOT MATCHED THEN INSERT (contact_key, hubspot_contact_id, email, updated_at)
+VALUES (DBT_INTERNAL_SOURCE.contact_key, ...)
+```
+
+<div class="mt-3 text-sm text-slate-500">Find this in <code>target/compiled/bloomwell/models/silver/dim_contact.sql</code></div>
+
+<!--
+This slide answers "what does dbt actually do?" at the SQL level. No magic.
+
+The MERGE pattern is why unique_key is required — ON DBT_INTERNAL_DEST.contact_key = DBT_INTERNAL_SOURCE.contact_key. Without a unique_key, dbt generates INSERT INTO instead, which creates duplicates.
+
+Walk them to target/compiled/ and show the real file for an existing incremental model in the repo.
+
+Also mention: --full-refresh forces a table DROP + CREATE instead of MERGE. Use it after logic changes that affect historical rows, after source data corrections, or after schema migrations.
+-->
+
+---
+
+# `on_schema_change` Options
+
+<div class="mt-4">
+
+| Value | Behaviour | Use at Bloomwell? |
+|---|---|---|
+| `ignore` *(default)* | New columns in SELECT are silently dropped | ❌ Never — silent data bug |
+| `fail` | Errors if SELECT has new columns | ⚠️ Useful in strict environments |
+| **`sync_all_columns`** | **Adds new columns, removes deleted ones** | **✅ Bloomwell standard** |
+| `append_new_columns` | Adds new columns only, never removes | ⚠️ Use case by case |
+
+</div>
+
+<div class="mt-6 bg-red-50 border border-red-200 rounded-xl p-4">
+  <div class="font-semibold text-red-800 mb-2">Why `ignore` is dangerous</div>
+  <div class="text-red-700 text-sm">You add a new column to your SELECT. dbt says nothing. The column never appears in the table. Downstream models and Power BI reports that depend on it fail — but only at query time, not at build time. The bug is invisible until someone notices wrong data.</div>
+</div>
+
+<!--
+This is one of the most subtle production bugs in dbt. Make sure they understand why ignore is the default (backward compatibility) but not safe for Bloomwell.
+
+After the CI tooling is set up, the dbt-sql-reviewer skill checks this — but for now, they need to remember to set it manually.
+-->
+
+---
+
+# `ephemeral` — Brief but Important
+
+```sql
+{{ config(materialized='ephemeral') }}
+
+SELECT
+    contact_id,
+    LOWER(email) AS email_clean
+FROM {{ source('hubspot', 'contacts') }}
+```
+
+<div class="mt-4 grid grid-cols-2 gap-6">
+<div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
+  <div class="font-semibold text-slate-700 mb-2">What happens</div>
+  No object is created in Snowflake. When another model references this via <code>{{ ref() }}</code>, dbt inlines it as a CTE.
+</div>
+<div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
+  <div class="font-semibold text-slate-700 mb-2">When NOT to use</div>
+  If multiple models reference the same ephemeral model, the computation is repeated in each one as a separate CTE. Use a view instead.
+</div>
+</div>
+
+<div class="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-600">
+  <strong>At Bloomwell:</strong> Ephemeral is rarely used. Prefer views for intermediate staging — they're queryable for debugging. An ephemeral model cannot be directly queried.
+</div>
+
+<!--
+Keep this brief — 5 minutes. The key facts: no Snowflake object, becomes a CTE, not queryable directly.
+
+The multiple-reference problem is subtle: if dim_patient and fct_prescription both ref() the same ephemeral staging model, that staging CTE is inlined twice — once in each compiled SQL. The computation runs twice in Snowflake. A view runs once and is cached.
+
+At Bloomwell we prefer views because they're debuggable. If something goes wrong in an ephemeral model, you can't query it to inspect the output.
+-->
+
+---
+
+# Bloomwell Materialization Rules
+
+<div class="mt-4">
+
+| Layer | Required materialization | Reason |
+|---|---|---|
+| Bronze | Append-only via Lambda — dbt does not own Bronze | Managed by ingestion layer |
+| **Staging** | **`view` or `ephemeral`** | No business logic, no storage needed |
+| Silver — dimensions | `table` (or `incremental` for SCD2) | Rebuilt nightly, medium size |
+| Silver — facts (large) | `incremental` with merge strategy | Too large to full-refresh every night |
+| Gold | `table` | Small aggregates; consumers need consistent reads |
+
+</div>
+
+<div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+  <strong>CI enforcement:</strong> Staging models configured as <code>table</code> will fail the pre-merge review. This is checked via the <code>dbt-sql-reviewer</code> skill.
+</div>
+
+<!--
+Read this table aloud together. These are not suggestions — the pre-merge review checks materialization compliance.
+
+The most common violation: someone creates a staging model as table because they want it to be queryable and fast. The correct solution is to promote it to a Silver model if it needs to be persisted.
+
+Ask: "What materialization is forbidden for staging models?" → table (and anything other than view or ephemeral).
+-->
+
+---
+
+# Exercise: Find the Bugs (25 min)
+
+**Three models are misconfigured. Identify the problem, explain why, write the fix.**
+
+<div class="space-y-4 mt-4">
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="text-xs font-mono text-red-500 mb-2">Model 1 — stg_hubspot__pipeline_stages.sql</div>
+
+```sql
+{{ config(materialized='table') }}
+SELECT pipeline_stage_id, stage_name, is_closed
+FROM {{ source('hubspot', 'pipeline_stages') }}
+```
+
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="text-xs font-mono text-red-500 mb-2">Model 2 — fct_daily_ticket_volume.sql (50M rows/day)</div>
+
+```sql
+{{ config(materialized='table') }}
+SELECT ticket_date, COUNT(*) AS ticket_count
+FROM {{ ref('dim_ticket') }} GROUP BY 1
+```
+
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="text-xs font-mono text-red-500 mb-2">Model 3 — dim_contact.sql (incremental)</div>
+
+```sql
+{{ config(materialized='incremental', unique_key='contact_key', on_schema_change='ignore') }}
+SELECT contact_key, email, updated_at FROM {{ ref('stg_hubspot__contacts') }}
+{{ if is_incremental() }} WHERE updated_at > (SELECT MAX(updated_at) FROM {{ this }}) {{ endif }}
+```
+
+</div>
+
+</div>
+
+<!--
+Expected answers:
+1. Staging must be view, not table. Fix: config(materialized='view')
+2. 50M rows rebuilt nightly as table is expensive. Fix: incremental with unique_key='ticket_date' (or a surrogate key), on_schema_change='sync_all_columns'
+3. Three bugs: (a) on_schema_change='ignore' should be 'sync_all_columns', (b) {{ if }} should be {% if %}, (c) {{ endif }} should be {% endif %}
+
+Model 3 has both a business logic bug and a Jinja syntax bug — watch whether participants catch both.
+
+Circulate. If someone finishes early, ask them to write the corrected full model including the WHERE clause with is_incremental().
+-->
+
+---
+layout: center
+---
+
+<div class="text-center">
+  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-4">Module 04 Complete</div>
+  <h2 class="text-3xl font-bold text-slate-800 mb-2">Next: Module 05</h2>
+  <p class="text-slate-500 mb-8">Sources and the Medallion Architecture</p>
+  <div class="space-y-2 text-left max-w-md mx-auto">
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q1: What SQL does a table materialization generate?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q2: What does is_incremental() return on first run?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q3: Mandatory on_schema_change setting at Bloomwell?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q4: Why never use table for a staging model?</div>
+  </div>
+</div>
