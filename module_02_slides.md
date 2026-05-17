@@ -145,6 +145,49 @@ Individual models can override any of this with a {{ config() }} block — cover
 
 ---
 
+# `+database` and `+schema` — Where Models Land
+
+`+materialized` controls *how* dbt builds a model. `+database` and `+schema` control *where* it lands in Snowflake.
+
+```yaml
+models:
+  analytics:
+    silver:
+      +materialized: table
+      +database: SILVER    # Silver models always write to this database
+      +schema: PUBLIC
+
+    gold:
+      +materialized: table
+      +database: GOLD      # Gold models write to a separate database
+      +schema: PUBLIC
+```
+
+<div class="mt-4 grid grid-cols-2 gap-4">
+<div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
+  <div class="font-mono text-xs text-slate-400 mb-2">Without <code>+database</code></div>
+  Every layer lands in whatever database <code>profiles.yml</code> specifies. No separation.
+</div>
+<div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
+  <div class="font-mono text-xs text-slate-400 mb-2">With <code>+database</code></div>
+  Each layer is routed to its own Snowflake database. The separation you see in Snowflake is enforced here.
+</div>
+</div>
+
+<div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+  <strong>Caution:</strong> Hardcoding <code>GOLD</code> writes to production even on a dev run. Environment-aware routing requires a <code>generate_database_name</code> macro — covered in the Intermediate tier.
+</div>
+
+<!--
+The key insight: the SILVER / GOLD database split participants see in Snowflake is not magic. It's this config. Without +database, everything would pile into whichever database the profile points at.
+
+The dev/prod problem is real and worth flagging now even though the fix (generate_database_name macro) comes later. Plant the question: "How does dbt know to write to SILVER_DEV instead of SILVER on a dev run?" — the answer is the macro, not profiles.yml alone.
+
+Don't go deep on the macro. Just establish the problem exists and that there's a solution.
+-->
+
+---
+
 # Core CLI Commands
 
 <div class="mt-4">

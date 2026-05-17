@@ -12,7 +12,7 @@
 |---|---|---|---|---|---|---|---|---|
 | 00:00 | 10 min | Recap Module 01 | Confirm mental model before introducing new content | Q&A | Answer from memory, no notes | — | Ask all 4 prep questions cold. Stop and revisit any wrong answer before continuing. | All 4 correct |
 | 00:10 | 15 min | `profiles.yml` anatomy | Understand how dbt connects to Snowflake | Present + live file | Read along in their own clone | `profiles.yml` from repo | Walk: `target`, `outputs`, `account`, `role`, `warehouse`, `schema`. Explain dev vs. prod target split. Key point: dev schema = `TESTING.dev_{name}` — never writes to Silver or Gold. | "What schema does your dev target write to?" |
-| 00:25 | 15 min | `dbt_project.yml` deep-dive | Know what the project config controls | Present + live file | Annotate own copy | `dbt_project.yml` | Cover: `name`, `model-paths`, `+materialized` per layer, `+tags`. Show how Silver inherits `materialized: table` from config. | "Where is the default materialization for Gold models set?" |
+| 00:25 | 15 min | `dbt_project.yml` deep-dive | Know what the project config controls | Present + live file | Annotate own copy | `dbt_project.yml` | Cover: `name`, `model-paths`, `+materialized` per layer, `+tags`, `+database`, `+schema`. Show how Silver inherits `materialized: table` from config and how `+database` enforces layer separation. | "Where is the default materialization for Gold models set?" |
 | 00:40 | 10 min | CLI command reference | Know the core commands and when to use each | Present | Write down command table | This doc | Don't demo all commands — just walk the table. They'll use them hands-on in Module 06. | "What command runs models AND tests together?" |
 | 00:50 | 10 min | The execution sequence | Understand what happens when you run `dbt run` | Present | Annotate diagram | Whiteboard | Five phases: Parse → Resolve → Compile → Execute → Report. Which phase produces which error type. One diagram, no more. | "At which phase does a Jinja syntax error appear?" |
 | 01:00 | — | Session close + prep questions | — | — | — | — | No exercise this session — hands-on begins in Module 03 when they write their first Jinja. | — |
@@ -119,6 +119,28 @@ models:
 - Staging is always a view — never a table
 - Silver and Gold persist docs to Snowflake so Power BI and Cortex AI can read column descriptions
 - Tags enable selective runs: `dbt build --select tag:silver`
+
+**`+database` and `+schema` — routing layers to the right Snowflake location**
+
+`+materialized` controls *how* dbt builds a model. `+database` and `+schema` control *where* it lands. Without them, every model writes to whichever database and schema `profiles.yml` specifies — the same location for every layer. With them, you can route Silver and Gold to separate Snowflake databases directly from the project config:
+
+```yaml
+models:
+  analytics:
+    silver:
+      +materialized: table
+      +database: SILVER    # Silver models always write to this database
+      +schema: PUBLIC
+
+    gold:
+      +materialized: table
+      +database: GOLD      # Gold models write to a separate database
+      +schema: PUBLIC
+```
+
+The layer separation visible in Snowflake (`SILVER` vs `GOLD` databases) is enforced here — not by convention, not by the profile, but by this config.
+
+**The dev/prod problem:** Hardcoding `GOLD` writes to the production `GOLD` database even on a dev run, breaking environment isolation. The solution is a `generate_database_name` macro that switches the value based on `target.name` — covered in the Intermediate tier. For now: understand what `+database` does and that hardcoding without the macro is dangerous in practice.
 
 ---
 
