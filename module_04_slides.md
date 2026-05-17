@@ -258,6 +258,46 @@ At Bloomwell we prefer views because they're debuggable. If something goes wrong
 
 ---
 
+# Snowflake-specific: Dynamic Tables
+
+<div class="mt-4 bg-white border border-slate-200 rounded-xl p-5">
+  <div class="text-sm text-slate-700 mb-3">Snowflake's native alternative to incremental models — the database engine manages refresh automatically.</div>
+
+```yaml
+models:
+  - name: fct_daily_revenue
+    config:
+      materialized: dynamic_table
+```
+
+  <div class="mt-3 text-sm text-slate-600">Write a plain <code>SELECT</code> — no <code>{% if is_incremental() %}</code> needed. Snowflake handles the incremental logic.</div>
+</div>
+
+<div class="mt-4 grid grid-cols-2 gap-3">
+  <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm">
+    <div class="font-semibold text-emerald-700 mb-1">Advantage</div>
+    <div class="text-emerald-800">Less code complexity. No <code>unique_key</code> or merge strategy to configure.</div>
+  </div>
+  <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
+    <div class="font-semibold text-amber-700 mb-1">Trade-off</div>
+    <div class="text-amber-800">Less control over refresh timing and logic. No <code>--full-refresh</code> override.</div>
+  </div>
+</div>
+
+<div class="mt-4 bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm text-slate-600">
+  <strong>Not used at Bloomwell today.</strong> Standard is <code>incremental</code> with <code>merge</code> strategy. Mention only if asked — it's a sign Snowflake is absorbing some of what dbt does manually.
+</div>
+
+<!--
+This is awareness-only — 2 minutes max. Don't get pulled into a comparison discussion.
+
+The key message: dynamic tables exist in Snowflake, they're dbt-supported, and they reduce the code you write for incremental models. They're not used at Bloomwell yet because the team prefers explicit control over merge logic. That may change.
+
+If someone asks "should we switch?": it depends on how complex the incremental logic is. For simple timestamp-based incremental filters, dynamic tables would work. For complex SCD2 patterns, keep incremental.
+-->
+
+---
+
 # Bloomwell Materialization Rules
 
 <div class="mt-4">

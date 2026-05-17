@@ -222,6 +222,37 @@ Make sure everyone knows target/compiled/ exists and that it's their best debugg
 -->
 
 ---
+
+# Other Project Files You'll See
+
+<div class="mt-4 space-y-3">
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="font-mono text-slate-700 font-semibold mb-1">packages.yml</div>
+  <div class="text-sm text-slate-600">Declares external dbt packages (e.g. <code>dbt_utils</code>). Run <code>dbt deps</code> to install them. Bloomwell uses <code>dbt_utils</code> for surrogate key generation.</div>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="font-mono text-slate-700 font-semibold mb-1">seeds/</div>
+  <div class="text-sm text-slate-600">CSV files for small, static lookup tables that don't live in a source system — e.g. excluded test accounts, country-code mappings. Load with <code>dbt seed</code>.</div>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="font-mono text-slate-700 font-semibold mb-1">analyses/</div>
+  <div class="text-sm text-slate-600">SQL files that use <code>ref()</code> and <code>source()</code> for lineage, but are never materialised. Useful for audit queries during a migration — compare old and new logic without polluting production models.</div>
+</div>
+
+</div>
+
+<!--
+These don't need deep coverage — just recognition. When trainees open the Bloomwell project and see packages.yml or a seeds/ folder, they should have a mental model rather than being confused.
+
+dbt_utils is installed in the Bloomwell project. If anyone asks, the most important thing it provides is generate_surrogate_key() — a macro that hashes multiple columns into a surrogate key. They'll use it in Module 09 (Macros) and later when building Silver dimensions.
+
+seeds/ and analyses/ are rarely used at Bloomwell today but are part of the standard project structure. Don't spend more than 2 minutes on this slide.
+-->
+
+---
 layout: center
 ---
 

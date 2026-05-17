@@ -112,16 +112,23 @@ models:
 
 **Singular tests — for complex business rules**
 
-Standalone `.sql` files in `tests/`. Return rows on failure.
+Standalone `.sql` files in `tests/`. Return rows on failure. Two common patterns:
 
+**Pattern 1 — business rule on aggregates (`GROUP BY ... HAVING`):**
+```sql
+-- tests/assert_fct_revenue_no_negative_amounts.sql
+SELECT customer_key, SUM(amount_net) AS total
+FROM {{ ref('fct_revenue') }}
+GROUP BY 1
+HAVING total < 0
+```
+
+**Pattern 2 — orphan FK check (`LEFT JOIN ... WHERE IS NULL`):**
 ```sql
 -- tests/assert_no_orphan_prescriptions.sql
--- Returns rows if any prescription has no patient
-
 SELECT p.prescription_key
 FROM {{ ref('fct_prescription') }} p
-LEFT JOIN {{ ref('dim_patient') }} d
-    ON p.patient_key = d.patient_key
+LEFT JOIN {{ ref('dim_patient') }} d ON p.patient_key = d.patient_key
 WHERE d.patient_key IS NULL
 ```
 
@@ -133,9 +140,11 @@ WHERE d.patient_key IS NULL
 </div>
 
 <!--
-The no-rows-means-pass convention for singular tests is counterintuitive — worth saying explicitly. The SQL should be written to SELECT the *failing* rows. If the SELECT returns nothing, there are no failures, and the test passes.
+The no-rows-means-pass convention is counterintuitive — worth saying explicitly. The SQL selects the *failing* rows. No rows = no failures = test passes.
 
-Generic tests cover almost everything at Bloomwell. The only common singular test pattern is orphan FK checks that require a LEFT JOIN — which the relationships generic test handles more elegantly in most cases.
+Pattern 1 (GROUP BY + HAVING) is the most common new pattern here — it handles business rules like "no negative revenue" or "no zero dosage" that operate on aggregated values. Generic tests can't express these.
+
+Pattern 2 (LEFT JOIN) is what they've already seen for orphan FK checks — but `relationships` generic test handles this more elegantly in most cases. Write a singular LEFT JOIN version only when the generic relationships test can't cover the logic.
 -->
 
 ---

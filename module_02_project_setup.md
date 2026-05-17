@@ -186,6 +186,14 @@ Always inspect `target/compiled/` when debugging a failing model.
 - [dbt_project.yml reference](https://docs.getdbt.com/reference/dbt_project.yml)
 - [dbt CLI commands](https://docs.getdbt.com/reference/dbt-commands)
 
+### Other project files you'll encounter in the Bloomwell repo
+
+These don't need deep coverage now, but you'll see them in the project:
+
+- **`packages.yml`** — declares external dbt packages (e.g. `dbt_utils`). Run `dbt deps` to install them into `dbt_packages/`. Bloomwell uses `dbt_utils` for surrogate key generation.
+- **`seeds/`** — CSV files for small, static lookup tables that don't exist in a source system (e.g. a list of excluded test accounts, or a country-code mapping). Run `dbt seed` to load them. Not the right place for data that changes frequently.
+- **`analyses/`** — SQL files that use `ref()` and `source()` for lineage tracking, but are never materialised. Useful for audit queries during a migration (e.g. "does our new Silver model match the old stored procedure?") without polluting the production model set.
+
 ---
 
 ## Prep Questions for Module 03

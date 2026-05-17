@@ -169,6 +169,23 @@ An ephemeral model creates no object in Snowflake. When another model references
 
 ---
 
+### Snowflake-specific: dynamic tables
+
+Snowflake has a native alternative to incremental models called **dynamic tables**. Instead of writing `is_incremental()` logic yourself, you configure dbt to let Snowflake manage the refresh:
+
+```yaml
+models:
+  - name: fct_daily_revenue
+    config:
+      materialized: dynamic_table
+```
+
+Snowflake handles the incremental refresh automatically — you write a plain `SELECT`, no `{% if is_incremental() %}` needed. The trade-off: less control over exactly when data refreshes and no `--full-refresh` override.
+
+**Not used at Bloomwell today.** The standard is `incremental` with `merge` strategy. Mention this only if asked — it's a sign that Snowflake is absorbing some of what dbt does manually.
+
+---
+
 ### Part E — Bloomwell Materialization Rules (mandatory)
 
 | Layer | Required materialization | Reason |

@@ -57,6 +57,23 @@ models:
 
 Standalone `.sql` files in the `tests/` folder. Return rows on failure (no rows = test passes).
 
+The most common pattern is a `GROUP BY ... HAVING` query that returns rows violating a business rule:
+
+```sql
+-- tests/assert_fct_revenue_no_negative_amounts.sql
+-- Fails if any combination of keys produces a negative net revenue
+
+SELECT
+    customer_key,
+    product_key,
+    SUM(amount_net) AS total_amount_net
+FROM {{ ref('fct_revenue') }}
+GROUP BY 1, 2
+HAVING total_amount_net < 0
+```
+
+Use this pattern for rules that operate on aggregations — things `not_null` and `unique` cannot express. The second common pattern uses `LEFT JOIN ... WHERE IS NULL` for referential checks that cross multiple models:
+
 ```sql
 -- tests/assert_no_orphan_prescriptions.sql
 -- Fails if any prescription has no matching patient
@@ -207,6 +224,8 @@ The model has these columns:
 **Step 2:** Add one `warn`-severity test for `dosage_amount` (not_null with warn).
 
 **Step 3:** Run `dbt test --select fct_prescription`. Then deliberately introduce a duplicate `prescription_key` in your dev environment and run again. Document what the failure output says.
+
+**Step 4 (singular test):** Write a singular test file `tests/assert_fct_prescription_no_zero_dosage.sql` that fails if any `prescription_key` has a `dosage_amount` of exactly `0` (zero is different from null — a zero dosage is a data error). Use the `GROUP BY ... HAVING` pattern. Run it with `dbt test --select test_type:singular`.
 
 ---
 

@@ -103,6 +103,30 @@ Grain: one {entity} per {dimension1} per {dimension2} per {time dimension}.
 
 If you can't write the grain statement, the model's design is unclear and should be reviewed before documenting it.
 
+### Doc blocks — for longer descriptions
+
+When a description exceeds one or two sentences, move it into a **doc block** in a separate `.md` file instead of cluttering the YAML:
+
+```markdown
+<!-- models/silver/_silver_docs.md -->
+{% docs fct_prescription %}
+One prescription event per patient per doctor per prescription_date.
+Source: HubSpot deal records filtered to the prescription pipeline.
+Excludes cancelled and draft prescriptions (status != 'closed_won').
+Refreshed nightly by Airflow after the Bronze load completes.
+{% enddocs %}
+```
+
+Then reference it in `schema.yml`:
+
+```yaml
+models:
+  - name: fct_prescription
+    description: '{{ doc("fct_prescription") }}'
+```
+
+**At Bloomwell:** Short inline descriptions are the standard for most columns. Use doc blocks only for models where the business context genuinely needs more than two lines — typically complex Silver facts or models with non-obvious exclusion logic.
+
 ---
 
 ### Part C — `persist_docs` — Writing Descriptions to Snowflake

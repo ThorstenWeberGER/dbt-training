@@ -166,6 +166,56 @@ Ask: "Write a grain statement for fct_prescription." Someone should be able to a
 
 ---
 
+# Doc Blocks — For Longer Descriptions
+
+<div class="mt-4 grid grid-cols-2 gap-4">
+<div>
+
+**`models/silver/_silver_docs.md`**
+```markdown
+{% docs fct_prescription %}
+One prescription per patient per doctor per date.
+Source: HubSpot deals in prescription pipeline stages.
+Excludes cancelled prescriptions (status != closed_won).
+Refreshed nightly after Bronze load completes.
+{% enddocs %}
+```
+
+</div>
+<div>
+
+**`schema.yml`**
+```yaml
+models:
+  - name: fct_prescription
+    description: '{{ doc("fct_prescription") }}'
+    columns:
+      - name: prescription_key
+        description: "Surrogate PK. MD5 hash."
+```
+
+</div>
+</div>
+
+<div class="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-600">
+  <strong>At Bloomwell:</strong> Short inline descriptions are the standard. Use doc blocks only when a model's business context genuinely needs more than one or two lines — typically complex Silver facts or models with non-obvious exclusion logic.
+</div>
+
+<!--
+Keep this to 3 minutes. Most of the time at Bloomwell, inline descriptions are fine and preferred.
+
+The doc block pattern is worth knowing because:
+1. It exists in the Bloomwell codebase for a few complex models
+2. Trainees will encounter it and wonder what {% docs %} means
+3. Multi-line YAML descriptions with > syntax get unwieldy for anything beyond 2-3 sentences
+
+The syntax trip-up: the reference in schema.yml uses single quotes around {{ doc("block_name") }} — required because the double quotes inside would break YAML.
+
+Don't let this become a discussion of when to use inline vs. doc blocks. The rule is simple: one or two sentences → inline. More → doc block.
+-->
+
+---
+
 # `persist_docs` — Docs Flow into Snowflake
 
 <div class="grid grid-cols-2 gap-8 mt-4">

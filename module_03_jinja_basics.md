@@ -141,6 +141,22 @@ Jinja adds newlines. Use `-` to strip them when it matters for readability:
 
 The `-` inside `{%-` and `-%}` trims whitespace before/after the tag. This only matters when inspecting compiled SQL — it has no effect on execution.
 
+### `target.name` — environment-conditional logic
+
+The `target` object exposes the active profile target (`dev`, `prod`, etc.). The most useful property is `target.name`:
+
+```sql
+SELECT *
+FROM {{ ref('fct_appointments') }}
+{% if target.name != 'prod' %}
+    WHERE appointment_date >= DATEADD('month', -3, CURRENT_DATE())
+{% endif %}
+```
+
+In dev this adds a 3-month filter — cheaper and faster. In prod the filter is removed and the full dataset is scanned. Note: this is a `{% %}` statement, not a `{{ }}` expression.
+
+This pattern is especially common inside incremental models to limit dev scans. You won't need it often in the Foundations tier, but you'll see it in the Bloomwell codebase.
+
 ---
 
 ### Part E — `{{ this }}` — reference the current model's table
