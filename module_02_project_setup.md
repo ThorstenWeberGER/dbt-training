@@ -161,6 +161,36 @@ When you run `dbt run` or `dbt build`, five phases execute in order:
                   ↳ Always runs; even failed runs produce a report
 ```
 
+```mermaid
+flowchart LR
+    P["1. PARSE<br/>Read .sql + .yml<br/>Validate Jinja"]
+    R["2. RESOLVE<br/>Build DAG<br/>Resolve ref() source()"]
+    C["3. COMPILE<br/>Jinja to SQL<br/>Write target/compiled/"]
+    E["4. EXECUTE<br/>Send SQL<br/>to Snowflake"]
+    X["5. REPORT<br/>Log results<br/>Write artifacts"]
+
+    P --> R --> C --> E --> X
+
+    EP["Jinja syntax errors<br/>missing macros"]
+    ER["circular refs<br/>missing models"]
+    EC["undefined vars<br/>bad config"]
+    EE["SQL errors<br/>type mismatches"]
+    EX["always runs"]
+
+    P -.-> EP
+    R -.-> ER
+    C -.-> EC
+    E -.-> EE
+    X -.-> EX
+
+    classDef phase fill:#f8fafc,stroke:#64748b,color:#1e293b
+    classDef fail fill:#fef2f2,stroke:#fca5a5,color:#991b1b
+    classDef pass fill:#f0fdf4,stroke:#86efac,color:#166534
+    class P,R,C,E,X phase
+    class EP,ER,EC,EE fail
+    class EX pass
+```
+
 **Why this matters:** When you get an error, the phase tells you where to look.
 
 - `Compilation Error` → your Jinja is wrong → check the template, not the SQL

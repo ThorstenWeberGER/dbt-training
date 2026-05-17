@@ -223,6 +223,48 @@ Make sure everyone knows target/compiled/ exists and that it's their best debugg
 
 ---
 
+# Execution Sequence — Visualised
+
+```mermaid
+flowchart LR
+    P["1. PARSE<br/>Read .sql + .yml<br/>Validate Jinja"]
+    R["2. RESOLVE<br/>Build DAG<br/>Resolve ref() source()"]
+    C["3. COMPILE<br/>Jinja to SQL<br/>Write target/compiled/"]
+    E["4. EXECUTE<br/>Send SQL<br/>to Snowflake"]
+    X["5. REPORT<br/>Log results<br/>Write artifacts"]
+
+    P --> R --> C --> E --> X
+
+    EP["Jinja syntax<br/>missing macros"]
+    ER["circular refs<br/>missing models"]
+    EC["undefined vars<br/>bad config"]
+    EE["SQL errors<br/>type mismatches"]
+    EX["always runs"]
+
+    P -.-> EP
+    R -.-> ER
+    C -.-> EC
+    E -.-> EE
+    X -.-> EX
+
+    classDef phase fill:#f8fafc,stroke:#64748b,color:#1e293b
+    classDef fail fill:#fef2f2,stroke:#fca5a5,color:#991b1b
+    classDef pass fill:#f0fdf4,stroke:#86efac,color:#166534
+    class P,R,C,E,X phase
+    class EP,ER,EC,EE fail
+    class EX pass
+```
+
+<!--
+The diagram maps each error type to its phase. When debugging: read the error header first — "Compilation Error", "Database Error", "Dependency Error". That tells you which phase failed, which tells you where to look.
+
+Dotted lines point downward from each phase to the error type that can occur there. REPORT has a green node — it always runs, even on failure.
+
+Have participants use this diagram as a reference during the exercise in Module 03 when they first encounter Jinja errors.
+-->
+
+---
+
 # Other Project Files You'll See
 
 <div class="mt-4 space-y-3">

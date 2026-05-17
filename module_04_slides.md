@@ -160,6 +160,40 @@ on_schema_change: explain 'ignore' (default, silent data bug) vs 'sync_all_colum
 
 ---
 
+# Incremental: First Run vs Subsequent Runs
+
+```mermaid
+flowchart TD
+    START(["dbt build dim_contact"])
+    CHECK{"Table exists\nin Snowflake?"}
+    FULL["is_incremental() = False\nWHERE skipped\nAll rows selected"]
+    INCR["is_incremental() = True\nWHERE updated_at > MAX(updated_at)\nNew and changed rows only"]
+    CREATE["CREATE TABLE\nFull load"]
+    MERGE["MERGE INTO dim_contact\nMATCHED → UPDATE\nNOT MATCHED → INSERT"]
+    DONE(["Done"])
+
+    START --> CHECK
+    CHECK -- "No — first run" --> FULL
+    CHECK -- "Yes — subsequent run" --> INCR
+    FULL --> CREATE --> DONE
+    INCR --> MERGE --> DONE
+
+    classDef first fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    classDef incr fill:#ecfdf5,stroke:#16a34a,color:#065f46
+    class FULL,CREATE first
+    class INCR,MERGE incr
+```
+
+<!--
+This diagram makes the is_incremental() state machine explicit. The most common trainee confusion: "when does is_incremental() return True?" — the diagram answers it visually.
+
+Yellow path = first run (full load, CREATE TABLE). Green path = subsequent runs (MERGE only).
+
+After showing the diagram, ask: "On the third run of this model, what SQL does Snowflake receive?" → A MERGE statement, because the table already exists. Make them trace the path through the diagram.
+-->
+
+---
+
 # The Compiled MERGE Statement
 
 **What Snowflake actually receives for an incremental model:**
