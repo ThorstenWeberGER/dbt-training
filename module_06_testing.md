@@ -138,19 +138,45 @@ Fails if any `patient_key` in this model doesn't exist in `dim_patient`. This is
 
 ### Part D — Test Severity
 
+There are two places to configure severity: globally in `dbt_project.yml`, or per individual test in `schema.yml`.
+
+**Option 1 — Global default in `dbt_project.yml`**
+
+```yaml
+# dbt_project.yml
+tests:
+  analytics:           # project namespace
+    +severity: warn    # default for every test in the project
+
+    silver:
+      +severity: error # Silver layer overrides — all tests here are errors
+
+    gold:
+      +severity: error # Gold layer overrides — all tests here are errors
+```
+
+This sets a project-wide default and lets you tighten it per layer. You rarely want everything to be `warn` globally — the example above is the pattern we use: `warn` as the safe default, `error` locked in for Silver and Gold where data quality is mandatory.
+
+**Option 2 — Per individual test in `schema.yml`**
+
 ```yaml
 - name: prescription_key
   tests:
     - unique:
-        severity: error    # CI fails, pipeline stops ← default for key columns
+        config:
+          severity: error    # CI fails, pipeline stops ← required on all _key columns
     - not_null:
-        severity: error
+        config:
+          severity: error
 
 - name: cancellation_note
   tests:
     - not_null:
-        severity: warn     # CI logs a warning but does NOT stop the pipeline
+        config:
+          severity: warn     # CI logs a warning but does NOT stop the pipeline
 ```
+
+Per-test config overrides any global setting from `dbt_project.yml`. Use this when a single test inside an otherwise strict layer needs to be relaxed.
 
 **Rule:**
 - `error` — all `_key` columns, all FK relationships, all required business columns

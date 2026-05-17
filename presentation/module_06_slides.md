@@ -241,23 +241,34 @@ Checkpoint: "Write the YAML for a unique + not_null test on prescription_key." �
 
 **Severity: `error` vs `warn`**
 
+Global default — `dbt_project.yml`:
+
+```yaml
+tests:
+  analytics:
+    +severity: warn    # project-wide default
+    silver:
+      +severity: error # Silver always errors
+    gold:
+      +severity: error # Gold always errors
+```
+
+Per individual test — `schema.yml`:
+
 ```yaml
 - name: prescription_key
   tests:
     - unique:
-        severity: error   # ← CI stops, pipeline halts
-    - not_null:
-        severity: error
-
+        config:
+          severity: error  # ← CI stops, pipeline halts
 - name: dosage_amount
   tests:
     - not_null:
-        severity: warn    # ← logged, pipeline continues
+        config:
+          severity: warn   # ← logged, continues
 ```
 
-**Rule:**
-- `error` → all `_key` columns, all FK relationships
-- `warn` → soft checks, optional columns
+Per-test overrides the global setting.
 
 </div>
 <div>
@@ -284,6 +295,13 @@ dbt build
 </div>
 
 <!--
+Two points to land on severity before moving to dbt build:
+
+1. Global vs per-test: dbt_project.yml sets the default for entire layers. schema.yml config: block overrides per individual test. Per-test always wins.
+   Our pattern: warn globally, error locked in for silver + gold. A staging test that's informational can stay warn; a Silver _key test must be error.
+
+2. The config: wrapper is the modern explicit syntax. The flat "severity: warn" directly under the test name also works in current dbt versions — both are valid.
+
 The dbt build vs dbt run distinction is the most important practical takeaway from this module.
 
 Concrete scenario: dim_patient has a not_null test on patient_key. A bad Lambda run loaded 500 NULL patient_keys. dbt run builds dim_patient (NULL keys included), then builds fct_prescription with those bad keys joined in. Then dbt test fails. By this point, corrupt data is already in fct_prescription.
