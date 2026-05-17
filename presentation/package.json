@@ -1,0 +1,16 @@
+{
+  "name": "dbt-training-slides",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev --open module_01_slides.md",
+    "build": "slidev build module_01_slides.md",
+    "export": "slidev export module_01_slides.md"
+  },
+  "devDependencies": {
+    "@slidev/cli": "^52.15.2"
+  },
+  "dependencies": {
+    "@slidev/theme-default": "^0.25.0"
+  }
+}

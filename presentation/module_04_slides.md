@@ -270,7 +270,7 @@ FROM {{ source('hubspot', 'contacts') }}
 <div class="mt-4 grid grid-cols-2 gap-6">
 <div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
   <div class="font-semibold text-slate-700 mb-2">What happens</div>
-  No object is created in Snowflake. When another model references this via <code>{{ ref() }}</code>, dbt inlines it as a CTE.
+  No object is created in Snowflake. When another model references this via <code v-pre>{{ ref() }}</code>, dbt inlines it as a CTE.
 </div>
 <div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
   <div class="font-semibold text-slate-700 mb-2">When NOT to use</div>

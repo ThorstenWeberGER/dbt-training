@@ -101,10 +101,10 @@ This also explains why Jinja errors appear at the Parse phase (Module 02) — db
 
 <div class="bg-white border border-slate-200 rounded-xl p-5">
   <div class="flex items-center gap-3 mb-2">
-    <code class="bg-slate-100 px-2 py-1 rounded font-mono text-sm">{{ }}</code>
+    <code class="bg-slate-100 px-2 py-1 rounded font-mono text-sm" v-pre>{{ }}</code>
     <span class="font-semibold text-slate-700">Expression — outputs a value</span>
   </div>
-  <div class="font-mono text-sm text-slate-600">{{ ref('dim_patient') }} → resolves to the table name</div>
+  <div class="font-mono text-sm text-slate-600" v-pre>{{ ref('dim_patient') }} → resolves to the table name</div>
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl p-5">
@@ -126,7 +126,7 @@ This also explains why Jinja errors appear at the Parse phase (Module 02) — db
 </div>
 
 <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
-  <strong>Most common beginner mistake:</strong> using <code>{{ if ... }}</code> instead of <code>{% if ... %}</code>. The <code>{{ }}</code> version outputs text — it does not execute logic.
+  <strong>Most common beginner mistake:</strong> using <code v-pre>{{ if ... }}</code> instead of <code>{% if ... %}</code>. The <code v-pre>{{ }}</code> version outputs text — it does not execute logic.
 </div>
 
 <!--
@@ -252,7 +252,7 @@ FROM {{ ref('stg_hubspot__contacts') }}
 </div>
 
 <div class="mt-3 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
-  <code>{{ this }}</code> refers to the table this model materialises to. Used almost exclusively inside <code>{% if is_incremental() %}</code> blocks.
+  <code v-pre>{{ this }}</code> refers to the table this model materialises to. Used almost exclusively inside <code>{% if is_incremental() %}</code> blocks.
 </div>
 
 <!--
@@ -370,9 +370,9 @@ layout: center
   <h2 class="text-3xl font-bold text-slate-800 mb-2">Next: Module 04</h2>
   <p class="text-slate-500 mb-8">Materializations</p>
   <div class="space-y-2 text-left max-w-md mx-auto">
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q1: What does {{ ref('dim_patient') }} compile to in dev?</div>
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q2: Difference between {{ }} and {% %}?</div>
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q3: When use {{ config() }} over dbt_project.yml?</div>
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q4: What does {{ this }} refer to?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q1: What does {{ ref('dim_patient') }} compile to in dev?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q2: Difference between {{ }} and {% %}?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q3: When use {{ config() }} over dbt_project.yml?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q4: What does {{ this }} refer to?</div>
   </div>
 </div>
