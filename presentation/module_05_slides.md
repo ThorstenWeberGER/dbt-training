@@ -93,12 +93,12 @@ Ask: "Who writes to the Bronze layer?" → Lambda / ingestion layer. Not dbt. Ne
 <div class="mt-6 grid grid-cols-2 gap-4">
 <div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
   <div class="font-mono text-slate-400 text-xs mb-2">When referencing Bronze in a staging model</div>
-  <code class="text-emerald-600">{{ source('hubspot', 'contacts') }}</code>
+  <code class="text-emerald-600" v-pre>{{ source('hubspot', 'contacts') }}</code>
   <div class="text-slate-500 text-xs mt-1">Declares a dependency on the source → DAG tracks it</div>
 </div>
 <div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
   <div class="font-mono text-slate-400 text-xs mb-2">When referencing any other dbt model</div>
-  <code class="text-emerald-600">{{ ref('dim_patient') }}</code>
+  <code class="text-emerald-600" v-pre>{{ ref('dim_patient') }}</code>
   <div class="text-slate-500 text-xs mt-1">Resolves to correct schema per target environment</div>
 </div>
 </div>

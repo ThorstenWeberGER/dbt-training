@@ -99,28 +99,25 @@ Emphasise: the orchestrator uses the prod target. You as a developer always use 
 
 # `dbt_project.yml` — The Project Config
 
+**YAML — human-readable config. Indentation is everything: two spaces = one level.**
+
 ```yaml {all|3|5|7-10|all}
 name: analytics
 version: "1.0.0"
 profile: analytics          # must match the key in profiles.yml
 
-model-paths: ["models"]
+model-paths: ["models"]    # one or multiple folders to look for models
+source-paths: ["sources"]   # one or multiple folders to look for sources
 
 models:
   analytics:                # ← project namespace — must match name above
-    staging:
+    staging:                # folder structure
       +materialized: view
-      +tags: ["staging"]
+      +tags: ["staging"]    # used for selective exectution
     silver:
       +materialized: table
       +tags: ["silver"]
-      +persist_docs:
-        relation: true
-        columns: true
-    gold:
-      +materialized: table
-      +tags: ["gold"]
-      +persist_docs:
+      +persist_docs:       # ddl for comments and relationships
         relation: true
         columns: true
 ```
@@ -219,6 +216,7 @@ Selective runs: mention dbt run --select dim_patient+ briefly. The + means "and 
 
 ---
 
+
 # The Execution Sequence
 
 **What happens when you run `dbt run` or `dbt build`:**
@@ -232,7 +230,7 @@ Selective runs: mention dbt run --select dim_patient+ briefly. The + means "and 
 
 <div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
   <div class="bg-slate-800 text-white text-xs font-mono px-2 py-1 rounded shrink-0">2. RESOLVE</div>
-  <div class="text-sm">Build the DAG — resolve all <code>{{ ref() }}</code> and <code>{{ source() }}</code> calls<br><span class="text-red-500 text-xs">Fails here: circular refs, missing models</span></div>
+  <div class="text-sm">Build the DAG — resolve all <code v-pre>{{ ref() }}</code> and <code v-pre>{{ source() }}</code> calls<br><span class="text-red-500 text-xs">Fails here: circular refs, missing models</span></div>
 </div>
 
 <div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
@@ -268,20 +266,22 @@ Make sure everyone knows target/compiled/ exists and that it's their best debugg
 
 # Execution Sequence — Visualised
 
+**This gets very important when developing and debuging. When can a mistake happen and be caught.**
+
 ```mermaid
 flowchart LR
-    P["1. PARSE<br/>Read .sql + .yml<br/>Validate Jinja"]
-    R["2. RESOLVE<br/>Build DAG<br/>Resolve ref() source()"]
-    C["3. COMPILE<br/>Jinja to SQL<br/>Write target/compiled/"]
-    E["4. EXECUTE<br/>Send SQL<br/>to Snowflake"]
-    X["5. REPORT<br/>Log results<br/>Write artifacts"]
+    P["1. PARSE\nRead .sql + .yml\nValidate Jinja"]
+    R["2. RESOLVE\nBuild DAG\nResolve ref() source()"]
+    C["3. COMPILE\nJinja to SQL\nWrite target/compiled/"]
+    E["4. EXECUTE\nSend SQL\nto Snowflake"]
+    X["5. REPORT\nLog results\nWrite artifacts"]
 
     P --> R --> C --> E --> X
 
-    EP["Jinja syntax<br/>missing macros"]
-    ER["circular refs<br/>missing models"]
-    EC["undefined vars<br/>bad config"]
-    EE["SQL errors<br/>type mismatches"]
+    EP["Jinja syntax\nmissing macros"]
+    ER["circular refs\nmissing models"]
+    EC["undefined vars\nbad config"]
+    EE["SQL errors\ntype mismatches"]
     EX["always runs"]
 
     P -.-> EP
@@ -314,7 +314,7 @@ Have participants use this diagram as a reference during the exercise in Module 
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">
   <div class="font-mono text-slate-700 font-semibold mb-1">packages.yml</div>
-  <div class="text-sm text-slate-600">Declares external dbt packages (e.g. <code>dbt_utils</code>). Run <code>dbt deps</code> to install them. We use <code>dbt_utils</code> for surrogate key generation.</div>
+  <div class="text-sm text-slate-600">Declares external dbt packages (e.g. <code>dbt_utils</code>). Run <code>dbt deps</code> to install them. Use <code>dbt_utils</code> for surrogate key generation and date spines; <code>dbt_expectations</code> for extended test coverage.</div>
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">

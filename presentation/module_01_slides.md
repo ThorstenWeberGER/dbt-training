@@ -152,31 +152,11 @@ If anyone has used dbt Cloud before, flag that their muscle memory around the sc
 
 # The Data Stack
 
-```mermaid
-flowchart TD
-    SRC(["Source Systems — HubSpot · Shopify · APIs"])
-    LAMBDA["AWS Lambda — Ingestion"]
-    BRONZE["BRONZE — raw · append-only — Lambda owns"]
-    STAGING["STAGING — views · stg_hubspot__*"]
-    SILVER["SILVER — dim_* · fct_* · bridge_*"]
-    GOLD["GOLD — mrt_*"]
-    PBI(["Power BI"])
+### dbt is the T in ELT: Extract, Load, Transform, Lambda handles E+L
 
-    SRC --> LAMBDA --> BRONZE
-    BRONZE -->|"source()"| STAGING
-    STAGING -->|"ref()"| SILVER
-    SILVER -->|"ref()"| GOLD
-    GOLD --> PBI
-
-    classDef dbt fill:#ecfdf5,stroke:#16a34a,color:#065f46
-    classDef lambda fill:#fef9c3,stroke:#ca8a04,color:#713f12
-    classDef bronze fill:#f1f5f9,stroke:#94a3b8,color:#475569
-    class STAGING,SILVER,GOLD dbt
-    class LAMBDA lambda
-    class BRONZE bronze
-```
-
-<div class="mt-2 text-sm text-slate-500">dbt owns Staging → Silver → Gold. Bronze is Lambda's responsibility.</div>
+<div class="h-full flex items-center justify-center mt-2">
+  <img src="./resources/dbt_in_datastack.png" alt="dbt in the Bloomwell data stack" class="max-h-80 object-contain" />
+</div>
 
 <!--
 Draw this on the whiteboard — don't just show the slide. The physical act of drawing it helps people remember the layer boundaries.
@@ -184,11 +164,15 @@ Draw this on the whiteboard — don't just show the slide. The physical act of d
 Key point to hammer: dbt does NOT write to Bronze. Lambda does. dbt starts at Staging and references Bronze as a *source*. This distinction matters in Module 05 when we cover sources.yml.
 
 Checkpoint: "Who writes to the Bronze layer?" — Answer: Lambda / the ingestion layer. Not dbt.
+
+Ask: "What is the first model dbt touches?" — Answer: Staging. It reads from Bronze via source(), not ref().
 -->
 
 ---
 
 # Live Demo: Project Structure
+
+### The basic folder structure applies to all projects.
 
 <div class="grid grid-cols-2 gap-10 mt-4">
 <div>
@@ -197,38 +181,48 @@ Checkpoint: "Who writes to the Bronze layer?" — Answer: Lambda / the ingestion
 
 ```
 analytics/
-├── dbt_project.yml      ← project config
-├── profiles.yml         ← NOT here (in ~/.dbt/)
+│
+├── readme.md          ← mandatory. verbose!
+├── .gitignore         ← mandatory, protect .secrets
+│
+├── .secrets/          ← tokens, git protected
+│
+├── dbt_project.yml    ← project config
+├── profiles.yml       ← NOT here (in ~/.dbt/)
+│
 ├── models/
-│   ├── staging/         ← hubspot__contacts etc.
-│   ├── silver/          ← dim_patient, fct_prescription
-│   └── gold/            ← mrt_monthly_volume
-├── macros/              ← scd2_merge and others
-├── tests/               ← singular tests
-└── target/              ← compiled SQL (git-ignored)
+│   ├── staging/       ← hubspot__contacts etc.
+│   ├── silver/        ← dim_patient, fct_prescription
+│   └── gold/          ← mrt_monthly_volume
+│
+├── snapshots/         ← scd2 models
+│
+├── macros/            ← reusable code, like functions
+├── tests/             ← singular tests
+└── target/            ← compiled SQL (git-ignored)
 ```
 
 </div>
 <div class="flex flex-col gap-3 mt-2">
 
-<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
-  <div class="font-mono text-slate-500 text-xs mb-1">dbt_project.yml</div>
-  Project name, model paths, default materialisation per layer
-</div>
-<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
-  <div class="font-mono text-slate-500 text-xs mb-1">models/silver/dim_patient.sql</div>
-  Contains <code>{{ ref() }}</code> — we'll cover this in Module 03
-</div>
-<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
-  <div class="font-mono text-slate-500 text-xs mb-1">target/ folder</div>
-  Where compiled SQL lives — always git-ignored, never commit it
-</div>
-<div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
-  <strong>Deliberate mistake:</strong> Navigate to the wrong folder. Get confused. Correct yourself. This is normal in a real project.
-</div>
+  <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
+    <div class="font-mono text-slate-500 text-xs mb-1">dbt_project.yml</div>
+    Project name, model paths, default materialisation per layer
+  </div>
+
+  <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
+    <div class="font-mono text-slate-500 text-xs mb-1">models/silver/dim_patient.sql</div>
+    Contains <code v-pre>{{ ref() }}</code> — we'll cover this in Module 03
+  </div>
+
+  <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
+    <div class="font-mono text-slate-500 text-xs mb-1">target/ folder</div>
+    Where compiled SQL lives — always git-ignored, never commit it
+  </div>
 
 </div>
 </div>
+
 
 <!--
 Do NOT run dbt run here. Running a model requires ref(), materialisation, and schema config — all coming in later modules.
@@ -256,7 +250,7 @@ After the demo, ask: "Point to where a Silver model lives." Make someone answer 
 
 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
   <div class="text-xs font-mono text-slate-400 mb-1">Q2</div>
-  <div class="text-sm font-medium text-slate-800">Find one Silver dimension model (<code>dim_*</code>). What table does it reference using <code>{{ ref() }}</code>?</div>
+  <div class="text-sm font-medium text-slate-800">Find one Silver dimension model (<code>dim_*</code>). What table does it reference using <code v-pre>{{ ref() }}</code>?</div>
 </div>
 
 </div>

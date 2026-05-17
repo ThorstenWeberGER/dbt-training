@@ -1,0 +1,4 @@
+.claude/
+.temp/
+presentation/.temp/
+presentation/node_modules
