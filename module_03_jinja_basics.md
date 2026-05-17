@@ -32,7 +32,7 @@ When dbt runs, it:
 
 The Jinja syntax never reaches Snowflake. What Snowflake receives is always plain SQL.
 
-You can always see what Snowflake received at: `target/compiled/bloomwell/models/...`
+You can always see what Snowflake received at: `target/compiled/analytics/models/...`
 
 ---
 
@@ -72,12 +72,12 @@ FROM {{ ref('dim_patient') }}
 
 What `{{ ref('dim_patient') }}` compiles to in dev:
 ```sql
-FROM BLOOMWELL_DEV.TESTING__dev_thorsten.dim_patient
+FROM SILVER_DEV.TESTING__dev_jane.dim_patient
 ```
 
 What it compiles to in prod:
 ```sql
-FROM BLOOMWELL.SILVER.dim_patient
+FROM SILVER.PUBLIC.dim_patient
 ```
 
 **This is why you never hardcode table names.** `ref()` makes your models environment-aware and adds the dependency to the DAG.
@@ -91,7 +91,7 @@ FROM {{ source('hubspot', 'contacts') }}
 
 Compiles to:
 ```sql
-FROM BLOOMWELL.BRONZE.HUBSPOT.contacts
+FROM BRONZE.HUBSPOT.contacts
 ```
 
 Sources are declared in `sources.yml`. `source()` registers the table as a DAG node so freshness checks and lineage work. Covered in depth in Module 05.
@@ -141,6 +141,22 @@ Jinja adds newlines. Use `-` to strip them when it matters for readability:
 
 The `-` inside `{%-` and `-%}` trims whitespace before/after the tag. This only matters when inspecting compiled SQL — it has no effect on execution.
 
+### `target.name` — environment-conditional logic
+
+The `target` object exposes the active profile target (`dev`, `prod`, etc.). The most useful property is `target.name`:
+
+```sql
+SELECT *
+FROM {{ ref('fct_appointments') }}
+{% if target.name != 'prod' %}
+    WHERE appointment_date >= DATEADD('month', -3, CURRENT_DATE())
+{% endif %}
+```
+
+In dev this adds a 3-month filter — cheaper and faster. In prod the filter is removed and the full dataset is scanned. Note: this is a `{% %}` statement, not a `{{ }}` expression.
+
+This pattern is especially common inside incremental models to limit dev scans. You won't need it often in the Foundations tier, but you'll see it in the project codebase.
+
 ---
 
 ### Part E — `{{ this }}` — reference the current model's table
@@ -175,14 +191,14 @@ LEFT JOIN {{ ref('dim_pipeline') }} p
 
 Expected answer:
 ```sql
-CREATE OR REPLACE TABLE BLOOMWELL.SILVER.your_model_name AS
+CREATE OR REPLACE TABLE SILVER.PUBLIC.your_model_name AS
 
 SELECT
     c.contact_id,
     c.email,
     p.pipeline_name
-FROM BLOOMWELL.BRONZE.HUBSPOT.contacts c
-LEFT JOIN BLOOMWELL.SILVER.dim_pipeline p
+FROM BRONZE.HUBSPOT.contacts c
+LEFT JOIN SILVER.PUBLIC.dim_pipeline p
     ON c.pipeline_id = p.hubspot_pipeline_id
 ```
 

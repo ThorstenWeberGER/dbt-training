@@ -11,7 +11,7 @@ fonts:
 ---
 
 <div class="h-full flex flex-col justify-center pl-2">
-  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">Bloomwell Data & Analytics · dbt Training</div>
+  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">dbt Training</div>
   <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono px-3 py-1 rounded-full w-fit mb-6">
     🟢 Beginner · Module 05 · 90 min
   </div>
@@ -27,7 +27,7 @@ fonts:
 Recap prep questions from Module 04 — cold, no notes:
 1. What SQL statement does a table materialization generate? → DROP + CREATE TABLE AS SELECT
 2. What does is_incremental() return on the first run? → False
-3. Mandatory on_schema_change setting at Bloomwell? → sync_all_columns
+3. Mandatory on_schema_change setting? → sync_all_columns
 4. Why never use table for a staging model? → No business logic, no storage needed, view is cheaper and sufficient
 
 All four correct before continuing.
@@ -35,32 +35,33 @@ All four correct before continuing.
 
 ---
 
-# The Bloomwell Medallion Architecture
+# The Medallion Architecture
 
-<div class="mt-4 space-y-2">
+```mermaid
+flowchart TD
+    SRC(["Source Systems — HubSpot · Shopify · APIs"])
+    LAMBDA["AWS Lambda — Ingestion"]
+    BRONZE["BRONZE — raw · append-only — Lambda owns"]
+    STAGING["STAGING — views · stg_hubspot__*"]
+    SILVER["SILVER — dim_* · fct_* · bridge_*"]
+    GOLD["GOLD — mrt_*"]
+    PBI(["Power BI"])
 
-<div class="bg-slate-800 text-white rounded-xl p-4">
-  <div class="text-xs font-mono text-slate-400 mb-1">SOURCE SYSTEMS</div>
-  <div class="text-sm">HubSpot · Shopify · External APIs</div>
-</div>
+    SRC --> LAMBDA --> BRONZE
+    BRONZE -->|"source()"| STAGING
+    STAGING -->|"ref()"| SILVER
+    SILVER -->|"ref()"| GOLD
+    GOLD --> PBI
 
-<div class="text-center text-slate-400 text-sm">↓ AWS Lambda (ingestion)</div>
+    classDef dbt fill:#ecfdf5,stroke:#16a34a,color:#065f46
+    classDef lambda fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    classDef bronze fill:#f1f5f9,stroke:#94a3b8,color:#475569
+    class STAGING,SILVER,GOLD dbt
+    class LAMBDA lambda
+    class BRONZE bronze
+```
 
-<div class="bg-slate-100 border-2 border-slate-300 rounded-xl p-4">
-  <div class="text-xs font-mono text-slate-500 mb-1">BRONZE — <code>BRONZE.{source}.{table}</code></div>
-  <div class="text-sm text-slate-600">Raw data. Append-only. Never modified. <strong>Lambda owns this. dbt does NOT touch Bronze.</strong></div>
-</div>
-
-<div class="text-center text-emerald-600 text-sm font-semibold">↓ dbt takes over here</div>
-
-<div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4">
-  <div class="text-xs font-mono text-emerald-600 mb-1">STAGING → SILVER → GOLD</div>
-  <div class="text-sm text-emerald-700">Staging: views, rename/cast · Silver: dim_*, fct_* · Gold: mrt_* → Power BI</div>
-</div>
-
-</div>
-
-<div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+<div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
   dbt references Bronze as a <strong>source</strong>, not via <code>ref()</code>. Bronze tables are never built by dbt.
 </div>
 
@@ -105,7 +106,7 @@ Ask: "Who writes to the Bronze layer?" → Lambda / ingestion layer. Not dbt. Ne
 <!--
 The source() vs ref() distinction is not just syntax — it's semantic. source() says "this data comes from outside dbt." ref() says "this data was built by dbt." The DAG reflects this distinction.
 
-If someone hardcodes BLOOMWELL.BRONZE.HUBSPOT.contacts instead of using source(), dbt has no idea that model depends on that Bronze table. The lineage graph is incomplete. Source freshness won't work for that model.
+If someone hardcodes BRONZE.HUBSPOT.contacts instead of using source(), dbt has no idea that model depends on that Bronze table. The lineage graph is incomplete. Source freshness won't work for that model.
 -->
 
 ---
@@ -117,8 +118,8 @@ version: 2
 
 sources:
   - name: hubspot                         # alias used in {{ source() }}
-    database: BLOOMWELL
-    schema: BRONZE.HUBSPOT
+    database: BRONZE
+    schema: HUBSPOT
     description: "HubSpot CRM data ingested via AWS Lambda."
 
     tables:
@@ -140,7 +141,7 @@ Use line highlights: first show the source-level config (name, database, schema)
 
 Without this file, {{ source('hubspot', 'contacts') }} fails at the Parse phase — dbt can't resolve the source.
 
-The loaded_at_field is the column dbt queries to check freshness: SELECT MAX(_ingested_at) FROM BLOOMWELL.BRONZE.HUBSPOT.contacts. If the MAX is older than your error threshold, the freshness check fails.
+The loaded_at_field is the column dbt queries to check freshness: SELECT MAX(_ingested_at) FROM BRONZE.HUBSPOT.contacts. If the MAX is older than your error threshold, the freshness check fails.
 
 Static tables like pipeline_stages don't need freshness — they change infrequently and deliberately. Opting out with freshness: null prevents false alerts.
 -->
@@ -156,7 +157,7 @@ Static tables like pipeline_stages don't need freshness — they change infreque
 
 ```sql
 SELECT *
-FROM BLOOMWELL.BRONZE.HUBSPOT.contacts
+FROM BRONZE.HUBSPOT.contacts
 ```
 
 <div class="mt-3 space-y-2 text-sm">
@@ -226,22 +227,22 @@ deals:    26 hours 15 minutes ago — ERROR
 ```
 
 <div class="mt-3 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-600">
-  <strong>In Airflow:</strong> Freshness check runs before any dbt models. If a source errors, the pipeline stops — preventing Silver and Gold from being built on stale Bronze data.
+  <strong>In your orchestrator:</strong> Freshness check runs before any dbt models. If a source errors, the pipeline stops — preventing Silver and Gold from being built on stale Bronze data.
 </div>
 
 <!--
 Run dbt source freshness live. Show the output. The timestamp comparison is simple: dbt queries MAX(_ingested_at) and compares it to now(). If the age exceeds the threshold, it warns or errors.
 
-The Airflow integration is important context: freshness checks are not just informational. They gate the pipeline. If HubSpot stops sending data and freshness is set correctly, the pipeline stops before building bad downstream models.
+The orchestrator integration is important context: freshness checks are not just informational. They gate the pipeline. If HubSpot stops sending data and freshness is set correctly, the pipeline stops before building bad downstream models.
 
-Ask: "What does dbt do if a source is stale and freshness is set to error?" → The dbt source freshness command exits with a non-zero code, which Airflow treats as a failure, and downstream tasks don't run.
+Ask: "What does dbt do if a source is stale and freshness is set to error?" → The dbt source freshness command exits with a non-zero code, which the orchestrator treats as a failure, and downstream tasks don't run.
 -->
 
 ---
 
 # Exercise: Add a New Source (25 min)
 
-**Scenario:** Adding the HubSpot `owners` table — `BLOOMWELL.BRONZE.HUBSPOT.owners`. Updated every 12 hours. Has a `_ingested_at` column.
+**Scenario:** Adding the HubSpot `owners` table — `BRONZE.HUBSPOT.owners`. Updated every 12 hours. Has a `_ingested_at` column.
 
 <div class="space-y-4 mt-4">
 
@@ -257,7 +258,7 @@ Ask: "What does dbt do if a source is stale and freshness is set to error?" → 
 
 <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
   <div class="text-xs font-mono text-emerald-600 mb-2">Step 3 — Verify</div>
-  <div class="text-sm text-emerald-700">Run <code>dbt compile --select stg_hubspot__owners</code>. Verify the compiled output references <code>BLOOMWELL.BRONZE.HUBSPOT.owners</code>.</div>
+  <div class="text-sm text-emerald-700">Run <code>dbt compile --select stg_hubspot__owners</code>. Verify the compiled output references <code>BRONZE.HUBSPOT.owners</code>.</div>
 </div>
 
 </div>

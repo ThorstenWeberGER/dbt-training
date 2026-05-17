@@ -11,7 +11,7 @@ fonts:
 ---
 
 <div class="h-full flex flex-col justify-center pl-2">
-  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">Bloomwell Data & Analytics · dbt Training</div>
+  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">dbt Training</div>
   <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono px-3 py-1 rounded-full w-fit mb-6">
     🟢 Beginner · Module 06 · 90 min
   </div>
@@ -54,7 +54,7 @@ All four correct before continuing.
 </div>
 <div>
 
-**At Bloomwell, tests are a CI requirement**
+**Tests are a CI requirement**
 
 <div class="space-y-2 mt-2">
   <div class="bg-white border border-slate-200 rounded-lg p-3 text-sm">
@@ -112,16 +112,23 @@ models:
 
 **Singular tests — for complex business rules**
 
-Standalone `.sql` files in `tests/`. Return rows on failure.
+Standalone `.sql` files in `tests/`. Return rows on failure. Two common patterns:
 
+**Pattern 1 — business rule on aggregates (`GROUP BY ... HAVING`):**
+```sql
+-- tests/assert_fct_revenue_no_negative_amounts.sql
+SELECT customer_key, SUM(amount_net) AS total
+FROM {{ ref('fct_revenue') }}
+GROUP BY 1
+HAVING total < 0
+```
+
+**Pattern 2 — orphan FK check (`LEFT JOIN ... WHERE IS NULL`):**
 ```sql
 -- tests/assert_no_orphan_prescriptions.sql
--- Returns rows if any prescription has no patient
-
 SELECT p.prescription_key
 FROM {{ ref('fct_prescription') }} p
-LEFT JOIN {{ ref('dim_patient') }} d
-    ON p.patient_key = d.patient_key
+LEFT JOIN {{ ref('dim_patient') }} d ON p.patient_key = d.patient_key
 WHERE d.patient_key IS NULL
 ```
 
@@ -133,9 +140,11 @@ WHERE d.patient_key IS NULL
 </div>
 
 <!--
-The no-rows-means-pass convention for singular tests is counterintuitive — worth saying explicitly. The SQL should be written to SELECT the *failing* rows. If the SELECT returns nothing, there are no failures, and the test passes.
+The no-rows-means-pass convention is counterintuitive — worth saying explicitly. The SQL selects the *failing* rows. No rows = no failures = test passes.
 
-Generic tests cover almost everything at Bloomwell. The only common singular test pattern is orphan FK checks that require a LEFT JOIN — which the relationships generic test handles more elegantly in most cases.
+Pattern 1 (GROUP BY + HAVING) is the most common new pattern here — it handles business rules like "no negative revenue" or "no zero dosage" that operate on aggregated values. Generic tests can't express these.
+
+Pattern 2 (LEFT JOIN) is what they've already seen for orphan FK checks — but `relationships` generic test handles this more elegantly in most cases. Write a singular LEFT JOIN version only when the generic relationships test can't cover the logic.
 -->
 
 ---
@@ -246,7 +255,7 @@ Checkpoint: "Write the YAML for a unique + not_null test on prescription_key." �
         severity: warn    # ← logged, pipeline continues
 ```
 
-**Rule at Bloomwell:**
+**Rule:**
 - `error` → all `_key` columns, all FK relationships
 - `warn` → soft checks, optional columns
 
@@ -286,7 +295,7 @@ Ask: "What does dbt build do that dbt run && dbt test does not?" → Runs tests 
 
 ---
 
-# Bloomwell Mandatory Test Requirements
+# Mandatory Test Requirements
 
 <div class="mt-4">
 

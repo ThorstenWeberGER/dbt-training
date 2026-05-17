@@ -28,12 +28,12 @@ Start every session — without exception — by revisiting the previous module.
 
 ### Theory Block (15–20 min max)
 - Explain the concept with a clear *why* before the *how*.
-- Use one concrete, Bloomwell-relevant example — never abstract toy data.
+- Use one concrete, relevant example — never abstract toy data.
 - Draw the DAG, the data flow, or the architecture by hand or on a whiteboard. Diagrams beat slides.
 - No more than 3 new concepts per theory block. If you have more, split the session.
 
 ### Live Demo (10–15 min)
-- Trainer codes in real time, in the real Bloomwell project (dev environment).
+- Trainer codes in real time, in the real dbt project (dev environment).
 - Narrate every decision out loud: *"I'm using `ref()` here instead of hardcoding because..."*
 - Make at least one deliberate mistake and fix it live. Watching debugging is more instructive than watching perfect code.
 - Participants do NOT code during the demo — they watch and ask questions.
@@ -95,7 +95,7 @@ Giving it before encourages reading instead of thinking. Providing it after the 
 |---|---|---|
 | Session summary (3–5 bullet points) | Written in the session | During debrief |
 | Official dbt docs link(s) for the topic | URL | After exercise |
-| Bloomwell-specific convention notes | Internal reference | After exercise |
+| Project convention notes | Internal reference | After exercise |
 | Optional deep-dive reading | URL or doc | Async/homework |
 
 **Recommended dbt resources by module tier:**
@@ -128,7 +128,7 @@ Good exercises are specific, achievable, and produce a verifiable output.
 
 | Principle | What it means in practice |
 |---|---|
-| **Real data, real project** | Exercises run against the Bloomwell dev environment, not toy datasets |
+| **Real data, real project** | Exercises run against the dev environment, not toy datasets |
 | **One concept at a time** | Each exercise isolates the concept just taught — no compounding new unknowns |
 | **Verifiable output** | "Run `dbt test` and show a green output" is verifiable. "Understand incremental models" is not |
 | **Escalating difficulty** | Start with a guided version (fill in the blanks), then a free-build version |
@@ -137,7 +137,7 @@ Good exercises are specific, achievable, and produce a verifiable output.
 **Exercise structure template:**
 
 ```
-Context: [1–2 sentences on what they're building and why it matters at Bloomwell]
+Context: [1–2 sentences on what they're building and why it matters]
 Task: [Specific, unambiguous instruction]
 Success criteria: [Exactly what "done" looks like — command output, row count, test result]
 Bonus: [Optional harder extension]
@@ -177,7 +177,7 @@ Avoid async delivery for Tier 1 modules. The concepts are simple but the mental 
 | Nobody attempts the bonus task | Pacing is too fast — slow down, the core isn't solid yet |
 | Everyone finishes in under 10 min | Exercise is too easy — increase complexity next time |
 | Questions are all about syntax | Participants are pattern-matching, not understanding — ask "why" questions |
-| The debrief runs out of things to say | The theory block was too abstract — ground it in Bloomwell examples next time |
+| The debrief runs out of things to say | The theory block was too abstract — ground it in concrete examples next time |
 
 ---
 

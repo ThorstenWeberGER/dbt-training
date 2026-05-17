@@ -11,7 +11,7 @@ fonts:
 ---
 
 <div class="h-full flex flex-col justify-center pl-2">
-  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">Bloomwell Data & Analytics · dbt Training</div>
+  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">dbt Training</div>
   <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono px-3 py-1 rounded-full w-fit mb-6">
     🟢 Beginner · Module 02 · 60 min
   </div>
@@ -28,7 +28,7 @@ Start with the 4 prep questions from Module 01 — cold, no notes.
 1. What does dbt_project.yml configure?
 2. Difference between dbt Core and dbt Cloud?
 3. Three things dbt does NOT do?
-4. Which layer does dbt own at Bloomwell?
+4. Which layer does dbt own in this project?
 
 Don't move on until all four are correct. Fix any wrong answers now — they'll compound if left.
 -->
@@ -41,26 +41,26 @@ Don't move on until all four are correct. Fix any wrong answers now — they'll 
 <div>
 
 ```yaml
-bloomwell:
+analytics:
   target: dev
   outputs:
     dev:
       type: snowflake
       account: abc123.eu-west-1
-      user: thorsten@bloomwellhealth.com
+      user: jane@company.com
       authenticator: externalbrowser
       role: TRANSFORMER_DEV
       warehouse: COMPUTE_WH_DEV
-      database: BLOOMWELL_DEV
-      schema: TESTING__dev_thorsten
+      database: SILVER_DEV
+      schema: TESTING__dev_jane
       threads: 4
 
     prod:
       type: snowflake
       role: TRANSFORMER_PROD
       warehouse: COMPUTE_WH_PROD
-      database: BLOOMWELL
-      schema: SILVER
+      database: SILVER
+      schema: PUBLIC
       threads: 8
 ```
 
@@ -73,7 +73,7 @@ bloomwell:
 
 <div class="bg-white border border-slate-200 rounded-lg p-3 text-sm">
   <div class="font-mono text-xs text-slate-400 mb-1">Dev schema rule</div>
-  Your dev target writes to <code>TESTING.dev_{yourname}</code>. You cannot write to Silver or Gold from your laptop.
+  Your dev target writes to <code>TESTING.dev_{yourname}</code>. You cannot write to Silver or Gold from your laptop — that's the orchestrator's job.
 </div>
 
 <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-800">
@@ -92,7 +92,7 @@ Key questions to ask mid-explanation:
 
 The externalbrowser authenticator means SSO login — Snowflake will open a browser tab. Show this live if possible so participants know what to expect.
 
-Emphasise: Airflow uses the prod target. You as a developer always use dev.
+Emphasise: the orchestrator uses the prod target. You as a developer always use dev.
 -->
 
 ---
@@ -100,14 +100,14 @@ Emphasise: Airflow uses the prod target. You as a developer always use dev.
 # `dbt_project.yml` — The Project Config
 
 ```yaml {all|3|5|7-10|all}
-name: bloomwell
+name: analytics
 version: "1.0.0"
-profile: bloomwell          # must match the key in profiles.yml
+profile: analytics          # must match the key in profiles.yml
 
 model-paths: ["models"]
 
 models:
-  bloomwell:                # ← project namespace — must match name above
+  analytics:                # ← project namespace — must match name above
     staging:
       +materialized: view
       +tags: ["staging"]
@@ -126,21 +126,64 @@ models:
 ```
 
 <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-  <strong>Why <code>bloomwell:</code>?</strong> It's a project namespace — scopes these configs to <em>your</em> models only, not to models from installed packages. Must match <code>name: bloomwell</code> at the top. Always include it.
+  <strong>Why <code>analytics:</code>?</strong> It's a project namespace — scopes these configs to <em>your</em> models only, not to models from installed packages. Must match <code>name: analytics</code> at the top. Always include it.
 </div>
 
 <!--
-Use the line highlights: click through profile link, then model-paths, then the bloomwell: namespace key.
+Use the line highlights: click through profile link, then model-paths, then the analytics: namespace key.
 
 Four things to emphasise:
 1. The profile key must match profiles.yml exactly — a mismatch is the #1 setup error.
 2. The + prefix means "apply to all models in this folder and subfolders."
 3. persist_docs: true is why Power BI and Snowsight show our column descriptions — dbt runs COMMENT ON COLUMN after every build.
-4. The bloomwell: namespace: it scopes these configs to your project only. If you install a package (dbt_utils etc.), package models live under their own namespace and won't inherit your configs. Without the namespace, your configs would bleed into package models.
+4. The analytics: namespace: it scopes these configs to your project only. If you install a package (dbt_utils etc.), package models live under their own namespace and won't inherit your configs. Without the namespace, your configs would bleed into package models.
 
-Ask: "Can you skip the bloomwell: namespace?" → Technically yes, but if you ever add a package, your layer configs could apply to package models unexpectedly. Always include it.
+Ask: "Can you skip the analytics: namespace?" → Technically yes, but if you ever add a package, your layer configs could apply to package models unexpectedly. Always include it.
 
 Individual models can override any of this with a {{ config() }} block — covered in Module 03.
+-->
+
+---
+
+# `+database` and `+schema` — Where Models Land
+
+`+materialized` controls *how* dbt builds a model. `+database` and `+schema` control *where* it lands in Snowflake.
+
+```yaml
+models:
+  analytics:
+    silver:
+      +materialized: table
+      +database: SILVER    # Silver models always write to this database
+      +schema: PUBLIC
+
+    gold:
+      +materialized: table
+      +database: GOLD      # Gold models write to a separate database
+      +schema: PUBLIC
+```
+
+<div class="mt-4 grid grid-cols-2 gap-4">
+<div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
+  <div class="font-mono text-xs text-slate-400 mb-2">Without <code>+database</code></div>
+  Every layer lands in whatever database <code>profiles.yml</code> specifies. No separation.
+</div>
+<div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
+  <div class="font-mono text-xs text-slate-400 mb-2">With <code>+database</code></div>
+  Each layer is routed to its own Snowflake database. The separation you see in Snowflake is enforced here.
+</div>
+</div>
+
+<div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+  <strong>Caution:</strong> Hardcoding <code>GOLD</code> writes to production even on a dev run. Environment-aware routing requires a <code>generate_database_name</code> macro — covered in the Intermediate tier.
+</div>
+
+<!--
+The key insight: the SILVER / GOLD database split participants see in Snowflake is not magic. It's this config. Without +database, everything would pile into whichever database the profile points at.
+
+The dev/prod problem is real and worth flagging now even though the fix (generate_database_name macro) comes later. Plant the question: "How does dbt know to write to SILVER_DEV instead of SILVER on a dev run?" — the answer is the macro, not profiles.yml alone.
+
+Don't go deep on the macro. Just establish the problem exists and that there's a solution.
 -->
 
 ---
@@ -219,6 +262,79 @@ The key message: when you get an error message, the phase tells you WHERE to loo
 Ask: "At which phase does a Jinja syntax error appear?" → Phase 1 (Parse). This is a prep question for Module 03.
 
 Make sure everyone knows target/compiled/ exists and that it's their best debugging tool. Show it in VS Code briefly.
+-->
+
+---
+
+# Execution Sequence — Visualised
+
+```mermaid
+flowchart LR
+    P["1. PARSE<br/>Read .sql + .yml<br/>Validate Jinja"]
+    R["2. RESOLVE<br/>Build DAG<br/>Resolve ref() source()"]
+    C["3. COMPILE<br/>Jinja to SQL<br/>Write target/compiled/"]
+    E["4. EXECUTE<br/>Send SQL<br/>to Snowflake"]
+    X["5. REPORT<br/>Log results<br/>Write artifacts"]
+
+    P --> R --> C --> E --> X
+
+    EP["Jinja syntax<br/>missing macros"]
+    ER["circular refs<br/>missing models"]
+    EC["undefined vars<br/>bad config"]
+    EE["SQL errors<br/>type mismatches"]
+    EX["always runs"]
+
+    P -.-> EP
+    R -.-> ER
+    C -.-> EC
+    E -.-> EE
+    X -.-> EX
+
+    classDef phase fill:#f8fafc,stroke:#64748b,color:#1e293b
+    classDef fail fill:#fef2f2,stroke:#fca5a5,color:#991b1b
+    classDef pass fill:#f0fdf4,stroke:#86efac,color:#166534
+    class P,R,C,E,X phase
+    class EP,ER,EC,EE fail
+    class EX pass
+```
+
+<!--
+The diagram maps each error type to its phase. When debugging: read the error header first — "Compilation Error", "Database Error", "Dependency Error". That tells you which phase failed, which tells you where to look.
+
+Dotted lines point downward from each phase to the error type that can occur there. REPORT has a green node — it always runs, even on failure.
+
+Have participants use this diagram as a reference during the exercise in Module 03 when they first encounter Jinja errors.
+-->
+
+---
+
+# Other Project Files You'll See
+
+<div class="mt-4 space-y-3">
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="font-mono text-slate-700 font-semibold mb-1">packages.yml</div>
+  <div class="text-sm text-slate-600">Declares external dbt packages (e.g. <code>dbt_utils</code>). Run <code>dbt deps</code> to install them. We use <code>dbt_utils</code> for surrogate key generation.</div>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="font-mono text-slate-700 font-semibold mb-1">seeds/</div>
+  <div class="text-sm text-slate-600">CSV files for small, static lookup tables that don't live in a source system — e.g. excluded test accounts, country-code mappings. Load with <code>dbt seed</code>.</div>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="font-mono text-slate-700 font-semibold mb-1">analyses/</div>
+  <div class="text-sm text-slate-600">SQL files that use <code>ref()</code> and <code>source()</code> for lineage, but are never materialised. Useful for audit queries during a migration — compare old and new logic without polluting production models.</div>
+</div>
+
+</div>
+
+<!--
+These don't need deep coverage — just recognition. When trainees open the project and see packages.yml or a seeds/ folder, they should have a mental model rather than being confused.
+
+dbt_utils is installed in the project. If anyone asks, the most important thing it provides is generate_surrogate_key() — a macro that hashes multiple columns into a surrogate key. They'll use it in Module 09 (Macros) and later when building Silver dimensions.
+
+seeds/ and analyses/ are rarely used in this project today but are part of the standard project structure. Don't spend more than 2 minutes on this slide.
 -->
 
 ---

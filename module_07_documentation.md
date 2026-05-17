@@ -2,7 +2,7 @@
 
 **Tier:** 🟢 Beginner · **Duration:** 60 min · **Prerequisites:** Module 06
 
-> **Framing:** Documentation is not an afterthought. At Bloomwell, CI fails if Silver or Gold models have missing descriptions or undocumented columns. This module closes the Beginner tier by establishing documentation as a non-negotiable part of the development workflow — not something you add before merging, but something you write while building.
+> **Framing:** Documentation is not an afterthought. CI fails if Silver or Gold models have missing descriptions or undocumented columns. This module closes the Beginner tier by establishing documentation as a non-negotiable part of the development workflow — not something you add before merging, but something you write while building.
 
 ---
 
@@ -28,7 +28,7 @@ Three months after a model is built, the original author can't remember what `fc
 
 If the column isn't documented in `schema.yml`, anyone who needs to know must read the SQL, trace it back through staging to Bronze, and hope the source system has documentation.
 
-**At Bloomwell, this is not acceptable for Silver or Gold models.** CI fails if:
+**This is not acceptable for Silver or Gold models.** CI fails if:
 - A Silver or Gold model has no description
 - A Silver or Gold model has no grain statement
 - Any column in a Silver or Gold model has no description
@@ -47,7 +47,7 @@ models:
     description: >
       Grain: one prescription event per patient per doctor per prescription_date.
       Source: HubSpot deal records filtered to prescription pipeline stages.
-      Refreshed nightly via Airflow. Excludes cancelled prescriptions.
+      Refreshed nightly. Excludes cancelled prescriptions.
     columns:
       - name: prescription_key
         description: >
@@ -103,6 +103,30 @@ Grain: one {entity} per {dimension1} per {dimension2} per {time dimension}.
 
 If you can't write the grain statement, the model's design is unclear and should be reviewed before documenting it.
 
+### Doc blocks — for longer descriptions
+
+When a description exceeds one or two sentences, move it into a **doc block** in a separate `.md` file instead of cluttering the YAML:
+
+```markdown
+<!-- models/silver/_silver_docs.md -->
+{% docs fct_prescription %}
+One prescription event per patient per doctor per prescription_date.
+Source: HubSpot deal records filtered to the prescription pipeline.
+Excludes cancelled and draft prescriptions (status != 'closed_won').
+Refreshed nightly after the Bronze load completes.
+{% enddocs %}
+```
+
+Then reference it in `schema.yml`:
+
+```yaml
+models:
+  - name: fct_prescription
+    description: '{{ doc("fct_prescription") }}'
+```
+
+Short inline descriptions are the standard for most columns. Use doc blocks only for models where the business context genuinely needs more than two lines — typically complex Silver facts or models with non-obvious exclusion logic.
+
 ---
 
 ### Part C — `persist_docs` — Writing Descriptions to Snowflake
@@ -111,7 +135,7 @@ This is already configured in `dbt_project.yml` for Silver and Gold:
 
 ```yaml
 models:
-  bloomwell:
+  analytics:
     silver:
       +persist_docs:
         relation: true    # writes model description to Snowflake table comment
@@ -120,8 +144,8 @@ models:
 
 **What this means:** When `dbt run` or `dbt build` executes a Silver model, dbt also runs:
 ```sql
-COMMENT ON TABLE BLOOMWELL.SILVER.fct_prescription IS 'Grain: one prescription event per...';
-COMMENT ON COLUMN BLOOMWELL.SILVER.fct_prescription.prescription_key IS 'Surrogate primary key...';
+COMMENT ON TABLE SILVER.PUBLIC.fct_prescription IS 'Grain: one prescription event per...';
+COMMENT ON COLUMN SILVER.PUBLIC.fct_prescription.prescription_key IS 'Surrogate primary key...';
 ```
 
 These comments are visible in:
@@ -158,7 +182,7 @@ The DAG is the fastest way to answer: "if I change `dim_patient`, what downstrea
 
 ### Task
 
-The model `dim_pipeline` exists in Silver with no documentation. Using what you know about HubSpot pipeline stages at Bloomwell, write a complete `schema.yml` entry for it.
+The model `dim_pipeline` exists in Silver with no documentation. Using what you know about HubSpot pipeline stages, write a complete `schema.yml` entry for it.
 
 The model has these columns:
 
@@ -184,8 +208,8 @@ The model has these columns:
 
 - [dbt documentation — schema.yml](https://docs.getdbt.com/docs/build/documentation)
 - [dbt `persist_docs` config](https://docs.getdbt.com/reference/resource-configs/persist_docs)
-- Bloomwell internal: `bloomwell-conventions` skill — documentation requirements per layer, grain format
-- Bloomwell internal: `references/go_live_checklist.md` — pre-merge checklist including documentation requirements
+- Internal: `conventions` skill — documentation requirements per layer, grain format
+- Internal: `references/go_live_checklist.md` — pre-merge checklist including documentation requirements
 
 ---
 
@@ -193,7 +217,7 @@ The model has these columns:
 
 You have now completed all 7 modules in the Beginner tier. At this point you can:
 
-- Explain what dbt is and what it does at Bloomwell
+- Explain what dbt is and what it does
 - Navigate the project structure and understand `dbt_project.yml` and `profiles.yml`
 - Read and write Jinja in dbt models: `{{ ref() }}`, `{{ source() }}`, `{{ config() }}`, `{% if %}`
 - Choose the correct materialization for a given use case
@@ -208,7 +232,7 @@ You have now completed all 7 modules in the Beginner tier. At this point you can
 
 ## Prep Questions for Module 08 (Intermediate — Advanced Incremental)
 
-1. What is `on_schema_change: sync_all_columns` and why is it required at Bloomwell?
+1. What is `on_schema_change: sync_all_columns` and why is it required?
 2. When would you use `--full-refresh` on an incremental model?
 3. What SQL statement does an incremental model with `unique_key` generate?
-4. What is the difference between `_key` and `_id` columns at Bloomwell?
+4. What is the difference between `_key` and `_id` columns?
