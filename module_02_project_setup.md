@@ -26,33 +26,33 @@
 `profiles.yml` is NOT stored in the dbt project repo. It lives in `~/.dbt/profiles.yml` on your machine. It contains credentials — never commit it to git.
 
 ```yaml
-bloomwell:
+analytics:
   target: dev          # which output to use by default
   outputs:
     dev:
       type: snowflake
       account: abc123.eu-west-1
-      user: thorsten@bloomwellhealth.com
+      user: jane@company.com
       authenticator: externalbrowser   # SSO login
       role: TRANSFORMER_DEV
       warehouse: COMPUTE_WH_DEV
-      database: BLOOMWELL_DEV
-      schema: TESTING__dev_thorsten    # your personal dev schema
+      database: SILVER_DEV
+      schema: TESTING__dev_jane        # your personal dev schema
       threads: 4
 
     prod:
       type: snowflake
       account: abc123.eu-west-1
-      user: dbt_prod@bloomwellhealth.com
+      user: dbt_prod@company.com
       authenticator: snowflake
       role: TRANSFORMER_PROD
       warehouse: COMPUTE_WH_PROD
-      database: BLOOMWELL
-      schema: SILVER                   # prod target; Airflow uses this
+      database: SILVER
+      schema: PUBLIC                   # prod target; your orchestrator uses this
       threads: 8
 ```
 
-**Critical rule:** Your dev target schema is `TESTING.dev_{yourname}`. You can break anything there. You cannot write to `SILVER` or `GOLD` from your laptop — that's Airflow's job.
+**Critical rule:** Your dev target schema is `TESTING.dev_{yourname}`. You can break anything there. You cannot write to `SILVER` or `GOLD` from your laptop — that's the orchestrator's job.
 
 **Test your connection:**
 ```bash
@@ -65,9 +65,9 @@ If this passes, you're ready to run models.
 ### Part B — `dbt_project.yml`: The Project Config
 
 ```yaml
-name: bloomwell
+name: analytics
 version: "1.0.0"
-profile: bloomwell         # must match the key in profiles.yml
+profile: analytics         # must match the key in profiles.yml
 
 model-paths: ["models"]
 test-paths: ["tests"]
@@ -75,7 +75,7 @@ macro-paths: ["macros"]
 seed-paths: ["seeds"]
 
 models:
-  bloomwell:
+  analytics:
     staging:
       +materialized: view    # all staging models default to view
       +tags: ["staging"]
@@ -97,15 +97,15 @@ models:
 
 The `+` prefix means the config applies to all models in that folder and subfolders. Individual models can override it with a `{{ config() }}` block at the top of the SQL file.
 
-**Why `models: bloomwell:` — the project namespace**
+**Why `models: analytics:` — the project namespace**
 
-The `bloomwell:` key under `models:` is the project name namespace. It must match `name: bloomwell` at the top of the file. Its purpose is to scope your config to *your* models only — not to models from installed packages.
+The `analytics:` key under `models:` is the project name namespace. It must match `name: analytics` at the top of the file. Its purpose is to scope your config to *your* models only — not to models from installed packages.
 
 If you install a package like `dbt_utils`, it brings its own models into the project. Without the namespace, any config you write under `models:` would apply to package models too. With it, package models are isolated under their own namespace:
 
 ```yaml
 models:
-  bloomwell:          # your models — configs apply here only
+  analytics:          # your models — configs apply here only
     silver:
       +materialized: table
 
@@ -115,7 +115,7 @@ models:
 
 **Can you skip it?** Technically yes — dbt will still work. But if you ever install a package, your configs could bleed into its models unexpectedly. The convention is to always include it.
 
-**Key decisions encoded in this file at Bloomwell:**
+**Key decisions encoded in this file:**
 - Staging is always a view — never a table
 - Silver and Gold persist docs to Snowflake so Power BI and Cortex AI can read column descriptions
 - Tags enable selective runs: `dbt build --select tag:silver`
@@ -201,7 +201,7 @@ flowchart LR
 ```
 target/
   compiled/
-    bloomwell/
+    analytics/
       models/
         silver/
           dim_patient.sql    ← this is what dbt actually sent to Snowflake
@@ -216,11 +216,11 @@ Always inspect `target/compiled/` when debugging a failing model.
 - [dbt_project.yml reference](https://docs.getdbt.com/reference/dbt_project.yml)
 - [dbt CLI commands](https://docs.getdbt.com/reference/dbt-commands)
 
-### Other project files you'll encounter in the Bloomwell repo
+### Other project files you'll encounter in the repo
 
 These don't need deep coverage now, but you'll see them in the project:
 
-- **`packages.yml`** — declares external dbt packages (e.g. `dbt_utils`). Run `dbt deps` to install them into `dbt_packages/`. Bloomwell uses `dbt_utils` for surrogate key generation.
+- **`packages.yml`** — declares external dbt packages (e.g. `dbt_utils`). Run `dbt deps` to install them into `dbt_packages/`. We use `dbt_utils` for surrogate key generation.
 - **`seeds/`** — CSV files for small, static lookup tables that don't exist in a source system (e.g. a list of excluded test accounts, or a country-code mapping). Run `dbt seed` to load them. Not the right place for data that changes frequently.
 - **`analyses/`** — SQL files that use `ref()` and `source()` for lineage tracking, but are never materialised. Useful for audit queries during a migration (e.g. "does our new Silver model match the old stored procedure?") without polluting the production model set.
 

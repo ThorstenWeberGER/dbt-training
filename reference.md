@@ -6,7 +6,7 @@
 **ISBN:** 978-1-098-14238-4
 **Pages:** 324
 
-> The book uses **dbt Cloud + BigQuery** for all hands-on examples. Bloomwell uses dbt Core + Snowflake, but all commands and concepts are identical — only connection config differs.
+> The book uses **dbt Cloud + BigQuery** for all hands-on examples. We use dbt Core + Snowflake, but all commands and concepts are identical — only connection config differs.
 
 ---
 
@@ -45,7 +45,7 @@
 **Code Exercise:**
 - **Example 1-3 (p. 21):** Minimal dbt model — a `SELECT` with `{{ ref() }}` and `{{ config(materialized='table') }}` that sums revenue across orders. Demonstrates that every dbt model is just a `SELECT` statement.
 
-**Training Module:** Pre-reading for **Module 1**. Covers the "why" of dbt at industry level and reinforces Bloomwell's exact motivation for adopting dbt.
+**Training Module:** Pre-reading for **Module 1**. Covers the "why" of dbt at industry level and reinforces the team's motivation for adopting dbt.
 
 ---
 
@@ -58,15 +58,15 @@
 - **Dimensional modeling (Kimball):** fact tables (measurable events) + dimension tables (context) → star schema; snowflake schema extends this by normalizing dimensions further
 - **Star schema** vs. **snowflake schema**: star is simpler and faster to query; snowflake is more normalized and storage-efficient
 - **Data Vault:** hub-satellite-link design, optimized for environments where source systems change frequently
-- **Modular data models in dbt:** staging layer (clean/rename) → intermediate layer (business logic) → marts layer (facts + dims); mirrors Bloomwell's Bronze→Staging→Silver→Gold
+- **Modular data models in dbt:** staging layer (clean/rename) → intermediate layer (business logic) → marts layer (facts + dims); mirrors the Bronze→Staging→Silver→Gold architecture
 - **Medallion Architecture (pp. 63–66):** Bronze (raw, append-only) → Silver (clean, tested, conformed dims + facts) → Gold (aggregated, BI-ready); dbt owns Silver and Gold
 
 **Code Exercise:**
 - No executable code exercises in this chapter. The modeling concepts are illustrated with entity-relationship diagrams and schema designs.
-- Suggested activity: sketch the star schema for Bloomwell's HubSpot data (deals, contacts, pipeline stages) using the conceptual → logical → physical workflow described on pp. 25–31.
+- Suggested activity: sketch the star schema for the project's HubSpot data (deals, contacts, pipeline stages) using the conceptual → logical → physical workflow described on pp. 25–31.
 
 **Training Module:**
-- **Module 1** pre-reading: pp. 47–66 (Modular Data Models + Medallion Architecture) — gives the theoretical foundation for Bloomwell's layer architecture
+- **Module 1** pre-reading: pp. 47–66 (Modular Data Models + Medallion Architecture) — gives the theoretical foundation for the layer architecture
 - **Module 5** pre-reading: pp. 63–66 (Medallion Architecture Pattern section) — directly explains Bronze/Silver/Gold semantics
 
 ---
@@ -112,7 +112,7 @@
 **Key Insights:**
 - **dbt design philosophy** (pp. 136–137): code-centric, modular, declarative, SQL-only, documentation-as-code, incremental builds, native integration with data platforms
 - **dbt data flow:** source systems → raw/bronze → dbt staging → dbt intermediate → dbt marts; dbt owns only the transformation steps
-- **dbt Cloud vs. dbt Core:** Cloud is managed (scheduling, IDE, CI); Core is open source CLI — Bloomwell uses Core
+- **dbt Cloud vs. dbt Core:** Cloud is managed (scheduling, IDE, CI); Core is open source CLI — we use Core
 - **Project structure** (pp. 165–167): `models/`, `macros/`, `seeds/`, `snapshots/`, `tests/`, `analyses/`, `target/`, `dbt_project.yml`
 - **YAML file organization** (pp. 168–174): one `_sources.yml` + one `_models.yml` per models directory; use `_` prefix so files sort to the top
 - **`dbt_project.yml`** (pp. 170–173): sets project name, model paths, default materializations per directory; all models inherit unless overridden
@@ -218,7 +218,7 @@
 - **Module 6** (Testing): pp. 280–285 — most complete test example in the book; covers both generic and singular tests on a full star schema
 - **Module 7** (Documentation): Example 6-28 (pp. 285–290) — full documented YAML including model descriptions, column descriptions, and tests together
 - **Module 10** (SCD2): the `dim_date` model using `dbt_utils.date_spine()` (pp. 276–278) demonstrates packages in practice
-- **Capstone / Final Project**: Ch. 6 in its entirety is the blueprint for a Bloomwell end-to-end project — adapting the omnichannel schema to Bloomwell's HubSpot→deals→pipeline model makes an ideal capstone exercise
+- **Capstone / Final Project**: Ch. 6 in its entirety is the blueprint for an end-to-end project — adapting the omnichannel schema to the project's HubSpot→deals→pipeline model makes an ideal capstone exercise
 
 ---
 
@@ -254,4 +254,4 @@ Each exercise below can be assigned as async homework. The book uses BigQuery �
 | M7 | Add model description with grain statement + column descriptions for all columns in a Silver dimension | Example 6-28, pp. 285–290 | Identical syntax |
 | M9 | Write a `generate_surrogate_key()` wrapper macro that calls `dbt_utils.generate_surrogate_key()`; use it in a staging model | Examples 5-14 + 5-15, pp. 238–239 | Identical syntax |
 | M10 | Create a snapshot for a HubSpot deals status column using `timestamp` strategy | Example 5-5, pp. 231–232 | Replace `target_schema` with Snowflake schema name |
-| Capstone | Build a mini star schema from Bloomwell's HubSpot data: 2 dims + 1 fact; write all tests and docs; run `dbt build` | Full Ch. 6 | Adapt BigQuery project/dataset → Snowflake database/schema |
+| Capstone | Build a mini star schema from the project's HubSpot data: 2 dims + 1 fact; write all tests and docs; run `dbt build` | Full Ch. 6 | Adapt BigQuery project/dataset → Snowflake database/schema |

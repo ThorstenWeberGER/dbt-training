@@ -11,7 +11,7 @@ fonts:
 ---
 
 <div class="h-full flex flex-col justify-center pl-2">
-  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">Bloomwell Data & Analytics · dbt Training</div>
+  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">dbt Training</div>
   <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono px-3 py-1 rounded-full w-fit mb-6">
     🟢 Beginner · Module 07 · 60 min · Final Beginner Module
   </div>
@@ -77,7 +77,7 @@ That's 30 minutes of investigation that a two-sentence description would have pr
 </div>
 
 <!--
-Open with a real scenario: Harki joins the team. He's working on a new Power BI dashboard and needs to know what fct_prescription.dosage_amount means. He finds the model but there's no schema.yml. He asks Thorsten, who built it 6 months ago and can't remember without checking. They both spend 20 minutes tracing it back through staging.
+Open with a real scenario: a new team member joins and is working on a new Power BI dashboard and needs to know what fct_prescription.dosage_amount means. They find the model but there's no schema.yml. They ask the original author, who built it 6 months ago and can't remember without checking. They both spend 20 minutes tracing it back through staging.
 
 That's the cost. Two sentences in schema.yml would have made it instant.
 
@@ -96,7 +96,7 @@ models:
     description: >
       Grain: one prescription event per patient per doctor per prescription_date.
       Source: HubSpot deal records filtered to prescription pipeline stages.
-      Refreshed nightly via Airflow. Excludes cancelled prescriptions.
+      Refreshed nightly. Excludes cancelled prescriptions.
 
     columns:
       - name: prescription_key
@@ -177,7 +177,7 @@ Ask: "Write a grain statement for fct_prescription." Someone should be able to a
 One prescription per patient per doctor per date.
 Source: HubSpot deals in prescription pipeline stages.
 Excludes cancelled prescriptions (status != closed_won).
-Refreshed nightly after Bronze load completes.
+Refreshed nightly after the Bronze load completes.
 {% enddocs %}
 ```
 
@@ -198,14 +198,14 @@ models:
 </div>
 
 <div class="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-600">
-  <strong>At Bloomwell:</strong> Short inline descriptions are the standard. Use doc blocks only when a model's business context genuinely needs more than one or two lines — typically complex Silver facts or models with non-obvious exclusion logic.
+  Short inline descriptions are the standard. Use doc blocks only when a model's business context genuinely needs more than one or two lines — typically complex Silver facts or models with non-obvious exclusion logic.
 </div>
 
 <!--
-Keep this to 3 minutes. Most of the time at Bloomwell, inline descriptions are fine and preferred.
+Keep this to 3 minutes. Most of the time, inline descriptions are fine and preferred.
 
 The doc block pattern is worth knowing because:
-1. It exists in the Bloomwell codebase for a few complex models
+1. It exists in the codebase for a few complex models
 2. Trainees will encounter it and wonder what {% docs %} means
 3. Multi-line YAML descriptions with > syntax get unwieldy for anything beyond 2-3 sentences
 
@@ -225,7 +225,7 @@ Don't let this become a discussion of when to use inline vs. doc blocks. The rul
 
 ```yaml
 models:
-  bloomwell:
+  analytics:
     silver:
       +persist_docs:
         relation: true   # model description → table comment
@@ -235,10 +235,10 @@ models:
 **What dbt runs after every Silver/Gold build:**
 
 ```sql
-COMMENT ON TABLE BLOOMWELL.SILVER.fct_prescription
+COMMENT ON TABLE SILVER.PUBLIC.fct_prescription
 IS 'Grain: one prescription event per...';
 
-COMMENT ON COLUMN BLOOMWELL.SILVER.fct_prescription.prescription_key
+COMMENT ON COLUMN SILVER.PUBLIC.fct_prescription.prescription_key
 IS 'Surrogate primary key. MD5 hash of...';
 ```
 
@@ -365,7 +365,7 @@ layout: center
   <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">🎉 Beginner Tier Complete</div>
   <h2 class="text-4xl font-bold text-slate-800 mb-4">You can now:</h2>
   <div class="text-left max-w-lg mx-auto space-y-2 mb-8">
-    <div class="flex gap-2 text-sm text-slate-600"><span class="text-emerald-500 font-bold">✓</span> Explain what dbt is and where it fits in the Bloomwell stack</div>
+    <div class="flex gap-2 text-sm text-slate-600"><span class="text-emerald-500 font-bold">✓</span> Explain what dbt is and where it fits in the data stack</div>
     <div class="flex gap-2 text-sm text-slate-600"><span class="text-emerald-500 font-bold">✓</span> Navigate the project and understand <code>dbt_project.yml</code> and <code>profiles.yml</code></div>
     <div class="flex gap-2 text-sm text-slate-600"><span class="text-emerald-500 font-bold">✓</span> Read and write Jinja: <code>ref()</code>, <code>source()</code>, <code>config()</code>, <code>{% if %}</code></div>
     <div class="flex gap-2 text-sm text-slate-600"><span class="text-emerald-500 font-bold">✓</span> Choose the correct materialization for any use case</div>

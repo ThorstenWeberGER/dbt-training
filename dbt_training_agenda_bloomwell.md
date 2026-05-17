@@ -1,5 +1,5 @@
-# dbt Training — Bloomwell Data Team
-> **Audience:** Data & Analytics team (Bloomwell Health)
+# dbt Training — Data Team
+> **Audience:** Data & Analytics team
 > **Stack:** dbt Core · Snowflake · Bronze / Silver / Gold medallion architecture · HubSpot pipelines
 > **Goal:** Get everyone productive in dbt — able to read, write, test, and maintain models confidently
 > **Levels:** 🟢 Beginner · 🟡 Intermediate · 🔴 Advanced
@@ -19,7 +19,7 @@ The course is structured in three tiers. Work through them in order. Each module
 
 - What problem dbt solves: ELT vs. ETL, transformation in the warehouse
 - The dbt philosophy: SQL-first, version-controlled, tested, documented
-- How dbt fits the Bloomwell stack (Snowflake + HubSpot + Power BI)
+- How dbt fits the project stack (Snowflake + HubSpot + Power BI)
 - dbt Core vs. dbt Cloud — what we use and why
 - The project structure: `models/`, `macros/`, `seeds/`, `tests/`, `snapshots/`, `dbt_project.yml`
 
@@ -43,8 +43,8 @@ The course is structured in three tiers. Work through them in order. Each module
   - `dbt debug` — verifying the connection works before writing any SQL
 
 ```yaml
-# ~/.dbt/profiles.yml — example for Bloomwell Snowflake
-bloomwell:
+# ~/.dbt/profiles.yml — example for Snowflake
+analytics:
   target: dev
   outputs:
     dev:
@@ -54,7 +54,7 @@ bloomwell:
       authenticator: externalbrowser
       role: TRANSFORMER_DEV
       warehouse: COMPUTE_WH
-      database: BLOOMWELL_DEV
+      database: SILVER_DEV
       schema: dbt_<your_name>   # personal dev schema, never shared
       threads: 4
     prod:
@@ -64,8 +64,8 @@ bloomwell:
       password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
       role: TRANSFORMER_PROD
       warehouse: COMPUTE_WH
-      database: BLOOMWELL_PROD
-      schema: silver
+      database: SILVER
+      schema: PUBLIC
       threads: 8
 ```
 
@@ -74,7 +74,7 @@ bloomwell:
 A dbt project is a directory with a specific layout. Every file has a purpose.
 
 ```
-bloomwell/                        # repo root
+analytics/                        # repo root
 ├── dbt_project.yml               # project config: name, version, model paths, vars, defaults
 ├── packages.yml                  # external packages (dbt_utils, dbt-expectations)
 ├── package-lock.yml              # pinned package versions — always commit this
@@ -101,7 +101,7 @@ bloomwell/                        # repo root
 ├── seeds/                        # version-controlled CSV lookup tables
 │   └── status_mapping.csv
 │
-├── snapshots/                    # native dbt SCD2 snapshots (not used at Bloomwell — see Module 11)
+├── snapshots/                    # native dbt SCD2 snapshots (see Module 11)
 │
 ├── tests/                        # custom singular tests (one-off SQL assertions)
 │   └── assert_no_negative_amounts.sql
@@ -172,7 +172,7 @@ Understanding what dbt does under the hood prevents a large class of debugging c
 dbt compile --select fct_prescription
 
 # Then inspect:
-cat target/compiled/bloomwell/models/silver/fct_prescription.sql
+cat target/compiled/analytics/models/silver/fct_prescription.sql
 ```
 
 #### Phase 4 — Execute
@@ -216,7 +216,7 @@ After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a comp
   - Staging (views): light renaming and type casting on top of Bronze
   - Silver: business entities — `dim_*`, `fct_*`, full tests and docs required
   - Gold: consumption-ready marts for Power BI — `mrt_*`
-- Naming conventions: the Bloomwell rules in practice (`_key` vs. `_id`, `_at` vs. `_date`, grain statements)
+- Naming conventions in practice (`_key` vs. `_id`, `_at` vs. `_date`, grain statements)
 
 **Key takeaway:** Never write directly to Bronze from dbt. Bronze is owned by the ingestion layer (Lambda / HubSpot API). dbt starts at staging.
 
@@ -232,7 +232,7 @@ After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a comp
 - Source tests: freshness checks, not-null on raw columns
 - Where to place tests: Bronze (optional) → Staging (optional) → **Silver (required)** → **Gold (required)**
 
-**Bloomwell rule:** Silver and Gold models **must** have `unique` + `not_null` on all `_key` columns, and `relationships` tests for all foreign keys. CI fails without them.
+**Mandatory:** Silver and Gold models **must** have `unique` + `not_null` on all `_key` columns, and `relationships` tests for all foreign keys. CI fails without them.
 
 **Hands-on exercise:** Add tests to a staging and a Silver model. Intentionally break a `not_null` test and inspect the failure output.
 
@@ -247,7 +247,7 @@ After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a comp
 - `persist_docs` in `dbt_project.yml` — pushing descriptions to Snowflake column comments
 - `doc()` blocks in `.md` files — reusable descriptions
 
-**Bloomwell rule:** Silver and Gold models require a grain statement in the model description and descriptions on every column. CI will fail without them.
+**Mandatory:** Silver and Gold models require a grain statement in the model description and descriptions on every column. CI will fail without them.
 
 ---
 
@@ -267,7 +267,7 @@ After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a comp
   - When to use `--full-refresh` and why it's dangerous in production
 - Config blocks in models vs. `dbt_project.yml`
 
-**Bloomwell context:** Bronze layer uses append-only (no dbt). Silver fact tables (e.g., `fct_prescription`) typically use `merge` incremental. Silver dimensions are usually `table` materialization with SCD2 handled via our custom `scd2_merge` macro (covered in Module 12).
+**In practice:** Bronze layer uses append-only (no dbt). Silver fact tables (e.g., `fct_prescription`) typically use `merge` incremental. Silver dimensions are usually `table` materialization with SCD2 handled via our custom `scd2_merge` macro (covered in Module 12).
 
 ---
 
@@ -295,7 +295,7 @@ After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a comp
 - Hooks: `pre-hook` and `post-hook` (e.g., `ALTER TABLE ... ADD PRIMARY KEY`)
 - Packages: `dbt_utils`, `dbt-expectations` — install via `packages.yml`
 
-**Bloomwell context:** We use `dbt_utils.generate_surrogate_key` for hash keys. Surrogate key computation happens in the source CTE of each model, not inside a shared macro — this keeps surrogate keys stable across full refreshes.
+**In practice:** We use `dbt_utils.generate_surrogate_key` for hash keys. Surrogate key computation happens in the source CTE of each model, not inside a shared macro — this keeps surrogate keys stable across full refreshes.
 
 ---
 
@@ -305,7 +305,7 @@ After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a comp
 - What SCD Type 2 is and why it matters for HubSpot pipeline data
 - dbt native snapshots: `check` strategy vs. `timestamp` strategy
 - Snapshot metadata columns: `dbt_valid_from`, `dbt_valid_to`, `dbt_scd_id`
-- **Why Bloomwell uses a custom `scd2_merge` macro instead of snapshots**
+- **Why we use a custom `scd2_merge` macro instead of snapshots**
   - Surrogate key stability during full refreshes — snapshots regenerate `dbt_scd_id`
   - More control over hash key computation
   - Hash keys computed in the source CTE of each model for reuse across `dim_pipelines` and `dim_pipeline_stages`
@@ -343,7 +343,7 @@ After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a comp
 - Environment variables in CI: Snowflake credentials, target environments
 - Failing a PR if tests fail — protecting production
 
-**Bloomwell context:** CI fails if Silver/Gold models are missing descriptions, grain statements, or column-level docs. This is enforced by dbt's built-in compile validation combined with our schema YAML requirements.
+**In practice:** CI fails if Silver/Gold models are missing descriptions, grain statements, or column-level docs. This is enforced by dbt's built-in compile validation combined with our schema YAML requirements.
 
 ---
 
@@ -388,7 +388,7 @@ After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a comp
 - Model access levels: `public`, `protected`, `private` — controlling cross-project references
 - Model versions: managing breaking changes to shared models
 - Snowflake PK/FK constraints as metadata (not enforced, but used by Power BI and Cortex AI)
-- The Bloomwell go-live checklist: what must be in place before a model hits production
+- The go-live checklist: what must be in place before a model hits production
 
 ---
 
@@ -411,8 +411,8 @@ These topics were considered and cut to keep the course focused:
 |---|---|
 | dbt Cloud IDE | We use dbt Core, not Cloud |
 | dbt Semantic Layer / MetricFlow | Cloud-only; not in our stack |
-| Python models | Not used at Bloomwell |
-| Dagster orchestration | We use Airflow on AWS ECS |
+| Python models | Not in our stack |
+| Dagster orchestration | We use a separate orchestrator |
 | Deep adapter internals | Snowflake-specific — handle in separate Snowflake training |
 
 ---
@@ -421,7 +421,7 @@ These topics were considered and cut to keep the course focused:
 
 - [dbt official docs](https://docs.getdbt.com)
 - [dbt Labs free courses](https://www.getdbt.com/dbt-learn)
-- Bloomwell internal: `bloomwell-conventions` skill — naming rules, layer responsibilities
-- Bloomwell internal: `dbt-sql-reviewer` skill — pre-merge checklist
-- Bloomwell internal: `dbt-test-strategy` skill — when and where to test
-- Bloomwell internal: `references/go_live_checklist.md` — required before every PR to production
+- Internal: `conventions` skill — naming rules, layer responsibilities
+- Internal: `dbt-sql-reviewer` skill — pre-merge checklist
+- Internal: `dbt-test-strategy` skill — when and where to test
+- Internal: `references/go_live_checklist.md` — required before every PR to production

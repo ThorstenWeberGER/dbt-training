@@ -11,7 +11,7 @@ fonts:
 ---
 
 <div class="h-full flex flex-col justify-center pl-2">
-  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">Bloomwell Data & Analytics · dbt Training</div>
+  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">dbt Training</div>
   <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono px-3 py-1 rounded-full w-fit mb-6">
     🟢 Beginner · Module 03 · 75 min
   </div>
@@ -77,7 +77,7 @@ FROM {{ ref('dim_patient') }}
 
 ```sql
 SELECT *
-FROM BLOOMWELL.SILVER.dim_patient
+FROM SILVER.PUBLIC.dim_patient
 ```
 
 </div>
@@ -152,10 +152,10 @@ This distinction trips up almost everyone once. Better to make the mistake in cl
 FROM {{ ref('dim_patient') }}
 
 -- Dev compiles to:
--- BLOOMWELL_DEV.TESTING__dev_thorsten.dim_patient
+-- SILVER_DEV.TESTING__dev_jane.dim_patient
 
 -- Prod compiles to:
--- BLOOMWELL.SILVER.dim_patient
+-- SILVER.PUBLIC.dim_patient
 ```
 
 <div class="text-xs text-slate-500 mt-2">Adds dependency to DAG. Never hardcode table names.</div>
@@ -169,7 +169,7 @@ FROM {{ ref('dim_patient') }}
 FROM {{ source('hubspot', 'contacts') }}
 
 -- Compiles to:
--- BLOOMWELL.BRONZE.HUBSPOT.contacts
+-- BRONZE.HUBSPOT.contacts
 ```
 
 <div class="text-xs text-slate-500 mt-2">Requires declaration in sources.yml. Covered in Module 05.</div>
@@ -215,7 +215,7 @@ These are the only four they need to get through the entire Beginner tier. Macro
 
 Emphasise ref() most heavily — it's used in every single model. The environment-awareness (dev vs prod schema) is the reason it exists. A hardcoded table name always points to prod — ref() respects your target.
 
-Checkpoint: "What does {{ ref('dim_patient') }} compile to in your dev environment?" → BLOOMWELL_DEV.TESTING__dev_thorsten.dim_patient
+Checkpoint: "What does {{ ref('dim_patient') }} compile to in your dev environment?" → SILVER_DEV.TESTING__dev_jane.dim_patient
 -->
 
 ---
@@ -348,10 +348,10 @@ Write `stg_hubspot__deals.sql` that:
 
 <!--
 Task 1 expected answer:
-CREATE OR REPLACE TABLE BLOOMWELL.SILVER.your_model AS
+CREATE OR REPLACE TABLE SILVER.PUBLIC.your_model AS
 SELECT c.contact_id, c.email, p.pipeline_name
-FROM BLOOMWELL.BRONZE.HUBSPOT.contacts c
-LEFT JOIN BLOOMWELL.SILVER.dim_pipeline p ON c.pipeline_id = p.hubspot_pipeline_id
+FROM BRONZE.HUBSPOT.contacts c
+LEFT JOIN SILVER.PUBLIC.dim_pipeline p ON c.pipeline_id = p.hubspot_pipeline_id
 
 Most common errors to watch for:
 - Using {{ }} for if blocks

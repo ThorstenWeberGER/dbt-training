@@ -512,7 +512,7 @@ function Slide7({ active }) {
             {[
               { title: "PK constraint (if no contract)", color: A1, code: "ALTER TABLE {{ this }}\n  ADD PRIMARY KEY (contact_key) RELY", note: "Snowflake metadata only — not enforced. RELY enables query optimizer and Cortex AI." },
               { title: "FK constraint", color: A1, code: "ALTER TABLE {{ this }}\n  ADD FOREIGN KEY (owner_key)\n  REFERENCES dim_owner (owner_key) RELY", note: "Required until contract foreign_key DDL generation is confirmed (open TODO)." },
-              { title: "PII tagging", color: A3, code: "ALTER TABLE {{ this }}\n  SET TAG bloomwell.pii = 'true'", note: "Data governance metadata for Snowflake access policies." },
+              { title: "PII tagging", color: A3, code: "ALTER TABLE {{ this }}\n  SET TAG governance.pii = 'true'", note: "Data governance metadata for Snowflake access policies." },
               { title: "Clustering key", color: A3, code: "ALTER TABLE {{ this }}\n  CLUSTER BY (created_date)", note: "Apply on large fact tables after initial load." },
             ].map(({ title, code, note, color }) => (
               <div key={title} style={{ background: "#F8FAFC", borderRadius: 6, padding: "9px 12px", border: `1px solid ${BORDER}` }}>

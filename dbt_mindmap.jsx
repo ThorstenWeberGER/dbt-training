@@ -29,10 +29,10 @@ const NODES = [
   { id: "custom_macros", label: "Custom\nMacros", sublabel: "dispatch · run-operation · scd2_merge deep dive", x: 830, y: 640, r: 34, type: "advanced" },
   { id: "governance", label: "Governance\n& Contracts", sublabel: "contracts · access levels · versions · PK/FK", x: 580, y: 570, r: 34, type: "advanced" },
 
-  // Bloomwell layer (small satellites)
-  { id: "medallion", label: "Bronze·Silver\n·Gold", sublabel: "Bloomwell medallion architecture", x: 365, y: 300, r: 28, type: "bloomwell" },
-  { id: "hubspot", label: "HubSpot\nPipelines", sublabel: "Lambda ingestion → Bronze", x: 430, y: 490, r: 28, type: "bloomwell" },
-  { id: "snowflake", label: "Snowflake", sublabel: "Target warehouse · clustering · tasks", x: 620, y: 310, r: 28, type: "bloomwell" },
+  // Stack layer (small satellites)
+  { id: "medallion", label: "Bronze·Silver\n·Gold", sublabel: "Medallion architecture", x: 365, y: 300, r: 28, type: "stack" },
+  { id: "hubspot", label: "HubSpot\nPipelines", sublabel: "Lambda ingestion → Bronze", x: 430, y: 490, r: 28, type: "stack" },
+  { id: "snowflake", label: "Snowflake", sublabel: "Target warehouse · clustering · tasks", x: 620, y: 310, r: 28, type: "stack" },
 ];
 
 const EDGES = [
@@ -44,7 +44,7 @@ const EDGES = [
   ["dbt", "seeds"], ["dbt", "selectors"], ["dbt", "scd2"],
   // Center to Tier 3
   ["dbt", "cicd"], ["dbt", "adv_testing"], ["dbt", "custom_macros"], ["dbt", "governance"],
-  // Center to Bloomwell
+  // Center to stack nodes
   ["dbt", "medallion"], ["dbt", "hubspot"], ["dbt", "snowflake"],
   // Logical connections
   ["models", "materializations"], ["materializations", "incremental"],
@@ -63,7 +63,7 @@ const TYPE_STYLES = {
   beginner:     { bg: "#0f2a1a", border: "#22c55e", text: "#dcfce7", glow: "#22c55e", label: "Foundations" },
   intermediate: { bg: "#1a1a0f", border: "#eab308", text: "#fef9c3", glow: "#eab308", label: "Intermediate" },
   advanced:     { bg: "#1a0f1a", border: "#a855f7", text: "#f3e8ff", glow: "#a855f7", label: "Advanced" },
-  bloomwell:    { bg: "#0f1a2a", border: "#38bdf8", text: "#bae6fd", glow: "#0ea5e9", label: "Bloomwell" },
+  stack:        { bg: "#0f1a2a", border: "#38bdf8", text: "#bae6fd", glow: "#0ea5e9", label: "Stack" },
 };
 
 function getNode(id) { return NODES.find(n => n.id === id); }
@@ -116,7 +116,7 @@ export default function DBTMindMap() {
         opacity: mounted ? 1 : 0, transition: "opacity 0.8s ease",
       }}>
         <div style={{ fontSize: 11, letterSpacing: "0.25em", color: "#38bdf8", textTransform: "uppercase", marginBottom: 6 }}>
-          Bloomwell · Data &amp; Analytics
+          Data &amp; Analytics
         </div>
         <h1 style={{
           margin: 0, fontSize: 22, fontWeight: 700,

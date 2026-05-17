@@ -4,7 +4,7 @@ theme: default
 title: dbt Training — Data Quality & Validation
 info: |
 
-## dbt Training — Bloomwell
+## dbt Training
 
 ## Data Quality & Validation
 Covers contracts, tests, post-hooks and the full dbt guardrail strategy.
@@ -17,7 +17,7 @@ sans: ‘DM Sans’
 mono: ‘Fira Code’
 
 <div class="flex flex-col h-full justify-center">
-  <div class="text-xs font-mono tracking-widest text-emerald-500 mb-3 uppercase">dbt Training · Bloomwell</div>
+  <div class="text-xs font-mono tracking-widest text-emerald-500 mb-3 uppercase">dbt Training</div>
   <h1 class="text-5xl font-extrabold text-slate-900 leading-tight mb-4">
     Data Quality<br/>&amp; Validation
   </h1>
@@ -332,7 +332,7 @@ Single-line per model. Safe to disable at any time. Enable only when schema is s
 - `not_null` on PK only
 - No uniqueness — duplicates expected in raw
 
-**Silver** *(Kimball source of truth at Bloomwell)*
+**Silver** *(Kimball source of truth)*
 
 - `unique` + `not_null` on every surrogate key → **error**
 - `relationships` on every FK → **error**
@@ -438,7 +438,7 @@ ALTER TABLE {{ this }}
 
 ```sql
 ALTER TABLE {{ this }}
-  SET TAG bloomwell.pii = 'true';
+  SET TAG governance.pii = 'true';
 ```
 
 **Clustering key**
@@ -546,7 +546,7 @@ dbt tests
 </div>
 
 <div class="mt-8 text-slate-400 text-sm">
-  Reference: <code>dbt_quality_guardrails.md</code> — full decision matrix, three-step governance plan, Bloomwell model scoring
+  Reference: <code>dbt_quality_guardrails.md</code> — full decision matrix, three-step governance plan, model scoring
 </div>
 
 <!-- Thank the team. Point to the guideline document for the full decision framework including the five criteria scoring matrix and the per-model governance steps. -->

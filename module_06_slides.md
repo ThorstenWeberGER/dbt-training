@@ -11,7 +11,7 @@ fonts:
 ---
 
 <div class="h-full flex flex-col justify-center pl-2">
-  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">Bloomwell Data & Analytics · dbt Training</div>
+  <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-6">dbt Training</div>
   <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono px-3 py-1 rounded-full w-fit mb-6">
     🟢 Beginner · Module 06 · 90 min
   </div>
@@ -54,7 +54,7 @@ All four correct before continuing.
 </div>
 <div>
 
-**At Bloomwell, tests are a CI requirement**
+**Tests are a CI requirement**
 
 <div class="space-y-2 mt-2">
   <div class="bg-white border border-slate-200 rounded-lg p-3 text-sm">
@@ -255,7 +255,7 @@ Checkpoint: "Write the YAML for a unique + not_null test on prescription_key." �
         severity: warn    # ← logged, pipeline continues
 ```
 
-**Rule at Bloomwell:**
+**Rule:**
 - `error` → all `_key` columns, all FK relationships
 - `warn` → soft checks, optional columns
 
@@ -295,7 +295,7 @@ Ask: "What does dbt build do that dbt run && dbt test does not?" → Runs tests 
 
 ---
 
-# Bloomwell Mandatory Test Requirements
+# Mandatory Test Requirements
 
 <div class="mt-4">
 

@@ -2,7 +2,7 @@
 
 **Tier:** 🟢 Beginner · **Duration:** 90 min · **Prerequisites:** Module 03
 
-> **Why this module exists:** Materialization strategy is one of the most consequential decisions in a dbt project — it drives cost, performance, freshness, and pipeline reliability. At Bloomwell, Bronze is append-only, Silver uses merge incremental, and Gold uses table. Without understanding why, participants will make expensive mistakes. This module gives a complete, Bloomwell-grounded treatment before Sources (Module 05) and Testing (Module 06), because testing strategy depends on knowing what you're materialising.
+> **Why this module exists:** Materialization strategy is one of the most consequential decisions in a dbt project — it drives cost, performance, freshness, and pipeline reliability. In this project, Bronze is append-only, Silver uses merge incremental, and Gold uses table. Without understanding why, participants will make expensive mistakes. This module gives a complete treatment before Sources (Module 05) and Testing (Module 06), because testing strategy depends on knowing what you're materialising.
 
 ---
 
@@ -12,10 +12,10 @@
 |---|---|---|---|---|---|---|---|---|
 | 00:00 | 10 min | Recap Module 03 | Confirm Jinja mental model | Q&A | Answer from memory | — | Ask all 4 prep questions. Probe: "what does `{{ this }}` refer to?" — it's directly relevant to incremental today. | All 4 correct |
 | 00:10 | 10 min | The four materializations | Know that dbt has four and when each is appropriate | Present | Annotate table | This doc | One-sentence summary of each. Don't go deep yet — depth comes next. | "Name the four materializations" |
-| 00:20 | 15 min | `view` and `table` | Understand the simplest two and their trade-offs | Present + live demo | Compare compiled SQL | VS Code | Show the DDL dbt generates for each. Key insight: `table` drops and recreates on every run — not suitable for large Bronze tables. | "Why would you never use `table` for Bronze at Bloomwell?" |
+| 00:20 | 15 min | `view` and `table` | Understand the simplest two and their trade-offs | Present + live demo | Compare compiled SQL | VS Code | Show the DDL dbt generates for each. Key insight: `table` drops and recreates on every run — not suitable for large Bronze tables. | "Why would you never use `table` for Bronze?" |
 | 00:35 | 20 min | `incremental` — the critical one | Understand merge incremental, `unique_key`, and `is_incremental()` | Present + live code | Follow along in editor | This doc | This is the most used and most misunderstood materialization. Walk through a real Silver model. Show what the merge SQL looks like in `target/compiled/`. | "What does `is_incremental()` return on a first run vs. subsequent runs?" |
-| 00:55 | 10 min | `ephemeral` — when and why | Know what ephemeral is and the one case it's useful | Present | Listen | This doc | Brief. Key point: ephemeral becomes a CTE in whatever calls it — no table created. Useful for intermediate staging steps. Rarely used at Bloomwell. | "Does an ephemeral model create a table in Snowflake?" |
-| 01:05 | 5 min | Bloomwell materialization rules | Know the mandatory choices per layer | Present | Write down rules | This doc | These are not suggestions. CI enforces them. Read through the table together. | "What materialization is forbidden for staging models?" |
+| 00:55 | 10 min | `ephemeral` — when and why | Know what ephemeral is and the one case it's useful | Present | Listen | This doc | Brief. Key point: ephemeral becomes a CTE in whatever calls it — no table created. Useful for intermediate staging steps. Rarely used. | "Does an ephemeral model create a table in Snowflake?" |
+| 01:05 | 5 min | Materialization rules | Know the mandatory choices per layer | Present | Write down rules | This doc | These are not suggestions. CI enforces them. Read through the table together. | "What materialization is forbidden for staging models?" |
 | 01:10 | 25 min | Exercise: read, diagnose, fix | Identify wrong materializations and fix them | Practice | Solo exercise | Exercise below | Circulate. Most common confusion: thinking `append` is a valid materialization keyword (it's not — `incremental` with `on_schema_change` + strategy controls this). | Exercise complete, all three models corrected |
 | 01:35 | 10 min | Debrief + prep questions | Consolidate | Debrief | Verbal | Whiteboard | Ask: "if a Gold model takes 45 minutes to rebuild, what's the first question you'd ask?" — answer: should it be incremental? | — |
 
@@ -40,32 +40,32 @@
 
 ```sql
 -- dbt compiles this to:
-CREATE OR REPLACE VIEW BLOOMWELL_DEV.TESTING__dev_thorsten.stg_hubspot__contacts AS
+CREATE OR REPLACE VIEW SILVER_DEV.TESTING__dev_jane.stg_hubspot__contacts AS
 SELECT
     contact_id,
     email,
     created_at
-FROM BLOOMWELL.BRONZE.HUBSPOT.contacts
+FROM BRONZE.HUBSPOT.contacts
 ```
 
 **Pro:** Always reflects the latest source data. Zero storage cost.
 **Con:** Recomputes on every query. Slow for complex transforms or large tables.
 
-**At Bloomwell:** Staging models are always views. They're cheap wrappers that rename columns and cast types — no business logic, no storage needed.
+**By convention:** Staging models are always views. They're cheap wrappers that rename columns and cast types — no business logic, no storage needed.
 
 #### table
 
 ```sql
 -- dbt compiles this to:
-DROP TABLE IF EXISTS BLOOMWELL.SILVER.dim_pipeline;
-CREATE TABLE BLOOMWELL.SILVER.dim_pipeline AS
+DROP TABLE IF EXISTS SILVER.PUBLIC.dim_pipeline;
+CREATE TABLE SILVER.PUBLIC.dim_pipeline AS
 SELECT ...
 ```
 
 **Pro:** Fast to query. No recomputation at query time.
 **Con:** Full rebuild on every `dbt run`. Expensive for large tables.
 
-**At Bloomwell:** Gold marts use `table` because they're small aggregates. Silver dimensions use `table` unless they're SCD2 (which uses incremental with a merge key).
+**By convention:** Gold marts use `table` because they're small aggregates. Silver dimensions use `table` unless they're SCD2 (which uses incremental with a merge key).
 
 ---
 
@@ -125,11 +125,11 @@ flowchart TD
 #### The compiled MERGE statement (what Snowflake receives)
 
 ```sql
-MERGE INTO BLOOMWELL.SILVER.dim_contact AS DBT_INTERNAL_DEST
+MERGE INTO SILVER.PUBLIC.dim_contact AS DBT_INTERNAL_DEST
 USING (
     SELECT contact_key, hubspot_contact_id, email, updated_at
-    FROM BLOOMWELL_DEV.TESTING__dev_thorsten.stg_hubspot__contacts
-    WHERE updated_at > (SELECT MAX(updated_at) FROM BLOOMWELL.SILVER.dim_contact)
+    FROM SILVER_DEV.TESTING__dev_jane.stg_hubspot__contacts
+    WHERE updated_at > (SELECT MAX(updated_at) FROM SILVER.PUBLIC.dim_contact)
 ) AS DBT_INTERNAL_SOURCE
 ON DBT_INTERNAL_DEST.contact_key = DBT_INTERNAL_SOURCE.contact_key
 
@@ -150,10 +150,10 @@ This is why `unique_key` is required for incremental with merge strategy — wit
 |---|---|
 | `ignore` (default) | New columns in SELECT are silently ignored — they won't appear in the table |
 | `fail` | dbt errors if SELECT has columns the table doesn't have |
-| `sync_all_columns` | Adds new columns, removes deleted ones — **Bloomwell standard** |
+| `sync_all_columns` | Adds new columns, removes deleted ones — **our standard** |
 | `append_new_columns` | Adds new columns only, never removes |
 
-**Always use `sync_all_columns` at Bloomwell.** `ignore` is a silent data bug waiting to happen.
+**Always use `sync_all_columns`.** `ignore` is a silent data bug waiting to happen.
 
 #### Forcing a full refresh
 
@@ -187,7 +187,7 @@ An ephemeral model creates no object in Snowflake. When another model references
 
 **When NOT to use:** When multiple models reference the same ephemeral model — it gets inlined as a CTE in each one, repeating the computation. In that case, use a view or table.
 
-**At Bloomwell:** Ephemeral is rarely used. Prefer views for intermediate staging steps — they're queryable for debugging.
+**In practice:** Ephemeral is rarely used. Prefer views for intermediate staging steps — they're queryable for debugging.
 
 ---
 
@@ -204,11 +204,11 @@ models:
 
 Snowflake handles the incremental refresh automatically — you write a plain `SELECT`, no `{% if is_incremental() %}` needed. The trade-off: less control over exactly when data refreshes and no `--full-refresh` override.
 
-**Not used at Bloomwell today.** The standard is `incremental` with `merge` strategy. Mention this only if asked — it's a sign that Snowflake is absorbing some of what dbt does manually.
+**Not used in this project today.** The standard is `incremental` with `merge` strategy. Mention this only if asked — it's a sign that Snowflake is absorbing some of what dbt does manually.
 
 ---
 
-### Part E — Bloomwell Materialization Rules (mandatory)
+### Part E — Mandatory Materialization Rules
 
 | Layer | Required materialization | Reason |
 |---|---|---|
@@ -273,7 +273,7 @@ FROM {{ ref('stg_hubspot__contacts') }}
 - [dbt materializations docs](https://docs.getdbt.com/docs/build/materializations)
 - [dbt incremental models](https://docs.getdbt.com/docs/build/incremental-models)
 - [dbt `on_schema_change`](https://docs.getdbt.com/docs/build/incremental-models#what-if-the-columns-of-my-incremental-model-change)
-- Bloomwell internal: `dbt-sql-reviewer` skill — checks materialization compliance pre-merge
+- Internal: `dbt-sql-reviewer` skill — checks materialization compliance pre-merge
 
 ---
 
@@ -281,5 +281,5 @@ FROM {{ ref('stg_hubspot__contacts') }}
 
 1. What SQL statement does dbt generate for a `table` materialization?
 2. What does `is_incremental()` return on the first run of an incremental model?
-3. At Bloomwell, what is the mandatory `on_schema_change` setting for incremental models?
+3. What is the mandatory `on_schema_change` setting for incremental models?
 4. Why would you never use `materialized='table'` for a staging model?

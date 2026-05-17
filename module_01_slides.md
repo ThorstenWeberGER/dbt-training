@@ -105,7 +105,7 @@ dbt is a **transformation framework** that lets you write SQL `SELECT` statement
 <div class="space-y-2 mt-1">
   <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Extract data from HubSpot — that's Lambda</div>
   <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Load data into Snowflake — already done before dbt runs</div>
-  <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Schedule itself — that's Airflow on AWS ECS</div>
+  <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Schedule itself — that's your orchestrator</div>
   <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Store any data itself</div>
 </div>
 
@@ -119,7 +119,7 @@ dbt is a **transformation framework** that lets you write SQL `SELECT` statement
 <!--
 The "does not" column is as important as the "does" column. Most confusion about dbt comes from people thinking it replaces the whole pipeline.
 
-Checkpoint question after this slide: "Is dbt Core or dbt Cloud? What's the difference?" — expect someone to not know. Answer: Core is open-source CLI. Cloud is a hosted platform with IDE and scheduler. Bloomwell uses Core only. Everything in this training is Core.
+Checkpoint question after this slide: "Is dbt Core or dbt Cloud? What's the difference?" — expect someone to not know. Answer: Core is open-source CLI. Cloud is a hosted platform with IDE and scheduler. We use Core only. Everything in this training is Core.
 -->
 
 ---
@@ -131,9 +131,9 @@ Checkpoint question after this slide: "Is dbt Core or dbt Cloud? What's the diff
 | | dbt Core | dbt Cloud |
 |---|---|---|
 | What it is | Open-source CLI tool | Hosted platform: IDE, scheduler, CI |
-| **What Bloomwell uses** | **✅ dbt Core** | **❌ Not used** |
+| **What we use** | **✅ dbt Core** | **❌ Not used** |
 | How we run it | `dbt run`, `dbt test`, `dbt build` | N/A |
-| How we schedule it | Airflow on AWS ECS | N/A |
+| How we schedule it | Your orchestrator | N/A |
 
 </div>
 
@@ -150,7 +150,7 @@ If anyone has used dbt Cloud before, flag that their muscle memory around the sc
 
 ---
 
-# The Bloomwell Stack
+# The Data Stack
 
 ```mermaid
 flowchart TD
@@ -193,10 +193,10 @@ Checkpoint: "Who writes to the Bronze layer?" — Answer: Lambda / the ingestion
 <div class="grid grid-cols-2 gap-10 mt-4">
 <div>
 
-**Open VS Code — Bloomwell dbt project**
+**Open VS Code — dbt project**
 
 ```
-bloomwell/
+analytics/
 ├── dbt_project.yml      ← project config
 ├── profiles.yml         ← NOT here (in ~/.dbt/)
 ├── models/
@@ -303,7 +303,7 @@ All four questions must be answered correctly before you move on. Don't skip the
 
 <div class="bg-white border-l-4 border-emerald-500 rounded-r-xl p-5 shadow-sm">
   <div class="text-xs font-mono text-slate-400 mb-2">02</div>
-  <div class="text-lg font-semibold text-slate-800">At Bloomwell, dbt owns <span class="text-emerald-600">Staging → Silver → Gold</span>. Lambda handles ingestion into Bronze.</div>
+  <div class="text-lg font-semibold text-slate-800">In this project, dbt owns <span class="text-emerald-600">Staging → Silver → Gold</span>. Lambda handles ingestion into Bronze.</div>
 </div>
 
 <div class="bg-white border-l-4 border-emerald-500 rounded-r-xl p-5 shadow-sm">

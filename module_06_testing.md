@@ -2,7 +2,7 @@
 
 **Tier:** 🟢 Beginner · **Duration:** 90 min · **Prerequisites:** Module 05
 
-> **Framing:** Testing is not an optional quality-of-life improvement. At Bloomwell, CI rejects any Silver or Gold PR that is missing mandatory tests on key columns. This module establishes that expectation from the start and treats `dbt build` as the only acceptable command for running models + tests together.
+> **Framing:** Testing is not an optional quality-of-life improvement. CI rejects any Silver or Gold PR that is missing mandatory tests on key columns. This module establishes that expectation from the start and treats `dbt build` as the only acceptable command for running models + tests together.
 
 ---
 
@@ -16,7 +16,7 @@
 | 00:35 | 20 min | The four generic tests | Write correct test YAML for all four | Present + live code | Follow along in editor | This doc | Write tests live, run `dbt test --select dim_patient`, show pass and fail output. Deliberately break a `not_null` test to see the failure message. | "Write the YAML for a `unique` + `not_null` test on `prescription_key`" |
 | 00:55 | 5 min | Test severity: `warn` vs. `error` | Know when to use each | Present | Annotate | This doc | One rule: `error` on key columns and FK relationships. `warn` on soft checks like data completeness ratios. | "What happens in CI if a test is set to `warn`?" |
 | 01:00 | 5 min | `dbt build` — the only correct command | Understand why `dbt build` is mandatory in CI | Present | — | This doc | State this clearly: `dbt run && dbt test` is wrong because a model can fail after `run` completes and tests still run. `dbt build` stops at first failure. | "What does `dbt build` do that `dbt run && dbt test` does not?" |
-| 01:05 | 5 min | Bloomwell mandatory test requirements | Know exactly what CI enforces | Present | Write down requirements | This doc | Read these aloud together. These are not suggestions — CI will reject PRs missing them. | "Name the two mandatory tests on every Silver `_key` column" |
+| 01:05 | 5 min | Mandatory test requirements | Know exactly what CI enforces | Present | Write down requirements | This doc | Read these aloud together. These are not suggestions — CI will reject PRs missing them. | "Name the two mandatory tests on every Silver `_key` column" |
 | 01:10 | 30 min | Exercise: add tests, break them, read the output | Write tests, run them, interpret failure messages | Practice | Solo exercise | Exercise below | Circulate. Key outcome: participants can write test YAML independently and read failure output without trainer help. | Tests written, failure output correctly interpreted |
 | 01:40 | 10 min | Debrief + prep questions | Consolidate | Debrief | Verbal | — | Ask: "what would happen to our dashboards if `fct_prescription.prescription_key` had duplicates and no test caught it?" — ground the stakes. | — |
 
@@ -33,7 +33,7 @@ A dbt model is only trustworthy if it is tested. Without tests:
 - A NULL value in a required column propagates downstream — silently
 - A Gold mart shows wrong numbers — and nobody knows until the business reports it
 
-**At Bloomwell, tests are a CI requirement for Silver and Gold models.** A PR without mandatory tests on key columns will not be merged.
+**Tests are a CI requirement for Silver and Gold models.** A PR without mandatory tests on key columns will not be merged.
 
 ---
 
@@ -152,7 +152,7 @@ Fails if any `patient_key` in this model doesn't exist in `dim_patient`. This is
         severity: warn     # CI logs a warning but does NOT stop the pipeline
 ```
 
-**Rule at Bloomwell:**
+**Rule:**
 - `error` — all `_key` columns, all FK relationships, all required business columns
 - `warn` — soft checks where some nulls are expected (free text fields, optional columns)
 
@@ -182,7 +182,7 @@ In CI: always `dbt build`. Locally: prefer `dbt build`. Only use `dbt test --sel
 
 ---
 
-### Part F — Bloomwell Mandatory Test Requirements
+### Part F — Mandatory Test Requirements
 
 These are checked on every Silver and Gold PR:
 
@@ -234,7 +234,7 @@ The model has these columns:
 - [dbt testing docs](https://docs.getdbt.com/docs/build/data-tests)
 - [dbt generic tests](https://docs.getdbt.com/docs/build/data-tests#generic-data-tests)
 - [dbt test severity](https://docs.getdbt.com/reference/resource-configs/severity)
-- Bloomwell internal: `dbt-test-strategy` skill — when and where to test per layer
+- Internal: `dbt-test-strategy` skill — when and where to test per layer
 
 ---
 
@@ -243,4 +243,4 @@ The model has these columns:
 1. What is the difference between a generic test and a singular test?
 2. Name the four built-in generic tests.
 3. What does `dbt build` do differently from `dbt run && dbt test`?
-4. At Bloomwell, which two tests are mandatory on every `_key` column in Silver?
+4. Which two tests are mandatory on every `_key` column in Silver?
