@@ -384,7 +384,7 @@ Take a moment here. Acknowledge the completion of 7 modules.
 
 Ask everyone to look at the checklist and honestly assess: is there anything they're not fully confident in? If so, that's the signal for what to revisit before starting the Intermediate tier.
 
-The Intermediate tier (Modules 08-13) covers: advanced incremental, SCD2 and the scd2_merge macro, Jinja macros and packages, seeds and variables, selectors and tags, CI/CD with GitHub Actions.
+The Intermediate tier (Modules 08-13) covers: advanced incremental, SCD2 and the scd2_merge macro, Jinja macros and packages, seeds and variables, selectors and tags, CI/CD with slim CI.
 
 The prerequisite for Module 08 is full confidence in incremental materializations (Module 04). If anyone isn't solid on that, recommend they review Module 04 and practice the exercise before the next session.
 -->

@@ -331,11 +331,11 @@ After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a comp
 
 ## Tier 3 — Production and Advanced Patterns 🔴
 
-### Module 12 — CI/CD with GitHub Actions
+### Module 12 — CI/CD and Slim CI
 **Estimated time: 1.5 hours**
 
 - What CI/CD means in a dbt context
-- Our GitHub Actions pipeline: what runs on PR vs. on merge to main
+- Your CI/CD pipeline: what runs on PR vs. on merge to main
 - Slim CI: running only changed models and their downstream dependencies
   - `dbt build --select state:modified+`
   - Requires a `manifest.json` from the previous production run

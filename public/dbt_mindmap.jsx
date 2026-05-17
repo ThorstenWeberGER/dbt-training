@@ -24,7 +24,7 @@ const NODES = [
   { id: "selectors", label: "Selectors\n& Tags", sublabel: "+model · state:modified · result:error", x: 155, y: 250, r: 34, type: "intermediate" },
 
   // Tier 3 — Advanced (right side)
-  { id: "cicd", label: "CI/CD", sublabel: "GitHub Actions · slim CI · manifest.json", x: 830, y: 155, r: 34, type: "advanced" },
+  { id: "cicd", label: "CI/CD", sublabel: "slim CI · manifest.json · state:modified+", x: 830, y: 155, r: 34, type: "advanced" },
   { id: "adv_testing", label: "Advanced\nTesting", sublabel: "store_failures · dbt-expectations · unit tests", x: 870, y: 400, r: 34, type: "advanced" },
   { id: "custom_macros", label: "Custom\nMacros", sublabel: "dispatch · run-operation · scd2_merge deep dive", x: 830, y: 640, r: 34, type: "advanced" },
   { id: "governance", label: "Governance\n& Contracts", sublabel: "contracts · access levels · versions · PK/FK", x: 580, y: 570, r: 34, type: "advanced" },

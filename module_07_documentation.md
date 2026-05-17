@@ -226,7 +226,7 @@ You have now completed all 7 modules in the Beginner tier. At this point you can
 - Write model and column documentation that passes CI requirements
 - Use `dbt build`, `dbt docs serve`, and `dbt source freshness`
 
-**Intermediate tier (Modules 08–13)** covers: advanced incremental patterns, SCD2 and the `scd2_merge` macro, Jinja macros and packages, seeds and variables, selectors and tags, and CI/CD with GitHub Actions.
+**Intermediate tier (Modules 08–13)** covers: advanced incremental patterns, SCD2 and the `scd2_merge` macro, Jinja macros and packages, seeds and variables, selectors and tags, and CI/CD with slim CI.
 
 ---
 

@@ -101,7 +101,7 @@ fonts:
   <div class="space-y-2 flex-1">
     <div class="flex items-start gap-2 text-xs">
       <span class="font-mono text-slate-300 shrink-0">12</span>
-      <span class="text-slate-700">CI/CD with GitHub Actions</span>
+      <span class="text-slate-700">CI/CD and slim CI</span>
     </div>
     <div class="flex items-start gap-2 text-xs">
       <span class="font-mono text-slate-300 shrink-0">13</span>
