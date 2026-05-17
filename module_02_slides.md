@@ -222,6 +222,79 @@ Make sure everyone knows target/compiled/ exists and that it's their best debugg
 -->
 
 ---
+
+# Execution Sequence — Visualised
+
+```mermaid
+flowchart LR
+    P["1. PARSE<br/>Read .sql + .yml<br/>Validate Jinja"]
+    R["2. RESOLVE<br/>Build DAG<br/>Resolve ref() source()"]
+    C["3. COMPILE<br/>Jinja to SQL<br/>Write target/compiled/"]
+    E["4. EXECUTE<br/>Send SQL<br/>to Snowflake"]
+    X["5. REPORT<br/>Log results<br/>Write artifacts"]
+
+    P --> R --> C --> E --> X
+
+    EP["Jinja syntax<br/>missing macros"]
+    ER["circular refs<br/>missing models"]
+    EC["undefined vars<br/>bad config"]
+    EE["SQL errors<br/>type mismatches"]
+    EX["always runs"]
+
+    P -.-> EP
+    R -.-> ER
+    C -.-> EC
+    E -.-> EE
+    X -.-> EX
+
+    classDef phase fill:#f8fafc,stroke:#64748b,color:#1e293b
+    classDef fail fill:#fef2f2,stroke:#fca5a5,color:#991b1b
+    classDef pass fill:#f0fdf4,stroke:#86efac,color:#166534
+    class P,R,C,E,X phase
+    class EP,ER,EC,EE fail
+    class EX pass
+```
+
+<!--
+The diagram maps each error type to its phase. When debugging: read the error header first — "Compilation Error", "Database Error", "Dependency Error". That tells you which phase failed, which tells you where to look.
+
+Dotted lines point downward from each phase to the error type that can occur there. REPORT has a green node — it always runs, even on failure.
+
+Have participants use this diagram as a reference during the exercise in Module 03 when they first encounter Jinja errors.
+-->
+
+---
+
+# Other Project Files You'll See
+
+<div class="mt-4 space-y-3">
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="font-mono text-slate-700 font-semibold mb-1">packages.yml</div>
+  <div class="text-sm text-slate-600">Declares external dbt packages (e.g. <code>dbt_utils</code>). Run <code>dbt deps</code> to install them. Bloomwell uses <code>dbt_utils</code> for surrogate key generation.</div>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="font-mono text-slate-700 font-semibold mb-1">seeds/</div>
+  <div class="text-sm text-slate-600">CSV files for small, static lookup tables that don't live in a source system — e.g. excluded test accounts, country-code mappings. Load with <code>dbt seed</code>.</div>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="font-mono text-slate-700 font-semibold mb-1">analyses/</div>
+  <div class="text-sm text-slate-600">SQL files that use <code>ref()</code> and <code>source()</code> for lineage, but are never materialised. Useful for audit queries during a migration — compare old and new logic without polluting production models.</div>
+</div>
+
+</div>
+
+<!--
+These don't need deep coverage — just recognition. When trainees open the Bloomwell project and see packages.yml or a seeds/ folder, they should have a mental model rather than being confused.
+
+dbt_utils is installed in the Bloomwell project. If anyone asks, the most important thing it provides is generate_surrogate_key() — a macro that hashes multiple columns into a surrogate key. They'll use it in Module 09 (Macros) and later when building Silver dimensions.
+
+seeds/ and analyses/ are rarely used at Bloomwell today but are part of the standard project structure. Don't spend more than 2 minutes on this slide.
+-->
+
+---
 layout: center
 ---
 

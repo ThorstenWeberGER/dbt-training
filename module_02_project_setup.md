@@ -161,6 +161,36 @@ When you run `dbt run` or `dbt build`, five phases execute in order:
                   ↳ Always runs; even failed runs produce a report
 ```
 
+```mermaid
+flowchart LR
+    P["1. PARSE<br/>Read .sql + .yml<br/>Validate Jinja"]
+    R["2. RESOLVE<br/>Build DAG<br/>Resolve ref() source()"]
+    C["3. COMPILE<br/>Jinja to SQL<br/>Write target/compiled/"]
+    E["4. EXECUTE<br/>Send SQL<br/>to Snowflake"]
+    X["5. REPORT<br/>Log results<br/>Write artifacts"]
+
+    P --> R --> C --> E --> X
+
+    EP["Jinja syntax errors<br/>missing macros"]
+    ER["circular refs<br/>missing models"]
+    EC["undefined vars<br/>bad config"]
+    EE["SQL errors<br/>type mismatches"]
+    EX["always runs"]
+
+    P -.-> EP
+    R -.-> ER
+    C -.-> EC
+    E -.-> EE
+    X -.-> EX
+
+    classDef phase fill:#f8fafc,stroke:#64748b,color:#1e293b
+    classDef fail fill:#fef2f2,stroke:#fca5a5,color:#991b1b
+    classDef pass fill:#f0fdf4,stroke:#86efac,color:#166534
+    class P,R,C,E,X phase
+    class EP,ER,EC,EE fail
+    class EX pass
+```
+
 **Why this matters:** When you get an error, the phase tells you where to look.
 
 - `Compilation Error` → your Jinja is wrong → check the template, not the SQL
@@ -185,6 +215,14 @@ Always inspect `target/compiled/` when debugging a failing model.
 - [dbt profiles.yml docs](https://docs.getdbt.com/docs/core/connect-data-platform/profiles.yml)
 - [dbt_project.yml reference](https://docs.getdbt.com/reference/dbt_project.yml)
 - [dbt CLI commands](https://docs.getdbt.com/reference/dbt-commands)
+
+### Other project files you'll encounter in the Bloomwell repo
+
+These don't need deep coverage now, but you'll see them in the project:
+
+- **`packages.yml`** — declares external dbt packages (e.g. `dbt_utils`). Run `dbt deps` to install them into `dbt_packages/`. Bloomwell uses `dbt_utils` for surrogate key generation.
+- **`seeds/`** — CSV files for small, static lookup tables that don't exist in a source system (e.g. a list of excluded test accounts, or a country-code mapping). Run `dbt seed` to load them. Not the right place for data that changes frequently.
+- **`analyses/`** — SQL files that use `ref()` and `source()` for lineage tracking, but are never materialised. Useful for audit queries during a migration (e.g. "does our new Silver model match the old stored procedure?") without polluting the production model set.
 
 ---
 

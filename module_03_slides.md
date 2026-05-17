@@ -265,6 +265,47 @@ After the slide, ask: "What does {{ this }} refer to?" → The table this model 
 
 ---
 
+# `target.name` — Environment-Conditional Logic
+
+<div class="mt-4">
+
+```sql {4,5,6}
+SELECT *
+FROM {{ ref('fct_appointments') }}
+{% if target.name != 'prod' %}
+    WHERE appointment_date >= DATEADD('month', -3, CURRENT_DATE())
+{% endif %}
+```
+
+</div>
+
+<div class="mt-4 grid grid-cols-2 gap-4">
+  <div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
+    <div class="font-semibold text-slate-700 mb-2">In dev target</div>
+    <div class="text-slate-600">Filter applies — only last 3 months scanned. Faster, cheaper.</div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
+    <div class="font-semibold text-slate-700 mb-2">In prod target</div>
+    <div class="text-slate-600">Filter removed — full dataset scanned. Correct production output.</div>
+  </div>
+</div>
+
+<div class="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-600">
+  <code>target</code> is a built-in Jinja object. <code>target.name</code> returns the active profile target name (<code>'dev'</code>, <code>'prod'</code>, etc.) from <code>profiles.yml</code>.
+</div>
+
+<!--
+Keep this to 3 minutes. It's a useful pattern and belongs in Jinja basics — it's just an if statement, not a macro.
+
+The key insight: the same model file produces different SQL depending on which profile target is active. In dev you're protecting Snowflake credits. In prod you need full history.
+
+Note that this is a {% %} statement (not {{ }}), and that target.name is lowercase. Both common trip-ups.
+
+Don't go deep into other target properties here. target.name is the one they'll actually use.
+-->
+
+---
+
 # Exercise: Read and Write (20 min)
 
 <div class="grid grid-cols-2 gap-6 mt-4">

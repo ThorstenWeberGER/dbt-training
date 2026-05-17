@@ -74,18 +74,28 @@ Everything in this training applies to **dbt Core only**.
 
 ### The dbt stack at Bloomwell
 
-```
-HubSpot / Source Systems
-        ↓
-   AWS Lambda (ingestion)
-        ↓
-   Snowflake — BRONZE layer (raw, append-only)
-        ↓
-   dbt — STAGING (views, rename/cast)
-        ↓
-   dbt — SILVER (dim_*, fct_*, bridge_*)
-        ↓
-   dbt — GOLD (mrt_* → Power BI)
+```mermaid
+flowchart TD
+    SRC(["Source Systems<br/>HubSpot · Shopify · APIs"])
+    LAMBDA["AWS Lambda<br/>Ingestion"]
+    BRONZE["BRONZE<br/>raw · append-only<br/>Lambda owns — dbt does NOT touch"]
+    STAGING["STAGING<br/>views · stg_hubspot__*"]
+    SILVER["SILVER<br/>dim_* · fct_* · bridge_*"]
+    GOLD["GOLD<br/>mrt_*"]
+    PBI(["Power BI"])
+
+    SRC --> LAMBDA --> BRONZE
+    BRONZE -->|"source()"| STAGING
+    STAGING -->|"ref()"| SILVER
+    SILVER -->|"ref()"| GOLD
+    GOLD --> PBI
+
+    classDef dbt fill:#ecfdf5,stroke:#16a34a,color:#065f46
+    classDef lambda fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    classDef bronze fill:#f1f5f9,stroke:#94a3b8,color:#475569
+    class STAGING,SILVER,GOLD dbt
+    class LAMBDA lambda
+    class BRONZE bronze
 ```
 
 dbt owns everything from Staging downward.

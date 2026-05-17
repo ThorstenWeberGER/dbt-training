@@ -37,30 +37,31 @@ All four correct before continuing.
 
 # The Bloomwell Medallion Architecture
 
-<div class="mt-4 space-y-2">
+```mermaid
+flowchart TD
+    SRC(["Source Systems — HubSpot · Shopify · APIs"])
+    LAMBDA["AWS Lambda — Ingestion"]
+    BRONZE["BRONZE — raw · append-only — Lambda owns"]
+    STAGING["STAGING — views · stg_hubspot__*"]
+    SILVER["SILVER — dim_* · fct_* · bridge_*"]
+    GOLD["GOLD — mrt_*"]
+    PBI(["Power BI"])
 
-<div class="bg-slate-800 text-white rounded-xl p-4">
-  <div class="text-xs font-mono text-slate-400 mb-1">SOURCE SYSTEMS</div>
-  <div class="text-sm">HubSpot · Shopify · External APIs</div>
-</div>
+    SRC --> LAMBDA --> BRONZE
+    BRONZE -->|"source()"| STAGING
+    STAGING -->|"ref()"| SILVER
+    SILVER -->|"ref()"| GOLD
+    GOLD --> PBI
 
-<div class="text-center text-slate-400 text-sm">↓ AWS Lambda (ingestion)</div>
+    classDef dbt fill:#ecfdf5,stroke:#16a34a,color:#065f46
+    classDef lambda fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    classDef bronze fill:#f1f5f9,stroke:#94a3b8,color:#475569
+    class STAGING,SILVER,GOLD dbt
+    class LAMBDA lambda
+    class BRONZE bronze
+```
 
-<div class="bg-slate-100 border-2 border-slate-300 rounded-xl p-4">
-  <div class="text-xs font-mono text-slate-500 mb-1">BRONZE — <code>BRONZE.{source}.{table}</code></div>
-  <div class="text-sm text-slate-600">Raw data. Append-only. Never modified. <strong>Lambda owns this. dbt does NOT touch Bronze.</strong></div>
-</div>
-
-<div class="text-center text-emerald-600 text-sm font-semibold">↓ dbt takes over here</div>
-
-<div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4">
-  <div class="text-xs font-mono text-emerald-600 mb-1">STAGING → SILVER → GOLD</div>
-  <div class="text-sm text-emerald-700">Staging: views, rename/cast · Silver: dim_*, fct_* · Gold: mrt_* → Power BI</div>
-</div>
-
-</div>
-
-<div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+<div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
   dbt references Bronze as a <strong>source</strong>, not via <code>ref()</code>. Bronze tables are never built by dbt.
 </div>
 

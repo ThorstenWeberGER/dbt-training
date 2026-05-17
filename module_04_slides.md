@@ -160,6 +160,40 @@ on_schema_change: explain 'ignore' (default, silent data bug) vs 'sync_all_colum
 
 ---
 
+# Incremental: First Run vs Subsequent Runs
+
+```mermaid
+flowchart TD
+    START(["dbt build dim_contact"])
+    CHECK{"Table exists\nin Snowflake?"}
+    FULL["is_incremental() = False\nWHERE skipped\nAll rows selected"]
+    INCR["is_incremental() = True\nWHERE updated_at > MAX(updated_at)\nNew and changed rows only"]
+    CREATE["CREATE TABLE\nFull load"]
+    MERGE["MERGE INTO dim_contact\nMATCHED → UPDATE\nNOT MATCHED → INSERT"]
+    DONE(["Done"])
+
+    START --> CHECK
+    CHECK -- "No — first run" --> FULL
+    CHECK -- "Yes — subsequent run" --> INCR
+    FULL --> CREATE --> DONE
+    INCR --> MERGE --> DONE
+
+    classDef first fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    classDef incr fill:#ecfdf5,stroke:#16a34a,color:#065f46
+    class FULL,CREATE first
+    class INCR,MERGE incr
+```
+
+<!--
+This diagram makes the is_incremental() state machine explicit. The most common trainee confusion: "when does is_incremental() return True?" — the diagram answers it visually.
+
+Yellow path = first run (full load, CREATE TABLE). Green path = subsequent runs (MERGE only).
+
+After showing the diagram, ask: "On the third run of this model, what SQL does Snowflake receive?" → A MERGE statement, because the table already exists. Make them trace the path through the diagram.
+-->
+
+---
+
 # The Compiled MERGE Statement
 
 **What Snowflake actually receives for an incremental model:**
@@ -254,6 +288,46 @@ Keep this brief — 5 minutes. The key facts: no Snowflake object, becomes a CTE
 The multiple-reference problem is subtle: if dim_patient and fct_prescription both ref() the same ephemeral staging model, that staging CTE is inlined twice — once in each compiled SQL. The computation runs twice in Snowflake. A view runs once and is cached.
 
 At Bloomwell we prefer views because they're debuggable. If something goes wrong in an ephemeral model, you can't query it to inspect the output.
+-->
+
+---
+
+# Snowflake-specific: Dynamic Tables
+
+<div class="mt-4 bg-white border border-slate-200 rounded-xl p-5">
+  <div class="text-sm text-slate-700 mb-3">Snowflake's native alternative to incremental models — the database engine manages refresh automatically.</div>
+
+```yaml
+models:
+  - name: fct_daily_revenue
+    config:
+      materialized: dynamic_table
+```
+
+  <div class="mt-3 text-sm text-slate-600">Write a plain <code>SELECT</code> — no <code>{% if is_incremental() %}</code> needed. Snowflake handles the incremental logic.</div>
+</div>
+
+<div class="mt-4 grid grid-cols-2 gap-3">
+  <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm">
+    <div class="font-semibold text-emerald-700 mb-1">Advantage</div>
+    <div class="text-emerald-800">Less code complexity. No <code>unique_key</code> or merge strategy to configure.</div>
+  </div>
+  <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
+    <div class="font-semibold text-amber-700 mb-1">Trade-off</div>
+    <div class="text-amber-800">Less control over refresh timing and logic. No <code>--full-refresh</code> override.</div>
+  </div>
+</div>
+
+<div class="mt-4 bg-slate-100 border border-slate-200 rounded-lg p-3 text-sm text-slate-600">
+  <strong>Not used at Bloomwell today.</strong> Standard is <code>incremental</code> with <code>merge</code> strategy. Mention only if asked — it's a sign Snowflake is absorbing some of what dbt does manually.
+</div>
+
+<!--
+This is awareness-only — 2 minutes max. Don't get pulled into a comparison discussion.
+
+The key message: dynamic tables exist in Snowflake, they're dbt-supported, and they reduce the code you write for incremental models. They're not used at Bloomwell yet because the team prefers explicit control over merge logic. That may change.
+
+If someone asks "should we switch?": it depends on how complex the incremental logic is. For simple timestamp-based incremental filters, dynamic tables would work. For complex SCD2 patterns, keep incremental.
 -->
 
 ---

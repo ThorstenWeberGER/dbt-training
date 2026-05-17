@@ -100,6 +100,28 @@ FROM {{ ref('stg_hubspot__contacts') }}
 
 `is_incremental()` returns `True`. The `WHERE` clause applies — only rows newer than the table's current `MAX(updated_at)` are selected. dbt executes a `MERGE INTO` using `unique_key` as the match condition.
 
+```mermaid
+flowchart TD
+    START(["dbt build dim_contact"])
+    CHECK{"Table exists<br/>in Snowflake?"}
+    FULL["is_incremental() = False<br/>WHERE skipped<br/>All rows selected"]
+    INCR["is_incremental() = True<br/>WHERE updated_at > MAX(updated_at)<br/>New and changed rows only"]
+    CREATE["CREATE TABLE<br/>Full load"]
+    MERGE["MERGE INTO dim_contact<br/>MATCHED → UPDATE<br/>NOT MATCHED → INSERT"]
+    DONE(["Done"])
+
+    START --> CHECK
+    CHECK -- "No — first run" --> FULL
+    CHECK -- "Yes — subsequent run" --> INCR
+    FULL --> CREATE --> DONE
+    INCR --> MERGE --> DONE
+
+    classDef first fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    classDef incr fill:#ecfdf5,stroke:#16a34a,color:#065f46
+    class FULL,CREATE first
+    class INCR,MERGE incr
+```
+
 #### The compiled MERGE statement (what Snowflake receives)
 
 ```sql
@@ -166,6 +188,23 @@ An ephemeral model creates no object in Snowflake. When another model references
 **When NOT to use:** When multiple models reference the same ephemeral model — it gets inlined as a CTE in each one, repeating the computation. In that case, use a view or table.
 
 **At Bloomwell:** Ephemeral is rarely used. Prefer views for intermediate staging steps — they're queryable for debugging.
+
+---
+
+### Snowflake-specific: dynamic tables
+
+Snowflake has a native alternative to incremental models called **dynamic tables**. Instead of writing `is_incremental()` logic yourself, you configure dbt to let Snowflake manage the refresh:
+
+```yaml
+models:
+  - name: fct_daily_revenue
+    config:
+      materialized: dynamic_table
+```
+
+Snowflake handles the incremental refresh automatically — you write a plain `SELECT`, no `{% if is_incremental() %}` needed. The trade-off: less control over exactly when data refreshes and no `--full-refresh` override.
+
+**Not used at Bloomwell today.** The standard is `incremental` with `merge` strategy. Mention this only if asked — it's a sign that Snowflake is absorbing some of what dbt does manually.
 
 ---
 
