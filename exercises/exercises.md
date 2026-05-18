@@ -67,15 +67,15 @@ Use these to understand column names, data types, and expected values before wri
 
 ## Before You Start — Configure Your Profile
 
-Copy `profiles.yml.example` to `~/.dbt/profiles.yml` and update every value to match the Bloomwell environment:
+Copy `profiles.yml.example` to `~/.dbt/profiles.yml` and update every value to match your environment (your trainer will provide the exact values):
 
 | Key | What to change |
 |-----|----------------|
-| `account` | Bloomwell Snowflake account locator (ask your trainer) |
-| `user` | Your Bloomwell email address |
-| `role` | Your assigned Transformer role (e.g. `transformer_dev`) |
-| `warehouse` | The warehouse your team uses (e.g. `BLOOMWELL_WH_DEV`) |
-| `database` | The dev database you write to (e.g. `BLOOMWELL_SILVER_DEV`) |
+| `account` | Snowflake account locator (ask your trainer) |
+| `user` | Your work email address |
+| `role` | Your assigned Transformer role (ask your trainer) |
+| `warehouse` | The warehouse assigned to your team (ask your trainer) |
+| `database` | The dev database you write to (ask your trainer) |
 | `schema` | Your personal dev schema — follow the pattern `dev_<yourname>` |
 
 > **Never commit `profiles.yml`.** It is already in `.gitignore`. The `.example` file is the only profiles file that lives in the repo.
