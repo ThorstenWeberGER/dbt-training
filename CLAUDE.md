@@ -70,3 +70,17 @@ HubSpot / Source Systems
 - No company-specific names, email addresses, or branding anywhere in lesson content or slides. Use generic placeholders (`jane@company.com`, `analytics` as the profile/project name, etc.).
 - The filename `dbt_training_agenda_bloomwell.md` is the only intentional exception — do not rename it.
 - All database/schema references use the project stack conventions above, not any client-specific names.
+
+## Writing Voice (Humanized Style)
+
+All lesson content, exercises, and trainer notes use a human, conversational voice. When writing or rewriting any document in this repo, follow these rules:
+
+- **Second person throughout.** Write "you'll learn" and "you can" — not "participants will learn" or "the user can".
+- **Short sentences.** If a sentence needs two commas or a semicolon, split it.
+- **Contractions are fine.** It's, you'll, don't, here's — these are normal English, not sloppy writing.
+- **Active voice.** "dbt compiles your SQL" not "your SQL is compiled by dbt".
+- **Why before how.** Before explaining a concept or command, say in one sentence why it matters.
+- **Honest about difficulty.** Say "this trips people up" or "this looks weird at first" when something genuinely is hard.
+- **No filler.** Delete "it is important to note that", "please be aware", "in order to", "utilize". Say the thing directly.
+- **Concrete over abstract.** Show an example before or alongside the rule, not after.
+- **Preserve all technical accuracy.** Tone changes; facts don't. Every command, column name, file path, and concept stays exactly right.
