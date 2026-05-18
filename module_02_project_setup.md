@@ -13,9 +13,9 @@
 | 00:00 | 10 min | Recap Module 01 | Confirm mental model before introducing new content | Q&A | Answer from memory, no notes | — | Ask all 4 prep questions cold. Stop and revisit any wrong answer before continuing. | All 4 correct |
 | 00:10 | 15 min | `profiles.yml` anatomy | Understand how dbt connects to Snowflake | Present + live file | Read along in their own clone | `profiles.yml` from repo | Walk: `target`, `outputs`, `account`, `role`, `warehouse`, `schema`. Explain dev vs. prod target split. Key point: dev schema = `TESTING.dev_{name}` — never writes to Silver or Gold. | "What schema does your dev target write to?" |
 | 00:25 | 15 min | `dbt_project.yml` deep-dive | Know what the project config controls | Present + live file | Annotate own copy | `dbt_project.yml` | Cover: `name`, `model-paths`, `+materialized` per layer, `+tags`, `+database`, `+schema`. Show how Silver inherits `materialized: table` from config and how `+database` enforces layer separation. | "Where is the default materialization for Gold models set?" |
-| 00:40 | 10 min | CLI command reference | Know the core commands and when to use each | Present | Write down command table | This doc | Don't demo all commands — just walk the table. They'll use them hands-on in Module 06. | "What command runs models AND tests together?" |
+| 00:40 | 10 min | CLI command reference | Know the core commands and when to use each | Present | Write down command table | This doc | Don't demo all commands — just walk the table. You'll use them hands-on in Module 06. | "What command runs models AND tests together?" |
 | 00:50 | 10 min | The execution sequence | Understand what happens when you run `dbt run` | Present | Annotate diagram | Whiteboard | Five phases: Parse → Resolve → Compile → Execute → Report. Which phase produces which error type. One diagram, no more. | "At which phase does a Jinja syntax error appear?" |
-| 01:00 | — | Session close + prep questions | — | — | — | — | No exercise this session — hands-on begins in Module 03 when they write their first Jinja. | — |
+| 01:00 | — | Session close + prep questions | — | — | — | — | No exercise this session — hands-on begins in Module 03 when you write your first Jinja. | — |
 
 ---
 
@@ -52,7 +52,7 @@ analytics:
       threads: 8
 ```
 
-**Critical rule:** Your dev target schema is `TESTING.dev_{yourname}`. You can break anything there. You cannot write to `SILVER` or `GOLD` from your laptop — that's the orchestrator's job.
+**Critical rule:** Your dev target schema is `TESTING.dev_{yourname}`. You can break anything there. You can't write to `SILVER` or `GOLD` from your laptop — that's the orchestrator's job.
 
 **Test your connection:**
 ```bash
@@ -113,7 +113,7 @@ models:
     +materialized: view
 ```
 
-Can you skip it? Technically yes — dbt will still work. But if you ever install a package, your configs could bleed into its models unexpectedly. The convention is to always include it.
+Can you skip it? Technically yes — dbt still works. But if you ever install a package, your configs could bleed into its models unexpectedly. Always include it.
 
 **Key decisions encoded in this file:**
 - Staging is always a view — never a table
@@ -140,7 +140,7 @@ models:
 
 The layer separation visible in Snowflake (`SILVER` vs `GOLD` databases) is enforced here — not by convention, not by the profile, but by this config.
 
-**The dev/prod problem:** Hardcoding `GOLD` writes to the production `GOLD` database even on a dev run — which breaks environment isolation. The fix is a `generate_database_name` macro that switches the value based on `target.name`. That's covered in the Intermediate tier. For now: understand what `+database` does, and know that hardcoding without the macro is dangerous in practice.
+**The dev/prod problem:** Hardcoding `GOLD` writes to the production `GOLD` database even on a dev run. That breaks environment isolation. The fix is a `generate_database_name` macro that switches the value based on `target.name`. That's covered in the Intermediate tier. For now: understand what `+database` does, and know that hardcoding without the macro is dangerous in practice.
 
 ---
 

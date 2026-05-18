@@ -12,8 +12,8 @@
 | 00:10 | 20 min | The problem dbt solves | Understand why raw SQL pipelines break at scale | Present + Discussion | Ask questions, share own pain points | Whiteboard / slides | Use a concrete example: HubSpot raw data → `BRONZE.HUBSPOT.contacts` → how it used to be queried ad hoc | "Name one pain point you have today with data transformations" |
 | 00:30 | 15 min | What dbt actually is | Understand what dbt does — and does not do | Present | Listen, annotate | Slide: dbt stack diagram | Common confusion: dbt is NOT a database, scheduler, or ETL tool. It transforms data already in Snowflake | "Are we on dbt Core or dbt Cloud? What's the difference?" |
 | 00:45 | 15 min | Live demo: project structure | Recognise the key files and folders in the dbt project | Demo | Watch, no coding | VS Code with dbt project open | Show real project: `dbt_project.yml`, `models/`, `macros/`, `tests/`. Don't explain every file — just build a mental map. Make one deliberate navigation mistake and correct it. | "Point to where a Silver model lives" |
-| 01:00 | 25 min | Exercise: explore and document | Navigate the project and find real examples | Practice | Independent exploration | dbt project (read-only) | Give worksheet below. Circulate but don't answer immediately — let participants struggle for 2 min first | All 4 worksheet questions answered correctly |
-| 01:25 | 10 min | Debrief + 3-bullet summary | Consolidate learning | Debrief | Discuss, write down summary | Whiteboard | Reveal the 3 bullets only after participants share their own first | "Explain dbt in one sentence to a non-technical colleague" |
+| 01:00 | 25 min | Exercise: explore and document | Navigate the project and find real examples | Practice | Independent exploration | dbt project (read-only) | Give worksheet below. Circulate but don't answer immediately — let them struggle for 2 min first | All 4 worksheet questions answered correctly |
+| 01:25 | 10 min | Debrief + 3-bullet summary | Consolidate learning | Debrief | Discuss, write down summary | Whiteboard | Reveal the 3 bullets only after you share your own first | "Explain dbt in one sentence to a non-technical colleague" |
 
 ---
 
@@ -134,7 +134,7 @@ Answer all four questions using only the dbt project — no Googling.
 
 ## Debrief — 3-Bullet Summary
 
-After you share your own answers, confirm these three:
+Share your own answers first. Then confirm these three:
 
 1. dbt transforms data that is **already in Snowflake** — it doesn't extract or load
 2. In this project, dbt owns Bronze Staging → Silver → Gold; Lambda handles ingestion
@@ -153,7 +153,7 @@ After you share your own answers, confirm these three:
 
 ## Prep Questions for Module 02
 
-You should be able to answer these at the start of the next session — from memory, without notes:
+Answer these at the start of the next session — from memory, without notes:
 
 1. What does `dbt_project.yml` configure?
 2. What's the difference between dbt Core and dbt Cloud?
