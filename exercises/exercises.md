@@ -67,16 +67,16 @@ Use these to understand column names, data types, and expected values before wri
 
 ## Before You Start — Configure Your Profile
 
-Copy `profiles.yml.example` to `~/.dbt/profiles.yml` and update every value to match your environment (your trainer will provide the exact values):
+Copy `profiles.yml.example` to `~/.dbt/profiles.yml` and replace every placeholder with the correct value for your environment:
 
-| Key | What to change |
-|-----|----------------|
-| `account` | Snowflake account locator (ask your trainer) |
-| `user` | Your work email address |
-| `role` | Your assigned Transformer role (ask your trainer) |
-| `warehouse` | The warehouse assigned to your team (ask your trainer) |
-| `database` | The dev database you write to (ask your trainer) |
-| `schema` | Your personal dev schema — follow the pattern `dev_<yourname>` |
+| Key | Example |
+|-----|---------|
+| `account` | `xy12345.eu-west-1` |
+| `user` | `jane@company.com` |
+| `role` | `transformer_dev` |
+| `warehouse` | `compute_wh_dev` |
+| `database` | `analytics_dev` |
+| `schema` | `dev_jane` |
 
 > **Never commit `profiles.yml`.** It is already in `.gitignore`. The `.example` file is the only profiles file that lives in the repo.
 
