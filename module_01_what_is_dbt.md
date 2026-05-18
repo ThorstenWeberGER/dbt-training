@@ -21,7 +21,7 @@
 
 ### What happened before dbt
 
-Picture this: a data team wants to answer *"How many HubSpot contacts converted to active patients last month?"*
+Here's a scenario you've probably lived. Your team wants to answer: *"How many HubSpot contacts converted to active patients last month?"*
 
 Someone writes a SQL query. It works. They save it somewhere — a shared folder, a BI tool, their laptop. Three months later the query is broken. A column was renamed in the source. There are no tests, no documentation. Two analysts wrote the same transformation differently and got different numbers. The business has lost confidence in the data.
 
@@ -134,9 +134,9 @@ Answer all four questions using only the dbt project — no Googling.
 
 ## Debrief — 3-Bullet Summary
 
-After participants share their own answers, confirm these three:
+After you share your own answers, confirm these three:
 
-1. dbt transforms data that is **already in Snowflake** — it does not extract or load
+1. dbt transforms data that is **already in Snowflake** — it doesn't extract or load
 2. In this project, dbt owns Bronze Staging → Silver → Gold; Lambda handles ingestion
 3. Every model is a `SELECT` statement; dbt handles the `CREATE TABLE` / `CREATE VIEW` around it
 
@@ -156,6 +156,6 @@ After participants share their own answers, confirm these three:
 You should be able to answer these at the start of the next session — from memory, without notes:
 
 1. What does `dbt_project.yml` configure?
-2. What is the difference between dbt Core and dbt Cloud?
+2. What's the difference between dbt Core and dbt Cloud?
 3. dbt does NOT do three things — name them.
 4. Which layer does dbt own in this project?
