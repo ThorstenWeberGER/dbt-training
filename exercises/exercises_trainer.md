@@ -136,7 +136,7 @@ Confirm `BRONZE.HUBSPOT.contacts` appears in the output.
 
 ### Bonus — Variables and environment-aware filtering
 
-Participants use an AI assistant to figure this out independently. No expected solution is prescribed — the goal is the discovery process, not a specific answer. Valid solutions share these properties:
+Participants use an AI assistant to figure this out independently. There's no prescribed solution — the goal is the discovery process, not a specific answer. Valid solutions share these properties:
 
 - A variable declared under `vars:` in `dbt_project.yml`, e.g. `limit_rows: 1000`
 - A `WHERE` clause in the model body using `{{ target.name }}` to gate the filter on dev only
@@ -170,7 +170,7 @@ Command-line override to verify:
 dbt compile --select stg_hubspot__contacts --vars '{"limit_rows": 100}'
 ```
 
-The compiled SQL should contain `LIMIT 100`. Without `--vars`, `LIMIT 1000` (the default) appears in dev; in prod the `LIMIT` clause disappears entirely.
+The compiled SQL should contain `LIMIT 100`. Without `--vars`, `LIMIT 1000` (the default) appears in dev. In prod the `LIMIT` clause disappears entirely.
 
 ---
 
@@ -288,7 +288,7 @@ sources:
           error_after: {count: 25, period: hour}
 ```
 
-Note: `contacts` and `deals` don't need freshness config (not required). Only `owners` adds it in this exercise.
+Note: `contacts` and `deals` don't need freshness config for this exercise. Only `owners` adds it here.
 
 ### Expected outcome: Task 2
 
@@ -480,7 +480,7 @@ Browser opens at `http://localhost:8080`. Participants should be able to:
 |---|---|
 | Writes a description for `dim_pipeline` but forgets the grain statement | A grain statement is mandatory for Silver models — the CI check fails without it |
 | Adds `hubspot_pipeline_id` as unique test | It's NOT unique in SCD2 — `hs-pipeline-003` appears twice. Point them to `data/silver/dim_pipeline.csv` |
-| `dbt docs serve` shows blank or 404 | Must run `dbt docs generate` first — the serve command reads the generated artifact |
+| `dbt docs serve` shows blank or 404 | You must run `dbt docs generate` first — the serve command reads the generated artifact |
 
 ### Verify success (trainer check)
 
