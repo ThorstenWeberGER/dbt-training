@@ -6,4 +6,5 @@ profiles.yml
 *.pyc
 __pycache__/
 node_modules/
-.claude/
+.claude/*
+!.claude/skills/
