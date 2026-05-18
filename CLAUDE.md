@@ -2,6 +2,41 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Mandatory Coding Guidelines (Karpathy Guidelines)
+
+**IMPORTANT: These four principles apply to EVERY coding task in this repository without exception. They override any default behavior.**
+
+The full skill is installed at `.claude/skills/karpathy-guidelines/SKILL.md`. The rules are:
+
+### 1. Think Before Coding
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+- State assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them — don't pick silently.
+- If a simpler approach exists, say so and push back when warranted.
+- If something is unclear, stop, name what's confusing, and ask.
+
+### 2. Simplicity First
+**Minimum code that solves the problem. Nothing speculative.**
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+### 3. Surgical Changes
+**Touch only what you must. Clean up only your own mess.**
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it — don't delete it.
+- Every changed line must trace directly to the user's request.
+
+### 4. Goal-Driven Execution
+**Define success criteria. Loop until verified.**
+- Transform vague tasks into testable objectives before starting.
+- For multi-step tasks, state a brief plan with explicit verify steps.
+- Strong success criteria let you loop independently; weak ones ("make it work") require constant clarification.
+
 ## Repository Purpose
 
 This is a **dbt training curriculum** for the data team — not an actual dbt project. It teaches dbt Core + Snowflake from foundations to production patterns, using the project's data stack as the running example throughout.
