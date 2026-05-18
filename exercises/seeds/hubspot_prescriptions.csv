@@ -1,0 +1,11 @@
+prescription_id,contact_id,owner_id,prescription_date,medication_type,dosage_amount,notes,_ingested_at
+rx-001,C001,OWN001,2024-01-10,tablet,500,Take twice daily with food,2024-01-15 08:00:00
+rx-002,C001,OWN002,2024-01-25,liquid,10,10ml three times daily,2024-01-25 08:00:00
+rx-003,C002,OWN001,2024-01-12,tablet,250,,2024-01-15 08:00:00
+rx-004,C002,OWN003,2024-02-05,injection,50,Administer subcutaneously,2024-02-05 09:00:00
+rx-005,C003,OWN001,2024-01-18,tablet,,,2024-01-20 08:00:00
+rx-006,C003,OWN004,2024-02-14,topical,30,Apply to affected area twice daily,2024-02-14 10:00:00
+rx-007,C004,OWN002,2024-01-22,liquid,5,,2024-01-22 08:00:00
+rx-008,C004,OWN001,2024-02-01,tablet,100,Do not take with alcohol,2024-02-01 08:00:00
+rx-009,C005,OWN003,2024-01-30,injection,,,2024-02-01 08:00:00
+rx-010,C005,OWN004,2024-02-20,topical,15,,2024-02-20 08:00:00

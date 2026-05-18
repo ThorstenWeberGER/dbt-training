@@ -1,5 +1,0 @@
-doctor_key,doctor_id,first_name,last_name,specialty,is_current
-doc-001,D001,James,Anderson,General Practice,true
-doc-002,D002,Maria,Santos,Cardiology,true
-doc-003,D003,Robert,Kim,Dermatology,true
-doc-004,D004,Emma,Patel,Neurology,true
