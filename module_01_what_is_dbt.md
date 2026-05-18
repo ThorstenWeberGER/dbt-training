@@ -21,15 +21,15 @@
 
 ### What happened before dbt
 
-A data team wants to answer: *"How many HubSpot contacts converted to active patients last month?"*
+Picture this: a data team wants to answer *"How many HubSpot contacts converted to active patients last month?"*
 
-They write a SQL query. It works. They save it somewhere — a shared folder, a BI tool, their laptop. Three months later the query is broken. A column was renamed in the source. No tests, no documentation. Two analysts wrote the same transformation differently and got different numbers. The business has lost confidence in the data.
+Someone writes a SQL query. It works. They save it somewhere — a shared folder, a BI tool, their laptop. Three months later the query is broken. A column was renamed in the source. There are no tests, no documentation. Two analysts wrote the same transformation differently and got different numbers. The business has lost confidence in the data.
 
-This is how most data teams operate without a transformation framework.
+That's how most data teams operate without a transformation framework.
 
 **The four core problems dbt solves:**
 
-1. **No single source of truth** — same calculation defined in 10 different places
+1. **No single source of truth** — the same calculation is defined in 10 different places
 2. **No testing** — transformations break silently; nobody notices until a dashboard is wrong
 3. **No documentation** — tribal knowledge about what `fct_prescription.amount` actually means
 4. **No dependency management** — nobody knows what breaks when a source column changes
@@ -153,7 +153,7 @@ After participants share their own answers, confirm these three:
 
 ## Prep Questions for Module 02
 
-Participants should be able to answer these at the start of the next session — from memory, without notes:
+You should be able to answer these at the start of the next session — from memory, without notes:
 
 1. What does `dbt_project.yml` configure?
 2. What is the difference between dbt Core and dbt Cloud?

@@ -2,7 +2,7 @@
 
 **Tier:** 🟢 Beginner · **Duration:** 75 min · **Prerequisites:** Module 02
 
-> **Why this module exists:** Participants encounter `{{ ref() }}`, `{{ source() }}`, `{{ config() }}`, and `{% if %}` blocks starting from Module 01. Without a proper grounding in Jinja syntax, they pattern-match rather than understand. This module gives them just enough Jinja to read and write any standard dbt model confidently — no macro programming, no advanced dispatch.
+> **Why this module exists:** You've been seeing `{{ ref() }}`, `{{ source() }}`, `{{ config() }}`, and `{% if %}` blocks since Module 01. Without a proper grounding in Jinja syntax, it's easy to pattern-match without really understanding what's happening. This module gives you just enough Jinja to read and write any standard dbt model confidently — no macro programming, no advanced dispatch.
 
 ---
 
@@ -23,7 +23,7 @@
 
 ### Part A — What Jinja Is
 
-Jinja is a templating language. dbt uses it to add logic to SQL files that plain SQL cannot express.
+Jinja is a templating language. dbt uses it to add logic to SQL files that plain SQL can't express.
 
 When dbt runs, it:
 1. Reads your `.sql` file
@@ -44,7 +44,7 @@ You can always see what Snowflake received at: `target/compiled/analytics/models
 | `{% %}` | Statement — logic, no output | `{% if target.name == 'prod' %}` |
 | `{# #}` | Comment — ignored entirely | `{# TODO: add grain doc #}` |
 
-**The most common beginner mistake:** using `{{ }}` for an `if` block.
+**The most common beginner mistake:** using `{{ }}` for an `if` block. This trips people up because the syntax looks similar, but the delimiter determines whether Jinja executes the statement or tries to output it as a value.
 
 ```sql
 -- ❌ WRONG — this will output the text of the condition, not execute it
@@ -94,7 +94,7 @@ Compiles to:
 FROM BRONZE.HUBSPOT.contacts
 ```
 
-Sources are declared in `sources.yml`. `source()` registers the table as a DAG node so freshness checks and lineage work. Covered in depth in Module 05.
+Sources are declared in `sources.yml`. `source()` registers the table as a DAG node so freshness checks and lineage work. This is covered in depth in Module 05.
 
 #### 3. `{{ config() }}` — configure a model inline
 
@@ -125,7 +125,7 @@ Variables are defined in `dbt_project.yml` or passed at runtime:
 dbt run --vars '{"start_date": "2024-01-01"}'
 ```
 
-Use `var()` for environment-specific values, date ranges, or feature flags. Don't use it for connection details — that's `profiles.yml`.
+Use `var()` for environment-specific values, date ranges, or feature flags. Don't use it for connection details — that's what `profiles.yml` is for.
 
 ---
 
@@ -167,13 +167,13 @@ This pattern is especially common inside incremental models to limit dev scans. 
 {% endif %}
 ```
 
-`{{ this }}` refers to the table that this model materialises to. Used almost exclusively in incremental models to filter only new records.
+`{{ this }}` refers to the table that this model materialises to. It's used almost exclusively in incremental models to filter only new records.
 
 ---
 
 ## Exercise (20 min)
 
-> **Project context:** This exercise starts your staging layer. By the end you will have one working staging model.
+> **Project context:** This exercise starts your staging layer. By the end you'll have one working staging model.
 
 ### Task 1 — Predict compiled output before writing anything
 

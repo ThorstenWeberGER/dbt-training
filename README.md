@@ -1,12 +1,12 @@
 # dbt Training — Data Team
 
-A structured, hands-on training curriculum for data team members learning dbt Core on a Snowflake + medallion architecture stack. The course runs across 16 planned modules divided into three tiers, from first principles through production patterns.
+This is a structured, hands-on training curriculum for data team members learning dbt Core on a Snowflake + medallion architecture stack. The course covers 16 modules across three tiers — from first principles through production patterns.
 
 ---
 
 ## Purpose
 
-This repository is a complete training resource — not a runnable dbt project. It contains lesson plans, slide decks, a hands-on coding project, reference data, and trainer guides. Everything needed to deliver or self-study the curriculum is here.
+This repo is a complete training resource, not a runnable dbt project. It contains lesson plans, slide decks, a hands-on coding project, reference data, and trainer guides. Everything you need to deliver or self-study the curriculum is here.
 
 ---
 
@@ -98,9 +98,9 @@ dbt-training/
 
 ## The Hands-on Project (`exercises/`)
 
-Participants build a single dbt project incrementally across Modules 01–07. They start from a partially built scaffold — a broken staging model and four untested Silver models — and add the staging layer, tests, and documentation session by session.
+You'll build a single dbt project incrementally across Modules 01–07. You start from a partially built scaffold — a broken staging model and four untested Silver models — and add the staging layer, tests, and documentation session by session.
 
-**Before starting,** copy the connection template and configure it for your environment:
+Before you start, copy the connection template and configure it for your environment:
 
 ```bash
 cp exercises/profiles.yml.example ~/.dbt/profiles.yml
@@ -114,7 +114,7 @@ dbt debug   # run from inside exercises/ — all checks must pass before Module 
 
 ## Slidev — Installation and Usage
 
-Slide decks in `presentation/` are written in [Slidev](https://sli.dev) — a Markdown-based presentation framework that runs in the browser.
+The slide decks in `presentation/` are written in [Slidev](https://sli.dev) — a Markdown-based presentation framework that runs in the browser.
 
 ### Requirements
 
@@ -128,7 +128,7 @@ cd presentation
 npm install
 ```
 
-This installs Slidev and its dependencies into `presentation/node_modules/`. It only needs to be done once.
+This installs Slidev and its dependencies into `presentation/node_modules/`. You only need to do this once.
 
 ### Start a presentation
 
@@ -156,7 +156,7 @@ Press `F` in the browser to enter fullscreen. Use arrow keys or swipe to navigat
 npx slidev export module_01_slides.md --output module_01.pdf
 ```
 
-Requires Playwright (`npx playwright install`) for PDF rendering. Alternatively, use the browser's Print → Save as PDF in presentation mode.
+This requires Playwright (`npx playwright install`) for PDF rendering. Alternatively, use the browser's Print → Save as PDF in presentation mode.
 
 ### Build as static HTML
 
@@ -164,7 +164,7 @@ Requires Playwright (`npx playwright install`) for PDF rendering. Alternatively,
 npx slidev build module_01_slides.md --out dist/
 ```
 
-Produces a standalone `dist/` folder that can be served from any static host.
+This produces a standalone `dist/` folder you can serve from any static host.
 
 ---
 

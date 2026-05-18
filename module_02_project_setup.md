@@ -2,7 +2,7 @@
 
 **Tier:** 🟢 Beginner · **Duration:** 60 min · **Prerequisites:** Module 01
 
-> **Change from original plan:** The execution sequence (parse → compile → execute → report) was previously a standalone 60-minute module. It is absorbed here as a 15-minute block at the end of setup, where it belongs conceptually. Running `dbt run` is impossible to understand without knowing what it actually does.
+> **Change from original plan:** The execution sequence (parse → compile → execute → report) was previously a standalone 60-minute module. It's absorbed here as a 15-minute block at the end of setup, where it belongs conceptually. Running `dbt run` is impossible to understand without knowing what it actually does.
 
 ---
 
@@ -99,9 +99,9 @@ The `+` prefix means the config applies to all models in that folder and subfold
 
 **Why `models: analytics:` — the project namespace**
 
-The `analytics:` key under `models:` is the project name namespace. It must match `name: analytics` at the top of the file. Its purpose is to scope your config to *your* models only — not to models from installed packages.
+The `analytics:` key under `models:` is the project name namespace. It must match `name: analytics` at the top of the file. Its job is to scope your config to *your* models only — not to models from installed packages.
 
-If you install a package like `dbt_utils`, it brings its own models into the project. Without the namespace, any config you write under `models:` would apply to package models too. With it, package models are isolated under their own namespace:
+If you install a package like `dbt_utils`, it brings its own models into the project. Without the namespace, any config you write under `models:` would apply to package models too. With it, package models stay isolated under their own namespace:
 
 ```yaml
 models:
@@ -113,7 +113,7 @@ models:
     +materialized: view
 ```
 
-**Can you skip it?** Technically yes — dbt will still work. But if you ever install a package, your configs could bleed into its models unexpectedly. The convention is to always include it.
+Can you skip it? Technically yes — dbt will still work. But if you ever install a package, your configs could bleed into its models unexpectedly. The convention is to always include it.
 
 **Key decisions encoded in this file:**
 - Staging is always a view — never a table
@@ -140,7 +140,7 @@ models:
 
 The layer separation visible in Snowflake (`SILVER` vs `GOLD` databases) is enforced here — not by convention, not by the profile, but by this config.
 
-**The dev/prod problem:** Hardcoding `GOLD` writes to the production `GOLD` database even on a dev run, breaking environment isolation. The solution is a `generate_database_name` macro that switches the value based on `target.name` — covered in the Intermediate tier. For now: understand what `+database` does and that hardcoding without the macro is dangerous in practice.
+**The dev/prod problem:** Hardcoding `GOLD` writes to the production `GOLD` database even on a dev run — which breaks environment isolation. The fix is a `generate_database_name` macro that switches the value based on `target.name`. That's covered in the Intermediate tier. For now: understand what `+database` does, and know that hardcoding without the macro is dangerous in practice.
 
 ---
 
@@ -243,7 +243,7 @@ Always inspect `target/compiled/` when debugging a failing model.
 These don't need deep coverage now, but you'll see them in the project:
 
 - **`packages.yml`** — declares external dbt packages (e.g. `dbt_utils`). Run `dbt deps` to install them into `dbt_packages/`. We use `dbt_utils` for surrogate key generation.
-- **`seeds/`** — CSV files for small, static lookup tables that don't exist in a source system (e.g. a list of excluded test accounts, or a country-code mapping). Run `dbt seed` to load them. Not the right place for data that changes frequently.
+- **`seeds/`** — CSV files for small, static lookup tables that don't exist in a source system (e.g. a list of excluded test accounts, or a country-code mapping). Run `dbt seed` to load them. Don't use seeds for data that changes frequently.
 - **`analyses/`** — SQL files that use `ref()` and `source()` for lineage tracking, but are never materialised. Useful for audit queries during a migration (e.g. "does our new Silver model match the old stored procedure?") without polluting the production model set.
 
 ---
