@@ -2,7 +2,7 @@
 
 **Tier:** 🟢 Beginner · **Duration:** 90 min · **Prerequisites:** Module 05
 
-> **Framing:** Testing is not an optional quality-of-life improvement. CI rejects any Silver or Gold PR that is missing mandatory tests on key columns. This module establishes that expectation from the start and treats `dbt build` as the only acceptable command for running models + tests together.
+> **Framing:** Testing isn't optional. CI rejects any Silver or Gold PR that's missing mandatory tests on key columns. This module sets that expectation from the start and treats `dbt build` as the only acceptable command for running models and tests together.
 
 ---
 
@@ -17,7 +17,7 @@
 | 00:55 | 5 min | Test severity: `warn` vs. `error` | Know when to use each | Present | Annotate | This doc | One rule: `error` on key columns and FK relationships. `warn` on soft checks like data completeness ratios. | "What happens in CI if a test is set to `warn`?" |
 | 01:00 | 5 min | `dbt build` — the only correct command | Understand why `dbt build` is mandatory in CI | Present | — | This doc | State this clearly: `dbt run && dbt test` is wrong because a model can fail after `run` completes and tests still run. `dbt build` stops at first failure. | "What does `dbt build` do that `dbt run && dbt test` does not?" |
 | 01:05 | 5 min | Mandatory test requirements | Know exactly what CI enforces | Present | Write down requirements | This doc | Read these aloud together. These are not suggestions — CI will reject PRs missing them. | "Name the two mandatory tests on every Silver `_key` column" |
-| 01:10 | 30 min | Exercise: add tests, break them, read the output | Write tests, run them, interpret failure messages | Practice | Solo exercise | Exercise below | Circulate. Key outcome: participants can write test YAML independently and read failure output without trainer help. | Tests written, failure output correctly interpreted |
+| 01:10 | 30 min | Exercise: add tests, break them, read the output | Write tests, run them, interpret failure messages | Practice | Solo exercise | Exercise below | Circulate. Key outcome: you can write test YAML independently and read failure output without trainer help. | Tests written, failure output correctly interpreted |
 | 01:40 | 10 min | Debrief + prep questions | Consolidate | Debrief | Verbal | — | Ask: "what would happen to our dashboards if `fct_prescription.prescription_key` had duplicates and no test caught it?" — ground the stakes. | — |
 
 ---
@@ -26,14 +26,16 @@
 
 ### Part A — Why Tests Are Mandatory
 
-A dbt model is only trustworthy if it is tested. Without tests:
+Here's a scenario that happens more often than you'd think. Someone renames a column in Bronze. The staging model that depended on that column silently breaks. No test catches it. Two weeks later, a dashboard shows wrong numbers, and the business reports it.
+
+Without tests:
 
 - A column rename in Bronze breaks a staging model — silently
 - Duplicate surrogate keys corrupt Power BI relationships — silently
 - A NULL value in a required column propagates downstream — silently
 - A Gold mart shows wrong numbers — and nobody knows until the business reports it
 
-**Tests are a CI requirement for Silver and Gold models.** A PR without mandatory tests on key columns will not be merged.
+**Tests are a CI requirement for Silver and Gold models.** A PR without mandatory tests on key columns won't be merged.
 
 ---
 
@@ -41,7 +43,7 @@ A dbt model is only trustworthy if it is tested. Without tests:
 
 #### 1. Generic tests — 95% of your tests
 
-Defined in `schema.yml`. Reusable. Apply to columns with minimal YAML.
+You define these in `schema.yml`. They're reusable and apply to columns with minimal YAML.
 
 ```yaml
 models:
@@ -55,7 +57,7 @@ models:
 
 #### 2. Singular tests — for complex business rules
 
-Standalone `.sql` files in the `tests/` folder. Return rows on failure (no rows = test passes).
+These are standalone `.sql` files in the `tests/` folder. They return rows on failure — no rows means the test passes.
 
 The most common pattern is a `GROUP BY ... HAVING` query that returns rows violating a business rule:
 
@@ -72,7 +74,7 @@ GROUP BY 1, 2
 HAVING total_amount_net < 0
 ```
 
-Use this pattern for rules that operate on aggregations — things `not_null` and `unique` cannot express. The second common pattern uses `LEFT JOIN ... WHERE IS NULL` for referential checks that cross multiple models:
+Use this pattern for rules that operate on aggregations — things `not_null` and `unique` can't express. The second common pattern uses `LEFT JOIN ... WHERE IS NULL` for referential checks that cross multiple models:
 
 ```sql
 -- tests/assert_no_orphan_prescriptions.sql
@@ -85,7 +87,7 @@ LEFT JOIN {{ ref('dim_patient') }} d
 WHERE d.patient_key IS NULL
 ```
 
-Use singular tests when the rule cannot be expressed in YAML. They're harder to read — prefer generic tests whenever possible.
+Use singular tests when the rule can't be expressed in YAML. They're harder to read — so prefer generic tests whenever possible.
 
 ---
 
@@ -99,7 +101,7 @@ Use singular tests when the rule cannot be expressed in YAML. They're harder to 
     - unique
 ```
 
-Fails if any value appears more than once. Required on all `_key` columns in Silver and Gold.
+This fails if any value appears more than once. It's required on all `_key` columns in Silver and Gold.
 
 #### `not_null`
 
@@ -109,7 +111,7 @@ Fails if any value appears more than once. Required on all `_key` columns in Sil
     - not_null
 ```
 
-Fails if any value is `NULL`. Required on all `_key` columns.
+This fails if any value is `NULL`. Required on all `_key` columns.
 
 #### `accepted_values`
 
@@ -120,7 +122,7 @@ Fails if any value is `NULL`. Required on all `_key` columns.
         values: ['scheduled', 'completed', 'cancelled', 'no_show']
 ```
 
-Fails if any value outside the list appears. Use for status columns, type columns, flag columns.
+This fails if any value outside the list appears. Use it for status columns, type columns, and flag columns.
 
 #### `relationships`
 
@@ -132,13 +134,13 @@ Fails if any value outside the list appears. Use for status columns, type column
         field: patient_key
 ```
 
-Fails if any `patient_key` in this model doesn't exist in `dim_patient`. This is a foreign key integrity check. Required on all FK columns in Silver facts and Gold marts.
+This fails if any `patient_key` in this model doesn't exist in `dim_patient`. It's a foreign key integrity check. It's required on all FK columns in Silver facts and Gold marts.
 
 ---
 
 ### Part D — Test Severity
 
-There are two places to configure severity: globally in `dbt_project.yml`, or per individual test in `schema.yml`.
+You can configure severity in two places: globally in `dbt_project.yml`, or per individual test in `schema.yml`.
 
 **Option 1 — Global default in `dbt_project.yml`**
 
@@ -182,7 +184,7 @@ Per-test config overrides any global setting from `dbt_project.yml`. Use this wh
 - `error` — all `_key` columns, all FK relationships, all required business columns
 - `warn` — soft checks where some nulls are expected (free text fields, optional columns)
 
-CI does not stop on `warn`. It does stop on `error`. Never use `warn` as a workaround for a test you don't want to fix.
+CI doesn't stop on `warn`. It does stop on `error`. Never use `warn` as a workaround for a test you don't want to fix.
 
 ---
 
@@ -200,11 +202,11 @@ dbt build
 1. For each node in the DAG, in dependency order:
    - Run the model (or seed/snapshot)
    - Run its tests immediately after
-   - If any test fails with `error` severity, stop — do not run downstream models
+   - If any test fails with `error` severity, stop — don't run downstream models
 
-**Why this matters:** If `dim_patient` has a duplicate `patient_key` test failure, `dbt build` stops before running `fct_prescription` (which depends on `dim_patient`). `dbt run && dbt test` would run all models first, then all tests — by which time you've already loaded bad data into `fct_prescription`.
+**Why this matters:** If `dim_patient` has a duplicate `patient_key` test failure, `dbt build` stops before running `fct_prescription` (which depends on `dim_patient`). With `dbt run && dbt test`, all models run first and all tests run after — by which time you've already loaded bad data into `fct_prescription`.
 
-In CI: always `dbt build`. Locally: prefer `dbt build`. Only use `dbt test --select <model>` when debugging a specific failing test.
+In CI: always `dbt build`. Locally: prefer `dbt build`. Only use `dbt test --select <model>` when you're debugging a specific failing test.
 
 ---
 
@@ -221,7 +223,7 @@ These are checked on every Silver and Gold PR:
 
 **What CI checks automatically:**
 - Silver and Gold models must have at least one test per `_key` column
-- A PR with zero tests on a new Silver model will not pass review
+- A PR with zero tests on a new Silver model won't pass review
 
 **Reference:** `dbt-test-strategy` skill — full test placement guide across Bronze/Silver/Gold.
 
@@ -229,7 +231,7 @@ These are checked on every Silver and Gold PR:
 
 ## Exercise (30 min)
 
-> **Project context:** Full staging layer complete. Silver models exist but `models/silver/schema.yml` does not yet exist. This session creates it with a full test suite.
+> **Project context:** The full staging layer is complete. Silver models exist but `models/silver/schema.yml` doesn't yet. This session creates it with a full test suite.
 
 ### Task 1 — Create `models/silver/schema.yml` with tests for `fct_prescription`
 
@@ -280,7 +282,7 @@ dbt run --select fct_prescription
 
 Create `tests/assert_fct_prescription_no_zero_dosage.sql`.
 
-Return rows where `dosage_amount = 0`. Zero is a data error (impossible to dispense nothing). Null is allowed (dose pending confirmation). If this query returns any rows, the test fails.
+Return rows where `dosage_amount = 0`. Zero is a data error — it's impossible to dispense nothing. Null is allowed (dose pending confirmation). If this query returns any rows, the test fails.
 
 Run it:
 
@@ -380,7 +382,7 @@ WHERE dosage_amount = 0
 
 ## Prep Questions for Module 07
 
-1. What is the difference between a generic test and a singular test?
+1. What's the difference between a generic test and a singular test?
 2. Name the four built-in generic tests.
 3. What does `dbt build` do differently from `dbt run && dbt test`?
 4. Which two tests are mandatory on every `_key` column in Silver?

@@ -21,7 +21,7 @@ Never skip a phase. The debrief is where the learning consolidates.
 ### Opening Recap (10 min)
 Start every session — without exception — by revisiting the previous module.
 
-- Trainer asks 2–3 questions out loud, not rhetorical: *"What does `{{ ref() }}` do? Why do we use it instead of a hardcoded table name?"*
+- Ask 2–3 questions out loud, not rhetorical: *"What does `{{ ref() }}` do? Why do we use it instead of a hardcoded table name?"*
 - Participants answer from memory, no notes.
 - Correct misremembering immediately and briefly — don't let wrong mental models linger.
 - This forces active retrieval, which is the single most effective memory technique known.
@@ -33,16 +33,16 @@ Start every session — without exception — by revisiting the previous module.
 - No more than 3 new concepts per theory block. If you have more, split the session.
 
 ### Live Demo (10–15 min)
-- Trainer codes in real time, in the real dbt project (dev environment).
+- Code in real time, in the real dbt project (dev environment).
 - Narrate every decision out loud: *"I'm using `ref()` here instead of hardcoding because..."*
 - Make at least one deliberate mistake and fix it live. Watching debugging is more instructive than watching perfect code.
-- Participants do NOT code during the demo — they watch and ask questions.
+- Participants don't code during the demo — they watch and ask questions.
 
 ### Hands-On Exercise (20–30 min)
 - Participants code independently (or in pairs for complex topics).
 - The exercise must produce a real output: a model that runs, a test that passes, a DAG that renders.
-- Exercises are graded by outcome, not syntax: *"Does your model produce the correct rows?"*
-- Trainer circulates — do not answer questions immediately. Let participants struggle for 2–3 minutes first. Productive struggle is where learning happens.
+- Grade by outcome, not syntax: *"Does your model produce the correct rows?"*
+- Circulate — don't answer questions immediately. Let participants struggle for 2–3 minutes first. Productive struggle is where learning happens.
 
 ### Debrief (10 min)
 - Review 2–3 participants' solutions together.
@@ -57,7 +57,7 @@ Start every session — without exception — by revisiting the previous module.
 
 ## 2. Interleaving and Spaced Repetition
 
-Do not teach a topic once and move on. Concepts must recur.
+Don't teach a topic once and move on. Concepts must recur.
 
 | When | What to do |
 |---|---|
@@ -71,7 +71,7 @@ Do not teach a topic once and move on. Concepts must recur.
 
 ## 3. Theory Before Practice — But Not Too Much
 
-A common mistake: 45 minutes of theory, then "now you try it." By minute 30, participants are passive and retention drops sharply.
+Here's a common mistake: 45 minutes of theory, then "now you try it." By minute 30, participants are passive and retention drops sharply.
 
 **The rule:** No theory block longer than 20 minutes before participants touch code.
 
@@ -87,7 +87,7 @@ Theory Part A (15 min) → Mini exercise (10 min) → Theory Part B (15 min) →
 
 Provide reference material *after* the exercise, not before.
 
-Giving it before encourages reading instead of thinking. Providing it after the exercise means participants consult it as a reference, which is the correct mental model for how documentation works.
+Giving it before encourages reading instead of thinking. Providing it after the exercise means participants consult it as a reference — which is the correct mental model for how documentation works.
 
 **Each module should have:**
 
@@ -185,6 +185,6 @@ Avoid async delivery for Tier 1 modules. The concepts are simple but the mental 
 
 **If a participant can't explain the concept back in their own words, they haven't learned it yet.**
 
-The goal of every session is not coverage of material — it is the ability to apply the concept independently next week.
+The goal of every session isn't coverage of material — it's the ability to apply the concept independently next week.
 
 When in doubt: do less, go deeper.
