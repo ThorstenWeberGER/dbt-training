@@ -200,7 +200,7 @@ cat target/compiled/analytics/models/silver/fct_prescription.sql
 
 #### Key Mental Model: `target/manifest.json`
 
-After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a complete snapshot of the project graph including every model, test, source, macro, and their relationships. CI uses this file for `state:modified+` selection (covered in Module 13). Never delete it from CI artifacts.
+After any `dbt run` or `dbt build`, dbt writes `target/manifest.json`. It's a complete snapshot of every model, test, source, macro, and relationship in the project graph. CI uses this file for `state:modified+` selection (covered in Module 13). Never delete it from CI artifacts.
 
 **Hands-on exercise:** Run `dbt compile --select +fct_prescription` and read the compiled SQL for a Silver model. Find where `ref()` was resolved to a fully-qualified Snowflake path. Find where a macro was expanded.
 

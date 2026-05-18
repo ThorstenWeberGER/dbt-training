@@ -1,12 +1,12 @@
 # dbt Training — Data Team
 
-This repo is a structured, hands-on training curriculum for data team members learning dbt Core on a Snowflake + medallion architecture stack. It covers 16 modules across three tiers — from first principles through production patterns.
+This repo is a structured, hands-on dbt Core training curriculum built on a Snowflake + medallion architecture stack. It covers 16 modules across three tiers — from first principles through production patterns.
 
 ---
 
 ## Purpose
 
-This is a complete training resource, not a runnable dbt project. It contains lesson plans, slide decks, a hands-on coding project, reference data, and trainer guides. Everything you need to deliver or self-study the curriculum is here.
+This is a complete training resource, not a runnable dbt project. It contains lesson plans, slide decks, a hands-on coding project, reference data, and trainer guides. Everything you need to deliver or self-study the curriculum is here — in one place.
 
 ---
 
@@ -98,7 +98,7 @@ dbt-training/
 
 ## The Hands-on Project (`exercises/`)
 
-You'll build a single dbt project incrementally across Modules 01–07. You start from a partially built scaffold — a broken staging model and four untested Silver models — and add the staging layer, tests, and documentation session by session.
+You'll build a single dbt project incrementally across Modules 01–07. The starting point is a partially built scaffold: a broken staging model and four untested Silver models. You add the staging layer, tests, and documentation session by session.
 
 Before you start, copy the connection template and configure it for your environment:
 
@@ -184,4 +184,4 @@ dbt Core installation: `pip install dbt-snowflake`
 
 ## Contributing
 
-Use Modules 01–07 as the style reference when adding new lesson content. Every lesson plan follows the same five-part structure: Opening Recap → Theory Block → Live Demo → Hands-on Exercise → Debrief. Slide decks mirror the lesson plan in Slidev format. See `CLAUDE.md` for content rules (no company-specific names, no credentials).
+Use Modules 01–07 as the style reference when adding new lesson content. Every lesson plan follows the same five-part structure: Opening Recap → Theory Block → Live Demo → Hands-on Exercise → Debrief. Slide decks mirror the lesson plan in Slidev format. See `CLAUDE.md` for content rules — no company-specific names, no credentials.
