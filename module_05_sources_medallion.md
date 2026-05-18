@@ -2,7 +2,7 @@
 
 **Tier:** 🟢 Beginner · **Duration:** 90 min · **Prerequisites:** Module 04
 
-> **Change from original plan:** This module was previously 60 minutes. Expanded to 90 minutes because the medallion architecture discussion reliably generates significant questions from newcomers, and source freshness was previously being rushed. Both topics now have adequate time.
+> **Change from original plan:** This module was previously 60 minutes. It's now 90 minutes because the medallion architecture reliably generates significant questions from newcomers, and source freshness was getting rushed. Both topics now have adequate time.
 
 ---
 
@@ -99,13 +99,13 @@ flowchart TD
 | Silver | dbt | dbt Gold, ad hoc analysis | ✅ Yes |
 | Gold | dbt | Power BI, business users | ✅ Yes |
 
-**The critical rule:** dbt references Bronze as a **source**, not a `ref()`. Bronze tables are never built by dbt.
+The critical rule: dbt references Bronze as a **source**, not a `ref()`. Bronze tables are never built by dbt.
 
 ---
 
 ### Part B — Declaring Sources in `sources.yml`
 
-Before you can use `{{ source('hubspot', 'contacts') }}` in a model, you must declare the source.
+Before you can use `{{ source('hubspot', 'contacts') }}` in a model, you have to declare the source. This trips people up — dbt doesn't auto-discover tables. If the declaration is missing, the `source()` call fails at compile time.
 
 ```yaml
 # models/staging/sources.yml
@@ -141,6 +141,8 @@ sources:
 
 ### Part C — `{{ source() }}` vs Hardcoding
 
+Both of these produce the same SQL in the dev environment. They're not equivalent, though.
+
 **Hardcoded — never do this:**
 ```sql
 SELECT *
@@ -153,7 +155,7 @@ SELECT *
 FROM {{ source('hubspot', 'contacts') }}
 ```
 
-Both produce the same SQL in the dev environment — but they're not equivalent. Here's what you lose with hardcoding:
+Here's what you lose by hardcoding:
 
 | | `source()` | Hardcoded |
 |---|---|---|
@@ -166,6 +168,8 @@ Both produce the same SQL in the dev environment — but they're not equivalent.
 ---
 
 ### Part D — Source Freshness
+
+Here's the problem source freshness solves: if HubSpot stops syncing data to Bronze, your Silver and Gold models will still run — they'll just be silently building on stale data. Source freshness gives you a way to catch that before it happens.
 
 Source freshness checks whether Bronze data is up to date before dbt models run.
 
