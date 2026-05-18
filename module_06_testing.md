@@ -26,7 +26,7 @@
 
 ### Part A — Why Tests Are Mandatory
 
-Here's a scenario that happens more often than you'd think. Someone renames a column in Bronze. The staging model that depended on that column silently breaks. No test catches it. Two weeks later, a dashboard shows wrong numbers, and the business reports it.
+Here's a scenario that happens more often than you'd think. Someone renames a column in Bronze. The staging model that depended on that column silently breaks. No test catches it. Two weeks later, a dashboard shows wrong numbers and the business reports it.
 
 Without tests:
 
@@ -87,7 +87,7 @@ LEFT JOIN {{ ref('dim_patient') }} d
 WHERE d.patient_key IS NULL
 ```
 
-Use singular tests when the rule can't be expressed in YAML. They're harder to read — so prefer generic tests whenever possible.
+Use singular tests when the rule can't be expressed in YAML. They're harder to read, so prefer generic tests whenever possible.
 
 ---
 
@@ -157,7 +157,7 @@ tests:
       +severity: error # Gold layer overrides — all tests here are errors
 ```
 
-This sets a project-wide default and lets you tighten it per layer. You rarely want everything to be `warn` globally — the example above is the pattern we use: `warn` as the safe default, `error` locked in for Silver and Gold where data quality is mandatory.
+This sets a project-wide default and lets you tighten it per layer. The example above is the pattern we use: `warn` as the safe default, `error` locked in for Silver and Gold where data quality is mandatory.
 
 **Option 2 — Per individual test in `schema.yml`**
 
@@ -204,7 +204,7 @@ dbt build
    - Run its tests immediately after
    - If any test fails with `error` severity, stop — don't run downstream models
 
-**Why this matters:** If `dim_patient` has a duplicate `patient_key` test failure, `dbt build` stops before running `fct_prescription` (which depends on `dim_patient`). With `dbt run && dbt test`, all models run first and all tests run after — by which time you've already loaded bad data into `fct_prescription`.
+**Why this matters:** If `dim_patient` has a duplicate `patient_key` test failure, `dbt build` stops before running `fct_prescription`. With `dbt run && dbt test`, all models run first and all tests run after — by which time you've already loaded bad data into `fct_prescription`.
 
 In CI: always `dbt build`. Locally: prefer `dbt build`. Only use `dbt test --select <model>` when you're debugging a specific failing test.
 

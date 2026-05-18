@@ -26,7 +26,7 @@
 
 Three months after a model is built, the original author can't remember what `fct_prescription.dosage_amount` represents. Is it in milligrams? Is it a monetary amount? Is NULL valid?
 
-If that column isn't documented in `schema.yml`, anyone who needs to know must read the SQL, trace it back through staging to Bronze, and hope the source system has documentation. That's hours of investigation for information that could have been one sentence.
+If that column isn't documented in `schema.yml`, anyone who needs to know must read the SQL, trace it back through staging to Bronze, and hope the source system has docs. That's hours of investigation for information that could have been one sentence.
 
 **This isn't acceptable for Silver or Gold models.** CI fails if:
 - A Silver or Gold model has no description
@@ -105,7 +105,7 @@ If you can't write the grain statement, the model's design is unclear. Review th
 
 ### Doc blocks — for longer descriptions
 
-When a description runs longer than a sentence or two, move it into a **doc block** in a separate `.md` file instead of cluttering the YAML:
+When a description runs longer than a sentence or two, move it into a **doc block** in a separate `.md` file. This keeps the YAML clean.
 
 ```markdown
 <!-- models/silver/_silver_docs.md -->
@@ -235,7 +235,7 @@ In the browser:
 
 ## Beginner Tier Complete
 
-You've now completed all 7 modules in the Beginner tier. At this point you can:
+You've now completed all 7 modules in the Beginner tier. You can:
 
 - Explain what dbt is and what it does
 - Navigate the project structure and understand `dbt_project.yml` and `profiles.yml`

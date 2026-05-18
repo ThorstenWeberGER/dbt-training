@@ -1,12 +1,12 @@
 # dbt Training — Data Team
 
-This is a structured, hands-on training curriculum for data team members learning dbt Core on a Snowflake + medallion architecture stack. The course covers 16 modules across three tiers — from first principles through production patterns.
+This repo is a structured, hands-on training curriculum for data team members learning dbt Core on a Snowflake + medallion architecture stack. It covers 16 modules across three tiers — from first principles through production patterns.
 
 ---
 
 ## Purpose
 
-This repo is a complete training resource, not a runnable dbt project. It contains lesson plans, slide decks, a hands-on coding project, reference data, and trainer guides. Everything you need to deliver or self-study the curriculum is here.
+This is a complete training resource, not a runnable dbt project. It contains lesson plans, slide decks, a hands-on coding project, reference data, and trainer guides. Everything you need to deliver or self-study the curriculum is here.
 
 ---
 
@@ -28,7 +28,7 @@ This repo is a complete training resource, not a runnable dbt project. It contai
 | 🟡 Working Effectively | 8–12 | Advanced materializations, seeds & variables, macros, SCD2/snapshots, CI/CD and slim CI |
 | 🔴 Production & Advanced | 13–16 | Advanced testing, custom macros, governance, production patterns |
 
-Full lesson content (lesson plans + slides) exists for **Tier 1 (Modules 1–7)**. Tier 2 has slides; Tier 3 is planned.
+Full lesson content (lesson plans + slides) exists for **Tier 1 (Modules 1–7)**. Tier 2 has slides. Tier 3 is planned.
 
 ### Not covered
 
@@ -90,7 +90,7 @@ dbt-training/
 | `dbt_training_methodology.md` | Trainers | How to structure and deliver sessions, the pedagogical framework |
 | `module_0X_[topic].md` | Trainers, self-study | Detailed lesson plan: recap → theory → live demo → exercise → debrief |
 | `presentation/module_0X_slides.md` | Trainers (present) | Slidev deck for the session — mirrors the lesson plan |
-| `exercises/exercises.md` | Participants | Step-by-step coding exercises building one dbt project across Modules 01–07 |
+| `exercises/exercises.md` | You (participant) | Step-by-step coding exercises building one dbt project across Modules 01–07 |
 | `exercises/exercises_trainer.md` | Trainers | Per-step expected outcomes, deliberate bugs explained, verify commands |
 | `resources/reference.md` | Self-study | Chapter-to-module mapping for the O'Reilly dbt book |
 
@@ -114,7 +114,7 @@ dbt debug   # run from inside exercises/ — all checks must pass before Module 
 
 ## Slidev — Installation and Usage
 
-The slide decks in `presentation/` are written in [Slidev](https://sli.dev) — a Markdown-based presentation framework that runs in the browser.
+The slide decks in `presentation/` use [Slidev](https://sli.dev) — a Markdown-based presentation framework that runs in the browser.
 
 ### Requirements
 
