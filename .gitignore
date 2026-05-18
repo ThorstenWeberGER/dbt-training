@@ -5,3 +5,4 @@ profiles.yml
 .secrets/
 *.pyc
 __pycache__/
+node_modules/
