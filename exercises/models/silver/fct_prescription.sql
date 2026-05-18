@@ -18,8 +18,8 @@ doctors AS (
 
 SELECT
     p.prescription_id   AS prescription_key,
-    p.contact_id        AS patient_key,
-    p.owner_id          AS doctor_key,
+    p.contact_id        AS doctor_key,
+    p.owner_id          AS patient_key,
     p.prescription_date,
     p.medication_type,
     p.dosage_amount,
