@@ -2,7 +2,7 @@
 
 ## What You're Building
 
-Across Modules 01–07 you build a working dbt project from the staging layer up. Each session adds one layer to the same project. By the end of Module 07 you have a complete staging layer, a tested Silver fact table, and fully documented Silver dimensions.
+Across Modules 01–07 you'll build a working dbt project from the staging layer up. Each session adds one layer to the same project. By the end of Module 07 you'll have a complete staging layer, a tested Silver fact table, and fully documented Silver dimensions.
 
 **The project you're handed at the start of Module 01:**
 
@@ -19,7 +19,7 @@ models/
     fct_prescription.sql                 ← pre-built, no tests, no docs
 ```
 
-**The project you have after Module 07:**
+**The project you'll have after Module 07:**
 
 ```
 models/
@@ -61,7 +61,7 @@ data/
     fct_prescription.csv          ← expected output of fct_prescription (clean state)
 ```
 
-Use these to understand column names, data types, and expected values before writing SQL.
+Check these files before writing SQL. They'll show you the column names, data types, and expected values you're working toward.
 
 ---
 
@@ -78,9 +78,9 @@ Copy `profiles.yml.example` to `~/.dbt/profiles.yml` and replace every placehold
 | `database` | `analytics_dev` |
 | `schema` | `dev_jane` |
 
-> **Never commit `profiles.yml`.** It is already in `.gitignore`. The `.example` file is the only profiles file that lives in the repo.
+> **Never commit `profiles.yml`.** It's already in `.gitignore`. The `.example` file is the only profiles file that lives in the repo.
 
-Once updated, verify the connection before any exercise:
+Once you've updated it, verify the connection before any exercise:
 
 ```bash
 dbt debug
@@ -97,7 +97,7 @@ All checks should pass before you write any SQL.
 
 ### Project state at start
 
-You have been given a partially built dbt project. Nothing is yours yet — everything you see was scaffolded for you. Your first job is to understand what you've been handed.
+You've been given a partially built dbt project. Nothing is yours yet — everything you see was scaffolded for you. Your first job is to understand what you've been handed.
 
 ### Task 1 — Read `dbt_project.yml`
 
@@ -254,7 +254,7 @@ After fixing the materialisation, make sure the model also selects all five colu
 <details>
 <summary>The bug and fix</summary>
 
-The model has `{{ config(materialized='table') }}`. Staging models must always be views — they are a lightweight rename/cast layer with no storage cost. The fix:
+The model has `{{ config(materialized='table') }}`. Staging models must always be views — they're a lightweight rename/cast layer with no storage cost. The fix:
 
 ```sql
 {{ config(materialized='view') }}
@@ -318,7 +318,7 @@ Three models should show `OK`. Open Snowflake and verify that `stg_hubspot__cont
 
 ### Bonus — Spot the two bugs
 
-The code below has two problems. Do not run it — identify both bugs by reading the code.
+The code below has two problems. Don't run it — identify both bugs by reading the code.
 
 ```sql
 {{ config(
@@ -569,7 +569,7 @@ WHERE dosage_amount = 0
 dbt build --select silver.*
 ```
 
-Watch the output order. Models run first; tests run immediately after each model in DAG order. `fct_prescription` will not build if `dim_patient` or `dim_doctor` fail their tests.
+Watch the output order. Models run first; tests run immediately after each model in DAG order. `fct_prescription` won't build if `dim_patient` or `dim_doctor` fail their tests.
 
 **Project state at end of Module 06:** `schema.yml` created. `fct_prescription` has 7 tests (6 error, 1 warn) plus the singular test.
 
@@ -754,7 +754,7 @@ models:
 At the end of Module 07 you can:
 
 - Write staging models using `{{ source() }}` and `{{ config() }}`
-- Understand the difference between `{{ }}`, `{% %}`, and why staging is always a view
+- Explain the difference between `{{ }}`, `{% %}`, and why staging is always a view
 - Declare sources in `sources.yml` with freshness thresholds
 - Run `dbt compile`, `dbt run`, `dbt test`, and `dbt build` and know when to use each
 - Write a complete Silver test suite including generic tests, severity levels, and a singular test
