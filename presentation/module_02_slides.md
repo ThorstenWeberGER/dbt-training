@@ -49,7 +49,7 @@ analytics:
       account: abc123.eu-west-1
       user: jane@company.com
       authenticator: externalbrowser
-      role: TRANSFORMER_DEV
+      role: analytics_service_role
       warehouse: COMPUTE_WH_DEV
       database: SILVER_DEV
       schema: TESTING__dev_jane
@@ -57,7 +57,7 @@ analytics:
 
     prod:
       type: snowflake
-      role: TRANSFORMER_PROD
+      role: analytics_service_role
       warehouse: COMPUTE_WH_PROD
       database: SILVER
       schema: PUBLIC

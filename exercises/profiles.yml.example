@@ -10,7 +10,7 @@ analytics:
       account: <account_locator>       # e.g. xy12345.eu-west-1
       user: <your_email>
       authenticator: externalbrowser
-      role: TRANSFORMER_DEV
+      role: analytics_service_role
       warehouse: COMPUTE_WH_DEV
       database: SILVER_DEV
       schema: TESTING__dev_<yourname>  # personal schema — never shared
@@ -21,7 +21,7 @@ analytics:
       account: <account_locator>
       user: <service_account_email>
       password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
-      role: TRANSFORMER_PROD
+      role: analytics_service_role
       warehouse: COMPUTE_WH_PROD
       database: SILVER
       schema: PUBLIC

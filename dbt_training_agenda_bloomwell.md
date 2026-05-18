@@ -52,7 +52,7 @@ analytics:
       account: <account_locator>
       user: <your_email>
       authenticator: externalbrowser
-      role: TRANSFORMER_DEV
+      role: analytics_service_role
       warehouse: COMPUTE_WH
       database: SILVER_DEV
       schema: dbt_<your_name>   # personal dev schema, never shared
@@ -62,7 +62,7 @@ analytics:
       account: <account_locator>
       user: <service_account>
       password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
-      role: TRANSFORMER_PROD
+      role: analytics_service_role
       warehouse: COMPUTE_WH
       database: SILVER
       schema: PUBLIC
