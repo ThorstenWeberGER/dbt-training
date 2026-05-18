@@ -11,5 +11,5 @@ SELECT
     first_name,
     last_name,
     email,
-    ingested_at
+    loaded_at
 FROM source

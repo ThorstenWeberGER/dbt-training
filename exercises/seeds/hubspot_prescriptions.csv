@@ -1,4 +1,4 @@
-prescription_id,contact_id,owner_id,prescription_date,medication_type,dosage_amount,notes,_ingested_at
+prescription_id,contact_id,owner_id,prescription_date,medication_type,dosage_amount,notes,_loaded_at
 rx-001,C001,OWN001,2024-01-10,tablet,500,Take twice daily with food,2024-01-15 08:00:00
 rx-002,C001,OWN002,2024-01-25,liquid,10,10ml three times daily,2024-01-25 08:00:00
 rx-003,C002,OWN001,2024-01-12,tablet,250,,2024-01-15 08:00:00

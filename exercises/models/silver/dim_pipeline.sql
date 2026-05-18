@@ -11,7 +11,7 @@ WITH pipeline_stages AS (
 distinct_pipelines AS (
     SELECT DISTINCT
         pipeline_id,
-        MIN(ingested_at) OVER (PARTITION BY pipeline_id) AS first_seen_at
+        MIN(loaded_at) OVER (PARTITION BY pipeline_id) AS first_seen_at
     FROM pipeline_stages
 )
 

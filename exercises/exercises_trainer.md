@@ -83,7 +83,7 @@ SELECT
     contact_id,
     email,
     pipeline_id,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'contacts') }}
 ```
 
@@ -95,7 +95,7 @@ CREATE OR REPLACE VIEW SILVER_DEV.TESTING__dev_yourname.stg_hubspot__contacts AS
       contact_id,
       email,
       pipeline_id,
-      _ingested_at AS ingested_at
+      _loaded_at AS loaded_at
   FROM BRONZE.HUBSPOT.contacts
 
 )
@@ -149,7 +149,7 @@ SELECT
     stage_name,
     is_closed,
     pipeline_id,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'pipeline_stages') }}
 ```
 
@@ -165,7 +165,7 @@ SELECT
     deal_name,
     pipeline_id,
     close_date   AS expected_close_date,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'deals') }}
 ```
 
@@ -229,7 +229,7 @@ sources:
       - name: contacts
       - name: deals
       - name: owners
-        loaded_at_field: _ingested_at
+        loaded_at_field: _loaded_at
         freshness:
           warn_after:  {count: 14, period: hour}
           error_after: {count: 25, period: hour}
@@ -247,7 +247,7 @@ SELECT
     first_name,
     last_name,
     email,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'owners') }}
 ```
 
@@ -262,14 +262,14 @@ dbt run --select staging.*   → 4 green OK rows
 dbt source freshness         → shows pass/warn/error per source
 ```
 
-The freshness result depends on the actual data in the training Snowflake environment. If `_ingested_at` was populated within 14 hours, it passes. Between 14–25 hours, it warns. Beyond 25 hours, it errors. In a training environment, it will typically warn or error — that's fine and expected. The goal is to read the output, not to have it pass.
+The freshness result depends on the actual data in the training Snowflake environment. If `_loaded_at` was populated within 14 hours, it passes. Between 14–25 hours, it warns. Beyond 25 hours, it errors. In a training environment, it will typically warn or error — that's fine and expected. The goal is to read the output, not to have it pass.
 
 ### Common mistakes
 
 | Mistake | Fix |
 |---|---|
 | Adds `owners` outside the `hubspot` source block (wrong indentation) | YAML indentation is critical — `owners` must be under `tables:` which is under the `hubspot` source |
-| Uses `loaded_at: _ingested_at` instead of `loaded_at_field` | The correct key is `loaded_at_field` |
+| Uses `loaded_at: _loaded_at` instead of `loaded_at_field` | The correct key is `loaded_at_field` |
 | Forgets `period: hour` and just writes `count: 14` | Both `count` and `period` are required |
 
 ---

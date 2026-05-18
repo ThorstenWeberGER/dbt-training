@@ -10,5 +10,5 @@ SELECT
     contact_id  AS patient_key,
     email,
     pipeline_id,
-    ingested_at
+    loaded_at
 FROM source
