@@ -8,7 +8,7 @@
 
 ## How to Use This Document
 
-The course is structured in three tiers. Work through them in order. Each module builds on the previous one. Estimated durations are per session; sessions can be split across separate days.
+The course runs in three tiers. Work through them in order. Each module builds on the previous one. Estimated durations are per session; you can split sessions across separate days.
 
 ---
 
@@ -23,7 +23,7 @@ The course is structured in three tiers. Work through them in order. Each module
 - dbt Core vs. dbt Cloud — what we use and why
 - The project structure: `models/`, `macros/`, `seeds/`, `tests/`, `snapshots/`, `dbt_project.yml`
 
-**Key takeaway:** dbt is not a pipeline runner — it's a transformation framework that brings software engineering practices (tests, docs, version control) to SQL.
+**Key takeaway:** dbt isn't a pipeline runner — it's a transformation framework that brings software engineering practices (tests, docs, version control) to SQL.
 
 ---
 
@@ -139,7 +139,7 @@ analytics/                        # repo root
 ### Module 3 — The dbt Execution Sequence: What Actually Happens
 **Estimated time: 1 hour**
 
-Understanding what dbt does under the hood prevents a large class of debugging confusion. This module covers the full lifecycle from command to Snowflake object.
+Understanding what dbt does under the hood prevents a whole class of debugging confusion. This module covers the full lifecycle from command to Snowflake object.
 
 #### The Five Phases of `dbt run`
 
@@ -343,7 +343,7 @@ After any `dbt run` or `dbt build`, dbt writes `target/manifest.json` — a comp
 - Environment variables in CI: Snowflake credentials, target environments
 - Failing a PR if tests fail — protecting production
 
-**In practice:** CI fails if Silver/Gold models are missing descriptions, grain statements, or column-level docs. This is enforced by dbt's built-in compile validation combined with our schema YAML requirements.
+**In practice:** CI fails if Silver/Gold models are missing descriptions, grain statements, or column-level docs. dbt's built-in compile validation combined with our schema YAML requirements enforces this.
 
 ---
 
