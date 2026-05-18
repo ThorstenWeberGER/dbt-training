@@ -1,6 +1,6 @@
 # dbt Training — Trainer Guide
 
-This document is for the trainer. It covers what participants must do per exercise, the expected outcome at every step, common mistakes to watch for, and how to verify success.
+This document is for you, the trainer. It covers what participants need to do per exercise, the expected outcome at every step, common mistakes to watch for, and how to verify success.
 
 **Participant-facing document:** `exercises.md`
 **Data reference:** `seeds/` (Bronze) and `reference/` (Silver expected output)
@@ -9,7 +9,7 @@ This document is for the trainer. It covers what participants must do per exerci
 
 ## Deliberate Bugs in the Pre-built Project
 
-Two bugs have been planted in the scaffold. Participants are not told about the second one — the test suite reveals it in Module 06.
+Two bugs have been planted in the scaffold. Participants aren't told about the second one — the test suite reveals it in Module 06.
 
 | Bug | File | What's wrong | When it surfaces |
 |-----|------|-------------|-----------------|
@@ -18,7 +18,7 @@ Two bugs have been planted in the scaffold. Participants are not told about the 
 
 **Bug 2 detail:** The SELECT reads `p.contact_id AS doctor_key` and `p.owner_id AS patient_key` — the aliases are reversed. The model compiles and runs without error, but produces wrong data. The FK relationship tests catch it: `patient_key` contains `OWN001`-style values which don't exist in `dim_patient`, and `doctor_key` contains `C001`-style values which don't exist in `dim_doctor`. The fix is a two-line swap of the aliases.
 
-**Teaching point:** This demonstrates exactly why tests matter. A model can run successfully and still be wrong. Tests are the safety net.
+**Teaching point:** This is exactly why tests matter. A model can run successfully and still be wrong. Tests are the safety net.
 
 ---
 
@@ -46,11 +46,11 @@ Two bugs have been planted in the scaffold. Participants are not told about the 
 ### Common mistakes
 
 - Participants try to fix the bug immediately — redirect them: "note it, fix it in Module 04"
-- Participants can't find `dbt_project.yml` — it is at the repo root, not inside `models/`
+- Participants can't find `dbt_project.yml` — it's at the repo root, not inside `models/`
 
 ### Trainer notes
 
-The goal here is orientation, not comprehension. If participants struggle with any question, that signals a gap to revisit — not a reason to slow down. Module 01 theory block should have covered all of this.
+The goal here is orientation, not comprehension. If participants struggle with any question, that signals a gap to revisit — not a reason to slow down. The Module 01 theory block should have covered all of this.
 
 ---
 
@@ -66,7 +66,7 @@ All lines show `OK`. The most common failure is an incorrect `account` field in 
 
 ### Trainer notes
 
-Do not proceed to Module 03 with anyone whose `dbt debug` is still failing. Snowflake auth with `externalbrowser` requires a browser window — make sure participants are not in a headless environment.
+Don't proceed to Module 03 with anyone whose `dbt debug` is still failing. Snowflake auth with `externalbrowser` requires a browser window — make sure participants aren't in a headless environment.
 
 ---
 
@@ -87,7 +87,7 @@ Do not proceed to Module 03 with anyone whose `dbt debug` is still failing. Snow
 | `{{ ref('dim_pipeline') }}` | `SILVER_DEV.TESTING__dev_yourname.dim_pipeline` (dev target) |
 | `{{ config(materialized='view') }}` | Removed; becomes a `CREATE OR REPLACE VIEW` wrapper |
 
-Common prediction mistake: participants write `SILVER.PUBLIC.dim_pipeline` for the `ref()`. On **dev**, `ref()` resolves to the **dev** database and personal schema.
+This trips people up: participants often write `SILVER.PUBLIC.dim_pipeline` for the `ref()`. On **dev**, `ref()` resolves to the **dev** database and personal schema.
 
 ### Expected outcome: Task 2
 
@@ -136,7 +136,7 @@ Confirm `BRONZE.HUBSPOT.contacts` appears in the output.
 
 ### Bonus — Variables and environment-aware filtering
 
-Participants use an AI assistant to figure this out independently. No expected solution is prescribed — the goal is the discovery process, not a specific answer. Valid solutions share these properties:
+Participants use an AI assistant to figure this out independently. There's no prescribed solution — the goal is the discovery process, not a specific answer. Valid solutions share these properties:
 
 - A variable declared under `vars:` in `dbt_project.yml`, e.g. `limit_rows: 1000`
 - A `WHERE` clause in the model body using `{{ target.name }}` to gate the filter on dev only
@@ -170,7 +170,7 @@ Command-line override to verify:
 dbt compile --select stg_hubspot__contacts --vars '{"limit_rows": 100}'
 ```
 
-The compiled SQL should contain `LIMIT 100`. Without `--vars`, `LIMIT 1000` (the default) appears in dev; in prod the `LIMIT` clause disappears entirely.
+The compiled SQL should contain `LIMIT 100`. Without `--vars`, `LIMIT 1000` (the default) appears in dev. In prod the `LIMIT` clause disappears entirely.
 
 ---
 
@@ -206,7 +206,7 @@ SELECT
 FROM {{ source('hubspot', 'pipeline_stages') }}
 ```
 
-One-sentence explanation: Staging models must always be views because they are a lightweight alias with no storage cost — materialising them as tables wastes compute and storage.
+One-sentence explanation: Staging models must always be views because they're a lightweight alias with no storage cost — materialising them as tables wastes compute and storage.
 
 ### Expected outcome: Task 2
 
@@ -288,7 +288,7 @@ sources:
           error_after: {count: 25, period: hour}
 ```
 
-Note: `contacts` and `deals` do not need freshness config (not required). Only `owners` adds it in this exercise.
+Note: `contacts` and `deals` don't need freshness config for this exercise. Only `owners` adds it here.
 
 ### Expected outcome: Task 2
 
@@ -315,7 +315,7 @@ dbt run --select staging.*   → 4 green OK rows
 dbt source freshness         → shows pass/warn/error per source
 ```
 
-The freshness result depends on the actual data in the training Snowflake environment. If `_loaded_at` was populated within 14 hours, it passes. Between 14–25 hours, it warns. Beyond 25 hours, it errors. In a training environment, it will typically warn or error — that's fine and expected. The goal is to read the output, not to have it pass.
+The freshness result depends on the actual data in the training Snowflake environment. If `_loaded_at` was populated within 14 hours, it passes. Between 14–25 hours, it warns. Beyond 25 hours, it errors. In a training environment, it'll typically warn or error — that's fine and expected. The goal is to read the output, not to have it pass.
 
 ### Common mistakes
 
@@ -374,7 +374,7 @@ Failure in test relationships_fct_prescription_doctor_key__doctor_key__ref_dim_d
 4. Fix: swap the two alias labels
 5. Re-run `dbt run --select fct_prescription` then `dbt test --select fct_prescription`
 
-After fixing the bug, 9 tests pass. The `dosage_amount` not_null shows `WARN` for rows `rx-005` and `rx-009` (those have null dosage in the training data). The pipeline continues — warn does not fail the build.
+After fixing the bug, 9 tests pass. The `dosage_amount` not_null shows `WARN` for rows `rx-005` and `rx-009` (those have null dosage in the training data). The pipeline continues — warn doesn't fail the build.
 
 ### Expected outcome: Task 3
 
@@ -428,7 +428,7 @@ Execution order (DAG):
 | Writes `severity: error` at the top of the column block, not inside `config:` | Correct: `- unique:\n    config:\n      severity: error` |
 | Uses `ref('dim_patient')` without quotes inside `to:` | Must be `to: ref('dim_patient')` — the function call is the value |
 | Singular test uses `HAVING COUNT(*) > 0` | The simple `WHERE dosage_amount = 0` pattern is correct — any returned row fails the test, no aggregation needed |
-| Forgets `version: 2` header in schema.yml | dbt 1.5+ does not require it but it is good practice and avoids confusion |
+| Forgets `version: 2` header in schema.yml | dbt 1.5+ doesn't require it but it's good practice and avoids confusion |
 
 ---
 
@@ -442,7 +442,7 @@ Execution order (DAG):
 
 ### Expected outcome: Task 1
 
-`fct_prescription` description must include a grain statement. Accept any wording that clearly states: **one row = one prescription record**.
+The `fct_prescription` description must include a grain statement. Accept any wording that clearly states: **one row = one prescription record**.
 
 Acceptable: *"Grain: one row per prescription event, identified by prescription_key."*
 
@@ -452,7 +452,7 @@ Column descriptions: any clear, accurate prose. The content matters more than ex
 
 ### Expected outcome: Task 2
 
-`dim_pipeline` grain statement must explain the SCD2 pattern. Accept any wording that states: **one row per pipeline per validity period** and that `dbt_valid_to IS NULL` marks the current version.
+The `dim_pipeline` grain statement must explain the SCD2 pattern. Accept any wording that states: **one row per pipeline per validity period** and that `dbt_valid_to IS NULL` marks the current version.
 
 The `dbt_valid_to` column description must mention that `NULL` means current — this is the most commonly missed detail.
 
@@ -460,7 +460,7 @@ Tests on `dim_pipeline`:
 - `pipeline_key`: unique + not_null (error)
 - `is_current`: not_null (error)
 
-(No test required on `hubspot_pipeline_id` for this exercise — it is not unique in an SCD2 table.)
+(No test required on `hubspot_pipeline_id` for this exercise — it's not unique in an SCD2 table.)
 
 ### Expected outcome: Task 3
 
@@ -479,8 +479,8 @@ Browser opens at `http://localhost:8080`. Participants should be able to:
 | Mistake | Fix |
 |---|---|
 | Writes a description for `dim_pipeline` but forgets the grain statement | A grain statement is mandatory for Silver models — the CI check fails without it |
-| Adds `hubspot_pipeline_id` as unique test | It is NOT unique in SCD2 — `hs-pipeline-003` appears twice. Point them to `data/silver/dim_pipeline.csv` |
-| `dbt docs serve` shows blank or 404 | Must run `dbt docs generate` first — the serve command reads the generated artifact |
+| Adds `hubspot_pipeline_id` as unique test | It's NOT unique in SCD2 — `hs-pipeline-003` appears twice. Point them to `data/silver/dim_pipeline.csv` |
+| `dbt docs serve` shows blank or 404 | You must run `dbt docs generate` first — the serve command reads the generated artifact |
 
 ### Verify success (trainer check)
 
@@ -505,13 +505,13 @@ Run through this list with participants. Everyone should be able to answer **fro
 - [ ] What does the `relationships` test check?
 - [ ] What is `dbt_valid_to` in an SCD2 model?
 
-If anyone cannot answer items 1–4, they are not ready for Tier 2. Recommend they redo Module 03 and Module 06 exercises independently before the next session.
+If anyone can't answer items 1–4, they're not ready for Tier 2. Recommend they redo Module 03 and Module 06 exercises independently before the next session.
 
 ---
 
 ## Data Reference
 
-All training data lives in `data/`. It is consistent — all foreign keys resolve, no invalid `medication_type` values, no zero dosages, SCD2 example clearly shows a pipeline rename.
+All training data lives in `data/`. It's consistent — all foreign keys resolve, no invalid `medication_type` values, no zero dosages, and the SCD2 example clearly shows a pipeline rename.
 
 **Key values to know for demos and debugging:**
 

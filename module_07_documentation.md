@@ -2,7 +2,7 @@
 
 **Tier:** 🟢 Beginner · **Duration:** 60 min · **Prerequisites:** Module 06
 
-> **Framing:** Documentation is not an afterthought. CI fails if Silver or Gold models have missing descriptions or undocumented columns. This module closes the Beginner tier by establishing documentation as a non-negotiable part of the development workflow — not something you add before merging, but something you write while building.
+> **Framing:** Documentation isn't an afterthought. CI fails if Silver or Gold models have missing descriptions or undocumented columns. This module closes the Beginner tier by treating documentation as a non-negotiable part of the development workflow — not something you add before merging, but something you write while you're building.
 
 ---
 
@@ -15,7 +15,7 @@
 | 00:20 | 15 min | Writing model and column descriptions | Write correct `schema.yml` descriptions including the grain statement | Present + live code | Follow along in editor | This doc | Write a full `schema.yml` block live including grain, column descriptions, and test YAML. Note: descriptions and tests live in the same file — don't treat them as separate concerns. | "Write a grain statement for `fct_prescription`" |
 | 00:35 | 10 min | `persist_docs` — docs in Snowflake | Know that dbt writes descriptions to Snowflake column comments | Present | Annotate config | This doc | Show Snowflake Snowsight: hover over a column in a Silver table → the dbt description appears. This is why Power BI and Cortex AI can read column context. | "Where do dbt column descriptions appear in Snowflake?" |
 | 00:45 | 5 min | `dbt docs generate` and `dbt docs serve` | Know how to build and browse the doc site | Demo | Watch | VS Code terminal | Run both commands. Navigate to the DAG. Click a model. Show lineage view. Show column descriptions. | "How do you reach the DAG visualisation?" |
-| 00:50 | 20 min | Exercise: document a real model | Write complete documentation for an undocumented model | Practice | Solo exercise | Exercise below | Circulate. Common mistake: writing descriptions for tests but not for the model itself. Ensure grain statement is present. | Model description + grain + all column descriptions written; `dbt docs generate` succeeds |
+| 00:50 | 20 min | Exercise: document a real model | Write complete documentation for an undocumented model | Practice | Solo exercise | Exercise below | Circulate. Common mistake: writing descriptions for tests but not for the model itself. Make sure the grain statement is present. | Model description + grain + all column descriptions written; `dbt docs generate` succeeds |
 | 01:10 | 10 min | Debrief + Beginner tier close | Consolidate and acknowledge completion of Tier 1 | Debrief | Verbal | — | Explicitly acknowledge: "you've now completed the Beginner tier. You can read, write, test, and document dbt models." Outline what Intermediate covers. | — |
 
 ---
@@ -26,14 +26,14 @@
 
 Three months after a model is built, the original author can't remember what `fct_prescription.dosage_amount` represents. Is it in milligrams? Is it a monetary amount? Is NULL valid?
 
-If the column isn't documented in `schema.yml`, anyone who needs to know must read the SQL, trace it back through staging to Bronze, and hope the source system has documentation.
+If that column isn't documented in `schema.yml`, anyone who needs to know must read the SQL, trace it back through staging to Bronze, and hope the source system has docs. That's hours of investigation for information that could have been one sentence.
 
-**This is not acceptable for Silver or Gold models.** CI fails if:
+**This isn't acceptable for Silver or Gold models.** CI fails if:
 - A Silver or Gold model has no description
 - A Silver or Gold model has no grain statement
 - Any column in a Silver or Gold model has no description
 
-Documentation is written once and saves hours of investigation for every person who works with the model afterward.
+You write documentation once. It saves everyone who touches the model afterward from having to figure it out themselves.
 
 ---
 
@@ -101,11 +101,11 @@ models:
 Grain: one {entity} per {dimension1} per {dimension2} per {time dimension}.
 ```
 
-If you can't write the grain statement, the model's design is unclear and should be reviewed before documenting it.
+If you can't write the grain statement, the model's design is unclear. Review the design before you document it.
 
 ### Doc blocks — for longer descriptions
 
-When a description exceeds one or two sentences, move it into a **doc block** in a separate `.md` file instead of cluttering the YAML:
+When a description runs longer than a sentence or two, move it into a **doc block** in a separate `.md` file. This keeps the YAML clean.
 
 ```markdown
 <!-- models/silver/_silver_docs.md -->
@@ -125,7 +125,7 @@ models:
     description: '{{ doc("fct_prescription") }}'
 ```
 
-Short inline descriptions are the standard for most columns. Use doc blocks only for models where the business context genuinely needs more than two lines — typically complex Silver facts or models with non-obvious exclusion logic.
+Short inline descriptions are standard for most columns. Use doc blocks only for models where the business context genuinely needs more than two lines — typically complex Silver facts or models with non-obvious exclusion logic.
 
 ---
 
@@ -153,7 +153,7 @@ These comments are visible in:
 - **Power BI** — column tooltips and field descriptions
 - **Snowflake Cortex AI** — used as context for natural language queries
 
-This is why documentation is not optional: it feeds directly into tools that the business uses.
+That's why documentation isn't optional — it feeds directly into tools the business uses every day.
 
 ---
 
@@ -235,7 +235,7 @@ In the browser:
 
 ## Beginner Tier Complete
 
-You have now completed all 7 modules in the Beginner tier. At this point you can:
+You've now completed all 7 modules in the Beginner tier. You can:
 
 - Explain what dbt is and what it does
 - Navigate the project structure and understand `dbt_project.yml` and `profiles.yml`
@@ -255,4 +255,4 @@ You have now completed all 7 modules in the Beginner tier. At this point you can
 1. What is `on_schema_change: sync_all_columns` and why is it required?
 2. When would you use `--full-refresh` on an incremental model?
 3. What SQL statement does an incremental model with `unique_key` generate?
-4. What is the difference between `_key` and `_id` columns?
+4. What's the difference between `_key` and `_id` columns?

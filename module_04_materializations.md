@@ -2,7 +2,7 @@
 
 **Tier:** 🟢 Beginner · **Duration:** 90 min · **Prerequisites:** Module 03
 
-> **Why this module exists:** Materialization strategy is one of the most consequential decisions in a dbt project — it drives cost, performance, freshness, and pipeline reliability. In this project, Bronze is append-only, Silver uses merge incremental, and Gold uses table. Without understanding why, participants will make expensive mistakes. This module gives a complete treatment before Sources (Module 05) and Testing (Module 06), because testing strategy depends on knowing what you're materialising.
+> **Why this module exists:** Materialization strategy is one of the most consequential decisions in a dbt project. It drives cost, performance, freshness, and pipeline reliability. In this project, Bronze is append-only, Silver uses merge incremental, and Gold uses table. Without understanding why, you'll make expensive mistakes. This module gives a complete treatment before Sources (Module 05) and Testing (Module 06), because testing strategy depends on knowing what you're materializing.
 
 ---
 
@@ -51,7 +51,7 @@ FROM BRONZE.HUBSPOT.contacts
 **Pro:** Always reflects the latest source data. Zero storage cost.
 **Con:** Recomputes on every query. Slow for complex transforms or large tables.
 
-**By convention:** Staging models are always views. They're cheap wrappers that rename columns and cast types — no business logic, no storage needed.
+Staging models are always views. They're cheap wrappers that rename columns and cast types — no business logic, no storage needed.
 
 #### table
 
@@ -65,13 +65,13 @@ SELECT ...
 **Pro:** Fast to query. No recomputation at query time.
 **Con:** Full rebuild on every `dbt run`. Expensive for large tables.
 
-**By convention:** Gold marts use `table` because they're small aggregates. Silver dimensions use `table` unless they're SCD2 (which uses incremental with a merge key).
+Gold marts use `table` because they're small aggregates. Silver dimensions use `table` unless they're SCD2, which uses incremental with a merge key.
 
 ---
 
 ### Part C — `incremental`: The One That Matters Most
 
-Incremental models do not rebuild from scratch on every run. They process only new or changed rows.
+Incremental models don't rebuild from scratch on every run. They process only new or changed rows. That's why large Silver facts use this materialization — rebuilding millions of rows nightly from scratch would be slow and expensive.
 
 ```sql
 {{ config(
@@ -142,7 +142,7 @@ WHEN NOT MATCHED THEN INSERT (contact_key, hubspot_contact_id, email, updated_at
 VALUES (...)
 ```
 
-This is why `unique_key` is required for incremental with merge strategy — without it, dbt can't know which rows to update vs. insert.
+`unique_key` is required for incremental with merge strategy. Without it, dbt can't know which rows to update vs. insert.
 
 #### `on_schema_change` options
 
@@ -153,11 +153,11 @@ This is why `unique_key` is required for incremental with merge strategy — wit
 | `sync_all_columns` | Adds new columns, removes deleted ones — **our standard** |
 | `append_new_columns` | Adds new columns only, never removes |
 
-**Always use `sync_all_columns`.** `ignore` is a silent data bug waiting to happen.
+Always use `sync_all_columns`. The `ignore` default is a silent data bug waiting to happen. You'll add a column, run dbt, see no error, and wonder why the column's missing from Snowflake.
 
 #### Forcing a full refresh
 
-If an incremental model's data is corrupted or you need to rebuild from scratch:
+Sometimes an incremental model's data gets corrupted, or you change logic that affects historical rows. To rebuild from scratch:
 
 ```bash
 dbt run --select dim_contact --full-refresh
@@ -185,7 +185,7 @@ An ephemeral model creates no object in Snowflake. When another model references
 
 **When to use:** Intermediate transformations that are used by exactly one downstream model and don't need to be queried directly.
 
-**When NOT to use:** When multiple models reference the same ephemeral model — it gets inlined as a CTE in each one, repeating the computation. In that case, use a view or table.
+**When NOT to use:** When multiple models reference the same ephemeral model. It gets inlined as a CTE in each one, repeating the computation. Use a view or table instead.
 
 **In practice:** Ephemeral is rarely used. Prefer views for intermediate staging steps — they're queryable for debugging.
 
@@ -228,14 +228,14 @@ Snowflake handles the incremental refresh automatically — you write a plain `S
 
 ### Task 1 — Fix `stg_hubspot__pipeline_stages.sql`
 
-Open `models/staging/hubspot/stg_hubspot__pipeline_stages.sql`. There is one configuration problem. Find it, fix it with a one-line change, and explain in one sentence why that materialisation is wrong for staging.
+Open `models/staging/hubspot/stg_hubspot__pipeline_stages.sql`. There's one configuration problem. Find it, fix it with a one-line change, and explain in one sentence why that materialization is wrong for staging.
 
 After fixing the config, make sure the model selects all five columns from the source (`pipeline_stage_id`, `stage_name`, `is_closed`, `pipeline_id`, `_ingested_at`), renaming `_ingested_at` → `ingested_at`.
 
 <details>
 <summary>The bug and fix</summary>
 
-The model has `materialized='table'`. Staging models are always views — they are a lightweight alias over Bronze with no storage cost. The fix:
+The model has `materialized='table'`. Staging models are always views — they're a lightweight alias over Bronze with no storage cost. The fix:
 
 ```sql
 {{ config(materialized='view') }}

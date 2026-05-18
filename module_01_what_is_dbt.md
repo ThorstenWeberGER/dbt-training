@@ -12,8 +12,8 @@
 | 00:10 | 20 min | The problem dbt solves | Understand why raw SQL pipelines break at scale | Present + Discussion | Ask questions, share own pain points | Whiteboard / slides | Use a concrete example: HubSpot raw data → `BRONZE.HUBSPOT.contacts` → how it used to be queried ad hoc | "Name one pain point you have today with data transformations" |
 | 00:30 | 15 min | What dbt actually is | Understand what dbt does — and does not do | Present | Listen, annotate | Slide: dbt stack diagram | Common confusion: dbt is NOT a database, scheduler, or ETL tool. It transforms data already in Snowflake | "Are we on dbt Core or dbt Cloud? What's the difference?" |
 | 00:45 | 15 min | Live demo: project structure | Recognise the key files and folders in the dbt project | Demo | Watch, no coding | VS Code with dbt project open | Show real project: `dbt_project.yml`, `models/`, `macros/`, `tests/`. Don't explain every file — just build a mental map. Make one deliberate navigation mistake and correct it. | "Point to where a Silver model lives" |
-| 01:00 | 25 min | Exercise: explore and document | Navigate the project and find real examples | Practice | Independent exploration | dbt project (read-only) | Give worksheet below. Circulate but don't answer immediately — let participants struggle for 2 min first | All 4 worksheet questions answered correctly |
-| 01:25 | 10 min | Debrief + 3-bullet summary | Consolidate learning | Debrief | Discuss, write down summary | Whiteboard | Reveal the 3 bullets only after participants share their own first | "Explain dbt in one sentence to a non-technical colleague" |
+| 01:00 | 25 min | Exercise: explore and document | Navigate the project and find real examples | Practice | Independent exploration | dbt project (read-only) | Give worksheet below. Circulate but don't answer immediately — let them struggle for 2 min first | All 4 worksheet questions answered correctly |
+| 01:25 | 10 min | Debrief + 3-bullet summary | Consolidate learning | Debrief | Discuss, write down summary | Whiteboard | Reveal the 3 bullets only after you share your own first | "Explain dbt in one sentence to a non-technical colleague" |
 
 ---
 
@@ -21,15 +21,15 @@
 
 ### What happened before dbt
 
-A data team wants to answer: *"How many HubSpot contacts converted to active patients last month?"*
+Here's a scenario you've probably lived. Your team wants to answer: *"How many HubSpot contacts converted to active patients last month?"*
 
-They write a SQL query. It works. They save it somewhere — a shared folder, a BI tool, their laptop. Three months later the query is broken. A column was renamed in the source. No tests, no documentation. Two analysts wrote the same transformation differently and got different numbers. The business has lost confidence in the data.
+Someone writes a SQL query. It works. They save it somewhere — a shared folder, a BI tool, their laptop. Three months later the query is broken. A column was renamed in the source. There are no tests, no documentation. Two analysts wrote the same transformation differently and got different numbers. The business has lost confidence in the data.
 
-This is how most data teams operate without a transformation framework.
+That's how most data teams operate without a transformation framework.
 
 **The four core problems dbt solves:**
 
-1. **No single source of truth** — same calculation defined in 10 different places
+1. **No single source of truth** — the same calculation is defined in 10 different places
 2. **No testing** — transformations break silently; nobody notices until a dashboard is wrong
 3. **No documentation** — tribal knowledge about what `fct_prescription.amount` actually means
 4. **No dependency management** — nobody knows what breaks when a source column changes
@@ -134,9 +134,9 @@ Answer all four questions using only the dbt project — no Googling.
 
 ## Debrief — 3-Bullet Summary
 
-After participants share their own answers, confirm these three:
+Share your own answers first. Then confirm these three:
 
-1. dbt transforms data that is **already in Snowflake** — it does not extract or load
+1. dbt transforms data that is **already in Snowflake** — it doesn't extract or load
 2. In this project, dbt owns Bronze Staging → Silver → Gold; Lambda handles ingestion
 3. Every model is a `SELECT` statement; dbt handles the `CREATE TABLE` / `CREATE VIEW` around it
 
@@ -153,9 +153,9 @@ After participants share their own answers, confirm these three:
 
 ## Prep Questions for Module 02
 
-Participants should be able to answer these at the start of the next session — from memory, without notes:
+Answer these at the start of the next session — from memory, without notes:
 
 1. What does `dbt_project.yml` configure?
-2. What is the difference between dbt Core and dbt Cloud?
+2. What's the difference between dbt Core and dbt Cloud?
 3. dbt does NOT do three things — name them.
 4. Which layer does dbt own in this project?

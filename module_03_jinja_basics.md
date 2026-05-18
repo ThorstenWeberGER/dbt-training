@@ -2,7 +2,7 @@
 
 **Tier:** 🟢 Beginner · **Duration:** 75 min · **Prerequisites:** Module 02
 
-> **Why this module exists:** Participants encounter `{{ ref() }}`, `{{ source() }}`, `{{ config() }}`, and `{% if %}` blocks starting from Module 01. Without a proper grounding in Jinja syntax, they pattern-match rather than understand. This module gives them just enough Jinja to read and write any standard dbt model confidently — no macro programming, no advanced dispatch.
+> **Why this module exists:** You've been seeing `{{ ref() }}`, `{{ source() }}`, `{{ config() }}`, and `{% if %}` blocks since Module 01. Without a proper grounding in Jinja syntax, it's easy to pattern-match without really understanding what's happening. This module gives you just enough Jinja to read and write any standard dbt model confidently — no macro programming, no advanced dispatch.
 
 ---
 
@@ -13,8 +13,8 @@
 | 00:00 | 10 min | Recap Module 02 | Confirm last session before new content | Q&A | Answer from memory | — | Ask all 4 prep questions cold. Specifically probe: "at which phase does a Jinja error appear?" — this connects directly to today's content | All 4 correct |
 | 00:10 | 15 min | What Jinja is and how dbt uses it | Understand that dbt models are templates, not plain SQL | Present | Annotate diagram | This doc | Key mental model: dbt reads your `.sql` file, runs it through Jinja, produces plain SQL, then sends that to Snowflake. The Jinja never reaches Snowflake. | "What does `{{ }}` output? What does `{% %}` do?" |
 | 00:25 | 20 min | The four Jinja constructs you need | Know `{{ }}`, `{% %}`, `{# #}`, and whitespace control | Present + live code | Follow along in editor | This doc | Write each example live. Deliberately use wrong delimiters and show the error. | "When would you use `{% %}` instead of `{{ }}`?" |
-| 00:45 | 15 min | dbt's built-in Jinja functions | Read and write `ref()`, `source()`, `config()`, `var()` | Present + live code | Annotate own copy | This doc | These are the only four they need for all Beginner modules. Don't introduce macros yet — that's Module 09. | "What does `{{ ref('dim_patient') }}` compile to?" |
-| 01:00 | 20 min | Exercise: read and write models | Read compiled output, write a model with correct Jinja | Practice | Solo exercise | Exercise below | Circulate. Most common error: using `{{ }}` for an `{% if %}` block. Watch for it. | Exercise complete, compiled SQL matches expected output |
+| 00:45 | 15 min | dbt's built-in Jinja functions | Read and write `ref()`, `source()`, `config()`, `var()` | Present + live code | Annotate own copy | This doc | These are the only four you need for all Beginner modules. Don't introduce macros yet — that's Module 09. | "What does `{{ ref('dim_patient') }}` compile to?" |
+| 01:00 | 20 min | Exercise: read and write models | Read compiled output, write a model with correct Jinja | Practice | Solo exercise | Exercise below | Circulate. The most common error: using `{{ }}` for an `{% if %}` block. Watch for it. | Exercise complete, compiled SQL matches expected output |
 | 01:20 | 5 min | Debrief + prep questions | Consolidate | Debrief | Verbal | — | — | — |
 
 ---
@@ -23,7 +23,7 @@
 
 ### Part A — What Jinja Is
 
-Jinja is a templating language. dbt uses it to add logic to SQL files that plain SQL cannot express.
+Jinja is a templating language. dbt uses it to add logic to SQL files that plain SQL can't express.
 
 When dbt runs, it:
 1. Reads your `.sql` file
@@ -44,7 +44,7 @@ You can always see what Snowflake received at: `target/compiled/analytics/models
 | `{% %}` | Statement — logic, no output | `{% if target.name == 'prod' %}` |
 | `{# #}` | Comment — ignored entirely | `{# TODO: add grain doc #}` |
 
-**The most common beginner mistake:** using `{{ }}` for an `if` block.
+**The most common beginner mistake:** using `{{ }}` for an `if` block. This trips people up because the syntax looks similar. But the delimiter determines whether Jinja executes the statement or tries to output it as a value.
 
 ```sql
 -- ❌ WRONG — this will output the text of the condition, not execute it
@@ -94,7 +94,7 @@ Compiles to:
 FROM BRONZE.HUBSPOT.contacts
 ```
 
-Sources are declared in `sources.yml`. `source()` registers the table as a DAG node so freshness checks and lineage work. Covered in depth in Module 05.
+Sources are declared in `sources.yml`. `source()` registers the table as a DAG node so freshness checks and lineage work. This is covered in depth in Module 05.
 
 #### 3. `{{ config() }}` — configure a model inline
 
@@ -125,7 +125,7 @@ Variables are defined in `dbt_project.yml` or passed at runtime:
 dbt run --vars '{"start_date": "2024-01-01"}'
 ```
 
-Use `var()` for environment-specific values, date ranges, or feature flags. Don't use it for connection details — that's `profiles.yml`.
+Use `var()` for environment-specific values, date ranges, or feature flags. Don't use it for connection details — that's what `profiles.yml` is for.
 
 ---
 
@@ -139,7 +139,7 @@ Jinja adds newlines. Use `-` to strip them when it matters for readability:
 {%- endif -%}
 ```
 
-The `-` inside `{%-` and `-%}` trims whitespace before/after the tag. This only matters when inspecting compiled SQL — it has no effect on execution.
+The `-` inside `{%-` and `-%}` trims whitespace before/after the tag. This only affects how the compiled SQL looks — it has no effect on execution.
 
 ### `target.name` — environment-conditional logic
 
@@ -167,13 +167,13 @@ This pattern is especially common inside incremental models to limit dev scans. 
 {% endif %}
 ```
 
-`{{ this }}` refers to the table that this model materialises to. Used almost exclusively in incremental models to filter only new records.
+`{{ this }}` refers to the table this model materialises to. It's used almost exclusively in incremental models to filter only new records.
 
 ---
 
 ## Exercise (20 min)
 
-> **Project context:** This exercise starts your staging layer. By the end you will have one working staging model.
+> **Project context:** This exercise starts your staging layer. By the end you'll have one working staging model.
 
 ### Task 1 — Predict compiled output before writing anything
 
@@ -263,6 +263,6 @@ FROM {{ source('hubspot', 'contacts') }}
 ## Prep Questions for Module 04
 
 1. What does `{{ ref('dim_patient') }}` compile to in your dev environment?
-2. What is the difference between `{{ }}` and `{% %}`?
+2. What's the difference between `{{ }}` and `{% %}`?
 3. When would you use `{{ config() }}` instead of setting materialisation in `dbt_project.yml`?
 4. What does `{{ this }}` refer to?
