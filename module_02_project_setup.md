@@ -34,7 +34,7 @@ analytics:
       account: abc123.eu-west-1
       user: jane@company.com
       authenticator: externalbrowser   # SSO login
-      role: TRANSFORMER_DEV
+      role: analytics_service_role
       warehouse: COMPUTE_WH_DEV
       database: SILVER_DEV
       schema: TESTING__dev_jane        # your personal dev schema
@@ -45,7 +45,7 @@ analytics:
       account: abc123.eu-west-1
       user: dbt_prod@company.com
       authenticator: snowflake
-      role: TRANSFORMER_PROD
+      role: analytics_service_role
       warehouse: COMPUTE_WH_PROD
       database: SILVER
       schema: PUBLIC                   # prod target; your orchestrator uses this

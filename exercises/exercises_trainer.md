@@ -3,7 +3,22 @@
 This document is for the trainer. It covers what participants must do per exercise, the expected outcome at every step, common mistakes to watch for, and how to verify success.
 
 **Participant-facing document:** `exercises.md`
-**Data reference:** `data/bronze/` and `data/silver/`
+**Data reference:** `seeds/` (Bronze) and `reference/` (Silver expected output)
+
+---
+
+## Deliberate Bugs in the Pre-built Project
+
+Two bugs have been planted in the scaffold. Participants are not told about the second one — the test suite reveals it in Module 06.
+
+| Bug | File | What's wrong | When it surfaces |
+|-----|------|-------------|-----------------|
+| **Bug 1** (visible) | `models/staging/hubspot/stg_hubspot__pipeline_stages.sql` | `materialized='table'` and three columns missing | Module 01 Task 3 (spot it); Module 04 Task 1 (fix it) |
+| **Bug 2** (hidden) | `models/silver/fct_prescription.sql` | `patient_key` and `doctor_key` aliases are swapped | Module 06 Task 2 — FK relationship tests fail |
+
+**Bug 2 detail:** The SELECT reads `p.contact_id AS doctor_key` and `p.owner_id AS patient_key` — the aliases are reversed. The model compiles and runs without error, but produces wrong data. The FK relationship tests catch it: `patient_key` contains `OWN001`-style values which don't exist in `dim_patient`, and `doctor_key` contains `C001`-style values which don't exist in `dim_doctor`. The fix is a two-line swap of the aliases.
+
+**Teaching point:** This demonstrates exactly why tests matter. A model can run successfully and still be wrong. Tests are the safety net.
 
 ---
 
@@ -83,7 +98,7 @@ SELECT
     contact_id,
     email,
     pipeline_id,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'contacts') }}
 ```
 
@@ -95,7 +110,7 @@ CREATE OR REPLACE VIEW SILVER_DEV.TESTING__dev_yourname.stg_hubspot__contacts AS
       contact_id,
       email,
       pipeline_id,
-      _ingested_at AS ingested_at
+      _loaded_at AS loaded_at
   FROM BRONZE.HUBSPOT.contacts
 
 )
@@ -118,6 +133,44 @@ cat target/compiled/analytics/models/staging/hubspot/stg_hubspot__contacts.sql
 ```
 
 Confirm `BRONZE.HUBSPOT.contacts` appears in the output.
+
+### Bonus — Variables and environment-aware filtering
+
+Participants use an AI assistant to figure this out independently. No expected solution is prescribed — the goal is the discovery process, not a specific answer. Valid solutions share these properties:
+
+- A variable declared under `vars:` in `dbt_project.yml`, e.g. `limit_rows: 1000`
+- A `WHERE` clause in the model body using `{{ target.name }}` to gate the filter on dev only
+- `{{ var('limit_rows') }}` used inside the condition
+
+A correct model looks roughly like:
+
+```sql
+SELECT ...
+FROM {{ source('hubspot', 'contacts') }}
+{% if target.name == 'dev' %}
+WHERE contact_id IN (
+    SELECT contact_id FROM {{ source('hubspot', 'contacts') }} LIMIT {{ var('limit_rows') }}
+)
+{% endif %}
+```
+
+Or more simply using `LIMIT` directly:
+
+```sql
+SELECT ...
+FROM {{ source('hubspot', 'contacts') }}
+{% if target.name == 'dev' %}
+LIMIT {{ var('limit_rows') }}
+{% endif %}
+```
+
+Command-line override to verify:
+
+```bash
+dbt compile --select stg_hubspot__contacts --vars '{"limit_rows": 100}'
+```
+
+The compiled SQL should contain `LIMIT 100`. Without `--vars`, `LIMIT 1000` (the default) appears in dev; in prod the `LIMIT` clause disappears entirely.
 
 ---
 
@@ -149,7 +202,7 @@ SELECT
     stage_name,
     is_closed,
     pipeline_id,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'pipeline_stages') }}
 ```
 
@@ -165,7 +218,7 @@ SELECT
     deal_name,
     pipeline_id,
     close_date   AS expected_close_date,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'deals') }}
 ```
 
@@ -229,7 +282,7 @@ sources:
       - name: contacts
       - name: deals
       - name: owners
-        loaded_at_field: _ingested_at
+        loaded_at_field: _loaded_at
         freshness:
           warn_after:  {count: 14, period: hour}
           error_after: {count: 25, period: hour}
@@ -247,7 +300,7 @@ SELECT
     first_name,
     last_name,
     email,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'owners') }}
 ```
 
@@ -262,14 +315,14 @@ dbt run --select staging.*   → 4 green OK rows
 dbt source freshness         → shows pass/warn/error per source
 ```
 
-The freshness result depends on the actual data in the training Snowflake environment. If `_ingested_at` was populated within 14 hours, it passes. Between 14–25 hours, it warns. Beyond 25 hours, it errors. In a training environment, it will typically warn or error — that's fine and expected. The goal is to read the output, not to have it pass.
+The freshness result depends on the actual data in the training Snowflake environment. If `_loaded_at` was populated within 14 hours, it passes. Between 14–25 hours, it warns. Beyond 25 hours, it errors. In a training environment, it will typically warn or error — that's fine and expected. The goal is to read the output, not to have it pass.
 
 ### Common mistakes
 
 | Mistake | Fix |
 |---|---|
 | Adds `owners` outside the `hubspot` source block (wrong indentation) | YAML indentation is critical — `owners` must be under `tables:` which is under the `hubspot` source |
-| Uses `loaded_at: _ingested_at` instead of `loaded_at_field` | The correct key is `loaded_at_field` |
+| Uses `loaded_at: _loaded_at` instead of `loaded_at_field` | The correct key is `loaded_at_field` |
 | Forgets `period: hour` and just writes `count: 14` | Both `count` and `period` are required |
 
 ---
@@ -304,7 +357,24 @@ Seven tests on `fct_prescription`:
 dbt test --select fct_prescription
 ```
 
-**9 tests pass** (7 generic tests + the not_null warn on dosage_amount counts separately). The `dosage_amount` not_null shows `WARN` for rows `rx-005` and `rx-009` (those have null dosage in the training data). The pipeline continues — warn does not fail the build.
+**The FK relationship tests will fail** — this is intentional. `fct_prescription.sql` contains Bug 2 (see the deliberate bugs section at the top of this guide): `patient_key` and `doctor_key` aliases are swapped. The tests surface this:
+
+```
+Failure in test relationships_fct_prescription_patient_key__patient_key__ref_dim_patient_
+  Got 10 results (OWN001-style values not found in dim_patient)
+
+Failure in test relationships_fct_prescription_doctor_key__doctor_key__ref_dim_doctor_
+  Got 10 results (C001-style values not found in dim_doctor)
+```
+
+**Guide participants through the debugging process:**
+1. Read the error — which column, which model, which expected reference?
+2. Open `fct_prescription.sql` — look at the SELECT aliases
+3. Compare: `p.contact_id` should produce patient-style keys (`C001`) but it's aliased as `doctor_key`
+4. Fix: swap the two alias labels
+5. Re-run `dbt run --select fct_prescription` then `dbt test --select fct_prescription`
+
+After fixing the bug, 9 tests pass. The `dosage_amount` not_null shows `WARN` for rows `rx-005` and `rx-009` (those have null dosage in the training data). The pipeline continues — warn does not fail the build.
 
 ### Expected outcome: Task 3
 

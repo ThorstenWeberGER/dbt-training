@@ -61,7 +61,7 @@ HubSpot / Source Systems
 
 **Naming conventions used throughout:** `dim_*` (dimensions), `fct_*` (facts), `bridge_*` (bridge tables), `mrt_*` (marts/gold). Silver and Gold models require mandatory grain statements, column-level docs, and tests on `_key` columns (`unique` + `not_null`).
 
-**dbt profile target:** `SILVER_DEV` database, schema pattern `TESTING__dev_{yourname}`, role `TRANSFORMER_DEV`, Snowflake external browser auth.
+**dbt profile target:** `SILVER_DEV` database, schema pattern `TESTING__dev_{yourname}`, role `analytics_service_role`, Snowflake external browser auth.
 
 **Layer routing:** `+database` and `+schema` in `dbt_project.yml` enforce which Snowflake database each layer lands in (e.g., Gold models routed to `GOLD`). Environment-aware switching (dev vs prod databases) requires a `generate_database_name` macro — covered in Intermediate tier. Never hardcode database names in model config without this macro.
 

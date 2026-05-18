@@ -65,6 +65,31 @@ Use these to understand column names, data types, and expected values before wri
 
 ---
 
+## Before You Start — Configure Your Profile
+
+Copy `profiles.yml.example` to `~/.dbt/profiles.yml` and replace every placeholder with the correct value for your environment:
+
+| Key | Example |
+|-----|---------|
+| `account` | `xy12345.eu-west-1` |
+| `user` | `jane@company.com` |
+| `role` | `transformer_dev` |
+| `warehouse` | `compute_wh_dev` |
+| `database` | `analytics_dev` |
+| `schema` | `dev_jane` |
+
+> **Never commit `profiles.yml`.** It is already in `.gitignore`. The `.example` file is the only profiles file that lives in the repo.
+
+Once updated, verify the connection before any exercise:
+
+```bash
+dbt debug
+```
+
+All checks should pass before you write any SQL.
+
+---
+
 ## Module 01 — Orientation (25 min)
 
 **Prerequisite:** Module 01 theory block
@@ -129,12 +154,12 @@ The Bronze source table (`BRONZE.HUBSPOT.contacts`) has these columns:
 | `contact_id` | HubSpot contact ID |
 | `email` | Contact email address |
 | `pipeline_id` | The pipeline this contact belongs to |
-| `_ingested_at` | Timestamp the row was loaded by Lambda |
+| `_loaded_at` | Timestamp the row was loaded by Lambda |
 
 Write a staging model that:
 - Is materialised as a `view`
 - References the source via `{{ source('hubspot', 'contacts') }}`
-- Selects all four columns, renaming `_ingested_at` → `ingested_at` (drop the leading underscore)
+- Selects all four columns, renaming `_loaded_at` → `loaded_at` (drop the leading underscore)
 
 ### Task 2 — Compile and verify
 
@@ -162,7 +187,7 @@ SELECT
     contact_id,
     email,
     pipeline_id,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'contacts') }}
 ```
 
@@ -178,7 +203,7 @@ CREATE OR REPLACE VIEW SILVER_DEV.TESTING__dev_yourname.stg_hubspot__contacts AS
       contact_id,
       email,
       pipeline_id,
-      _ingested_at AS ingested_at
+      _loaded_at AS loaded_at
   FROM BRONZE.HUBSPOT.contacts
 
 )
@@ -187,6 +212,19 @@ CREATE OR REPLACE VIEW SILVER_DEV.TESTING__dev_yourname.stg_hubspot__contacts AS
 </details>
 
 **Project state at end of Module 03:** 1 staging model. 0 staging models yet running in Snowflake.
+
+### Bonus — Variables and environment-aware filtering
+
+dbt lets you define variables in `dbt_project.yml` and read them inside any model with `{{ var('my_var') }}`. Combined with `{{ target.name }}`, this is a common pattern for limiting data volume in dev without changing your production query.
+
+**Your task (no code provided — use an AI assistant to help you work this out):**
+
+1. Add a variable called `limit_rows` with a default value to `dbt_project.yml` under the `vars:` key.
+2. In `stg_hubspot__contacts.sql`, add a `WHERE` clause that only activates when the current target is `dev`. When active, it should use the `limit_rows` variable to restrict the number of rows returned.
+3. Compile the model and inspect the output. Does the `WHERE` clause appear? What happens when the target is `prod`?
+4. Override the variable from the command line with `--vars` and recompile. Confirm the compiled SQL changes.
+
+Think about: why is this pattern useful in a team where Bronze tables have millions of rows?
 
 ---
 
@@ -209,9 +247,9 @@ The Bronze source table (`BRONZE.HUBSPOT.pipeline_stages`) has these columns:
 | `stage_name` | Human-readable stage label |
 | `is_closed` | Whether this stage represents a closed deal |
 | `pipeline_id` | The pipeline this stage belongs to |
-| `_ingested_at` | Ingestion timestamp |
+| `_loaded_at` | Ingestion timestamp |
 
-After fixing the materialisation, make sure the model also selects all five columns (rename `_ingested_at` → `ingested_at`).
+After fixing the materialisation, make sure the model also selects all five columns (rename `_loaded_at` → `loaded_at`).
 
 <details>
 <summary>The bug and fix</summary>
@@ -226,7 +264,7 @@ SELECT
     stage_name,
     is_closed,
     pipeline_id,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'pipeline_stages') }}
 ```
 
@@ -244,14 +282,14 @@ The Bronze source table (`BRONZE.HUBSPOT.deals`) has these columns:
 | `deal_name` | Name of the deal |
 | `pipeline_id` | Pipeline the deal belongs to |
 | `close_date` | Expected close date |
-| `_ingested_at` | Ingestion timestamp |
+| `_loaded_at` | Ingestion timestamp |
 
 Requirements:
 - Materialise as view
 - Source: `{{ source('hubspot', 'deals') }}`
 - Select all five columns
 - Rename `close_date` → `expected_close_date`
-- Rename `_ingested_at` → `ingested_at`
+- Rename `_loaded_at` → `loaded_at`
 
 <details>
 <summary>Expected model</summary>
@@ -264,7 +302,7 @@ SELECT
     deal_name,
     pipeline_id,
     close_date      AS expected_close_date,
-    _ingested_at    AS ingested_at
+    _loaded_at    AS loaded_at
 FROM {{ source('hubspot', 'deals') }}
 ```
 
@@ -320,7 +358,7 @@ Open `models/staging/hubspot/sources.yml`. The file currently declares `contacts
 
 Add the `owners` table to the same source block:
 - Table name: `owners`
-- `loaded_at_field`: `_ingested_at`
+- `loaded_at_field`: `_loaded_at`
 - Freshness warn threshold: 14 hours
 - Freshness error threshold: 25 hours
 
@@ -329,7 +367,7 @@ Add the `owners` table to the same source block:
 
 ```yaml
       - name: owners
-        loaded_at_field: _ingested_at
+        loaded_at_field: _loaded_at
         freshness:
           warn_after:  {count: 14, period: hour}
           error_after: {count: 25, period: hour}
@@ -349,9 +387,9 @@ The Bronze source table (`BRONZE.HUBSPOT.owners`) has these columns:
 | `first_name` | First name |
 | `last_name` | Last name |
 | `email` | Work email |
-| `_ingested_at` | Ingestion timestamp |
+| `_loaded_at` | Ingestion timestamp |
 
-Requirements: view materialization, `{{ source('hubspot', 'owners') }}`, all five columns, rename `_ingested_at` → `ingested_at`.
+Requirements: view materialization, `{{ source('hubspot', 'owners') }}`, all five columns, rename `_loaded_at` → `loaded_at`.
 
 <details>
 <summary>Expected model</summary>
@@ -364,7 +402,7 @@ SELECT
     first_name,
     last_name,
     email,
-    _ingested_at AS ingested_at
+    _loaded_at AS loaded_at
 FROM {{ source('hubspot', 'owners') }}
 ```
 

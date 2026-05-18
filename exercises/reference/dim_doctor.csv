@@ -1,4 +1,4 @@
-owner_id,first_name,last_name,email,_ingested_at
+doctor_key,first_name,last_name,email,loaded_at
 OWN001,Jane,Smith,jane@company.com,2024-01-15 06:00:00
 OWN002,Tom,Baker,tom@company.com,2024-01-15 06:00:00
 OWN003,Sarah,Chen,sarah@company.com,2024-01-15 06:00:00

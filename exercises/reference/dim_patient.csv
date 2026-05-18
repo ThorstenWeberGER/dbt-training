@@ -1,4 +1,4 @@
-contact_id,email,pipeline_id,_ingested_at
+patient_key,email,pipeline_id,loaded_at
 C001,alice.johnson@example.com,hs-pipeline-001,2024-01-15 08:00:00
 C002,bob.smith@example.com,hs-pipeline-001,2024-01-15 08:00:00
 C003,carol.white@example.com,hs-pipeline-002,2024-01-15 08:00:00

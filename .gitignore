@@ -1,4 +1,8 @@
-.claude/
-.temp/
-presentation/.temp/
-presentation/node_modules
+target/
+dbt_packages/
+logs/
+profiles.yml
+.secrets/
+*.pyc
+__pycache__/
+node_modules/

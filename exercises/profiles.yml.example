@@ -1,0 +1,28 @@
+# Copy this file to ~/.dbt/profiles.yml and fill in your details.
+# Never commit the real profiles.yml — it contains credentials.
+
+analytics:
+  target: dev
+  outputs:
+
+    dev:
+      type: snowflake
+      account: <account_locator>       # e.g. xy12345.eu-west-1
+      user: <your_email>
+      authenticator: externalbrowser
+      role: transformer
+      warehouse: COMPUTE_WH_DEV
+      database: SILVER_DEV
+      schema: TESTING__dev_<yourname>  # personal schema — never shared
+      threads: 4
+
+    prod:
+      type: snowflake
+      account: <account_locator>
+      user: <service_account_email>
+      password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
+      role: transformer
+      warehouse: COMPUTE_WH_PROD
+      database: SILVER
+      schema: PUBLIC
+      threads: 8

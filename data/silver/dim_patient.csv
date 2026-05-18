@@ -1,6 +1,0 @@
-patient_key,patient_id,first_name,last_name,date_of_birth,is_current
-pat-001,P001,Alice,Walker,1985-03-12,true
-pat-002,P002,Bob,Turner,1972-07-24,true
-pat-003,P003,Carol,White,1990-11-05,true
-pat-004,P004,David,Brown,1965-09-18,true
-pat-005,P005,Eve,Garcia,1998-02-28,true
