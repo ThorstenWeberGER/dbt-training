@@ -213,6 +213,19 @@ CREATE OR REPLACE VIEW SILVER_DEV.TESTING__dev_yourname.stg_hubspot__contacts AS
 
 **Project state at end of Module 03:** 1 staging model. 0 staging models yet running in Snowflake.
 
+### Bonus — Variables and environment-aware filtering
+
+dbt lets you define variables in `dbt_project.yml` and read them inside any model with `{{ var('my_var') }}`. Combined with `{{ target.name }}`, this is a common pattern for limiting data volume in dev without changing your production query.
+
+**Your task (no code provided — use an AI assistant to help you work this out):**
+
+1. Add a variable called `limit_rows` with a default value to `dbt_project.yml` under the `vars:` key.
+2. In `stg_hubspot__contacts.sql`, add a `WHERE` clause that only activates when the current target is `dev`. When active, it should use the `limit_rows` variable to restrict the number of rows returned.
+3. Compile the model and inspect the output. Does the `WHERE` clause appear? What happens when the target is `prod`?
+4. Override the variable from the command line with `--vars` and recompile. Confirm the compiled SQL changes.
+
+Think about: why is this pattern useful in a team where Bronze tables have millions of rows?
+
 ---
 
 ## Module 04 — Fix and Extend Staging (25 min)
