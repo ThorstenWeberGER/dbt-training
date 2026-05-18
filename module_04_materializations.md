@@ -71,7 +71,7 @@ Gold marts use `table` because they're small aggregates. Silver dimensions use `
 
 ### Part C — `incremental`: The One That Matters Most
 
-Here's the core idea: incremental models don't rebuild from scratch on every run. They process only new or changed rows. That's why large Silver facts use this materialization — rebuilding millions of rows nightly from scratch would be slow and expensive.
+Incremental models don't rebuild from scratch on every run. They process only new or changed rows. That's why large Silver facts use this materialization — rebuilding millions of rows nightly from scratch would be slow and expensive.
 
 ```sql
 {{ config(
@@ -153,7 +153,7 @@ VALUES (...)
 | `sync_all_columns` | Adds new columns, removes deleted ones — **our standard** |
 | `append_new_columns` | Adds new columns only, never removes |
 
-Always use `sync_all_columns`. The `ignore` default is a silent data bug waiting to happen — you'll add a column, run dbt, see no error, and wonder why the column's missing from Snowflake.
+Always use `sync_all_columns`. The `ignore` default is a silent data bug waiting to happen. You'll add a column, run dbt, see no error, and wonder why the column's missing from Snowflake.
 
 #### Forcing a full refresh
 

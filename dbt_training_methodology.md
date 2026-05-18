@@ -87,7 +87,7 @@ Theory Part A (15 min) → Mini exercise (10 min) → Theory Part B (15 min) →
 
 Provide reference material *after* the exercise, not before.
 
-Giving it before encourages reading instead of thinking. Providing it after the exercise means participants consult it as a reference — which is the correct mental model for how documentation works.
+Giving it before encourages reading instead of thinking. Providing it after means participants consult it as a reference — which is the correct mental model for how documentation works.
 
 **Each module should have:**
 
@@ -153,7 +153,7 @@ Bonus: [Optional harder extension]
 | 1 trainer : 5–8 participants | Workable — use pair programming for exercises |
 | Async / self-paced | Only for reference reading and optional challenges — not for core modules |
 
-Avoid async delivery for Tier 1 modules. The concepts are simple but the mental model has to be built correctly the first time. Misunderstandings at Module 2 compound badly by Module 8.
+Avoid async delivery for Tier 1 modules. The concepts are simple, but you need to build the mental model correctly the first time. Misunderstandings at Module 2 compound badly by Module 8.
 
 ---
 

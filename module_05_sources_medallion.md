@@ -99,7 +99,7 @@ flowchart TD
 | Silver | dbt | dbt Gold, ad hoc analysis | ✅ Yes |
 | Gold | dbt | Power BI, business users | ✅ Yes |
 
-The critical rule: dbt references Bronze as a **source**, not a `ref()`. Bronze tables are never built by dbt.
+dbt references Bronze as a **source**, not a `ref()`. Bronze tables are never built by dbt.
 
 ---
 
@@ -169,7 +169,7 @@ Here's what you lose by hardcoding:
 
 ### Part D — Source Freshness
 
-Here's the problem source freshness solves: if HubSpot stops syncing data to Bronze, your Silver and Gold models will still run — they'll just be silently building on stale data. Source freshness gives you a way to catch that before it happens.
+If HubSpot stops syncing data to Bronze, your Silver and Gold models will still run. They'll just be silently building on stale data. Source freshness gives you a way to catch that before it happens.
 
 Source freshness checks whether Bronze data is up to date before dbt models run.
 

@@ -215,7 +215,7 @@ CREATE OR REPLACE VIEW SILVER_DEV.TESTING__dev_yourname.stg_hubspot__contacts AS
 
 ### Bonus — Variables and environment-aware filtering
 
-dbt lets you define variables in `dbt_project.yml` and read them inside any model with `{{ var('my_var') }}`. Combined with `{{ target.name }}`, this is a common pattern for limiting data volume in dev without changing your production query.
+dbt lets you define variables in `dbt_project.yml` and read them in any model with `{{ var('my_var') }}`. Combined with `{{ target.name }}`, this is a common pattern for limiting data volume in dev without changing your production query.
 
 **Your task (no code provided — use an AI assistant to help you work this out):**
 
