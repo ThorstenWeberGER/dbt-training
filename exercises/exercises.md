@@ -65,6 +65,31 @@ Use these to understand column names, data types, and expected values before wri
 
 ---
 
+## Before You Start — Configure Your Profile
+
+Copy `profiles.yml.example` to `~/.dbt/profiles.yml` and update every value to match the Bloomwell environment:
+
+| Key | What to change |
+|-----|----------------|
+| `account` | Bloomwell Snowflake account locator (ask your trainer) |
+| `user` | Your Bloomwell email address |
+| `role` | Your assigned Transformer role (e.g. `transformer_dev`) |
+| `warehouse` | The warehouse your team uses (e.g. `BLOOMWELL_WH_DEV`) |
+| `database` | The dev database you write to (e.g. `BLOOMWELL_SILVER_DEV`) |
+| `schema` | Your personal dev schema — follow the pattern `dev_<yourname>` |
+
+> **Never commit `profiles.yml`.** It is already in `.gitignore`. The `.example` file is the only profiles file that lives in the repo.
+
+Once updated, verify the connection before any exercise:
+
+```bash
+dbt debug
+```
+
+All checks should pass before you write any SQL.
+
+---
+
 ## Module 01 — Orientation (25 min)
 
 **Prerequisite:** Module 01 theory block
