@@ -1,7 +1,0 @@
-deal_id,deal_name,pipeline_id,close_date,_loaded_at
-D001,Initial Consultation Package,hs-pipeline-001,2024-02-28,2024-01-15 08:00:00
-D002,Follow-up Treatment Plan,hs-pipeline-001,2024-03-15,2024-01-15 08:00:00
-D003,Annual Wellness Package,hs-pipeline-002,2024-03-30,2024-01-16 09:00:00
-D004,Premium Health Check,hs-pipeline-002,2024-04-15,2024-01-16 09:00:00
-D005,Specialist Referral Bundle,hs-pipeline-003,2024-04-30,2024-01-17 10:00:00
-D006,Emergency Care Package,hs-pipeline-001,2024-05-15,2024-01-18 08:00:00
