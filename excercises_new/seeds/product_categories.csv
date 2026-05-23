@@ -1,0 +1,4 @@
+category_code,category_label,is_prescription_required
+SUPPLEMENTS,Dietary Supplements,false
+PRESCRIPTION,Prescription Medication,true
+OTC,Over-The-Counter,false

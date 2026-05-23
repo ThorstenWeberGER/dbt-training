@@ -1,0 +1,29 @@
+version: 2
+
+sources:
+  - name: hubspot
+    # Database resolves via env var:
+    #   Snowflake training  → set DBT_SOURCE_DATABASE=DBT_TRAINING
+    #   DuckDB testing      → defaults to 'dbt_training' (the .duckdb file name)
+    database: "{{ env_var('DBT_SOURCE_DATABASE', 'dbt_training') }}"
+    schema: hubspot_raw
+    loaded_at_field: _loaded_at
+    freshness:
+      warn_after:  {count: 24, period: hour}
+      error_after: {count: 48, period: hour}
+    tables:
+      - name: contacts
+        description: "One row per HubSpot contact. Pre-loaded by trainer before training."
+      - name: deals
+        description: "One row per HubSpot deal."
+      - name: pipeline_stages
+        description: "HubSpot pipeline stage definitions."
+      - name: prescriptions
+        description: "One row per prescription record."
+      - name: products
+        description: "Product catalogue."
+      # ── Module 05 exercise ─────────────────────────────────────────────────
+      # The owners source is declared here but has no freshness config yet.
+      # Module 05 task: add loaded_at_field, warn_after (24h), error_after (48h).
+      - name: owners
+        description: "One row per HubSpot owner (doctor)."

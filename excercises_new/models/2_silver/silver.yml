@@ -1,0 +1,122 @@
+version: 2
+
+models:
+  - name: dim_patient
+    description: "Patient dimension. Grain: one row per patient (HubSpot contact). SCD1."
+    columns:
+      - name: patient_key
+        description: "Surrogate key — MD5 of contact_id"
+        tests:
+          - not_null
+          - unique
+      - name: contact_id
+        tests:
+          - not_null
+          - unique
+      - name: email
+        tests:
+          - not_null
+      - name: country_code
+        description: "ISO 2-letter country code (upper-cased in staging)"
+
+  - name: dim_doctor
+    description: "Doctor dimension. Grain: one row per doctor (HubSpot owner). SCD1."
+    columns:
+      - name: doctor_key
+        description: "Surrogate key — MD5 of owner_id"
+        tests:
+          - not_null
+          - unique
+      - name: owner_id
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_pipeline_stage
+    description: "Pipeline stage dimension. Grain: one row per stage."
+    columns:
+      - name: pipeline_stage_key
+        description: "Surrogate key — MD5 of pipeline_stage_id"
+        tests:
+          - not_null
+          - unique
+      - name: pipeline_stage_id
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_product
+    description: "Product dimension enriched with category labels. Grain: one row per product."
+    columns:
+      - name: product_key
+        description: "Surrogate key — MD5 of product_id"
+        tests:
+          - not_null
+          - unique
+      - name: product_id
+        tests:
+          - not_null
+          - unique
+
+  - name: fct_deal
+    description: "Deal facts. Grain: one row per deal."
+    columns:
+      - name: deal_key
+        description: "Surrogate key — MD5 of deal_id"
+        tests:
+          - not_null
+          - unique
+      - name: deal_id
+        tests:
+          - not_null
+          - unique
+      - name: patient_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_patient')
+                field: patient_key
+      - name: pipeline_stage_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_pipeline_stage')
+                field: pipeline_stage_key
+
+  - name: fct_prescription
+    description: "Prescription facts. Grain: one row per prescription."
+    columns:
+      - name: prescription_key
+        description: "Surrogate key — MD5 of prescription_id"
+        tests:
+          - not_null
+          - unique
+      - name: prescription_id
+        tests:
+          - not_null
+          - unique
+      - name: patient_key
+        description: "FK to dim_patient — identifies the patient who received the prescription"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_patient')
+                field: patient_key
+      - name: doctor_key
+        description: "FK to dim_doctor — identifies the prescribing doctor"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_doctor')
+                field: doctor_key
+      - name: product_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
