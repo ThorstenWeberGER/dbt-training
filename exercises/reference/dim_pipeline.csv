@@ -1,4 +1,0 @@
-pipeline_key,hubspot_pipeline_id,pipeline_name,is_active,dbt_valid_from,dbt_valid_to,is_current
-1,hs-pipeline-001,hs-pipeline-001,true,2024-01-15 08:00:00,,true
-2,hs-pipeline-002,hs-pipeline-002,true,2024-01-15 08:00:00,,true
-3,hs-pipeline-003,hs-pipeline-003,true,2024-01-16 09:00:00,,true

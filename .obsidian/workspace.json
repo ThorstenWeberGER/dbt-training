@@ -1,0 +1,209 @@
+{
+  "main": {
+    "id": "34e153115e451873",
+    "type": "split",
+    "children": [
+      {
+        "id": "255b3d0c6d30cc05",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "47ec2bff893c09d0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "excercises/exercises_trainer.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "exercises_trainer"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "a576c2e9636798a5",
+    "type": "split",
+    "children": [
+      {
+        "id": "06f1af62e63cc8b2",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c4664627c9c84c51",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Dateiexplorer"
+            }
+          },
+          {
+            "id": "9c90a39526e0faf9",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Suchen"
+            }
+          },
+          {
+            "id": "f77473403633ae57",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Lesezeichen"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "b7b9182fae26a73e",
+    "type": "split",
+    "children": [
+      {
+        "id": "90a552d4240c359e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1d5da2adeedd4eda",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "excercises/exercises_trainer.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Rückverweise auf exercises_trainer"
+            }
+          },
+          {
+            "id": "10e3b23652799933",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "excercises/exercises_trainer.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Ausgehende Links von exercises_trainer öffnen"
+            }
+          },
+          {
+            "id": "5c691ef6e4469943",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "83f0aa4251fab35b",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Alle Eigenschaften"
+            }
+          },
+          {
+            "id": "d73c6bfa0114041f",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "excercises/exercises_trainer.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Gliederung von exercises_trainer"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Schnellauswahl öffnen": false,
+      "graph:Graph-Ansicht öffnen": false,
+      "canvas:Neuen Canvas erstellen": false,
+      "daily-notes:Heutige Notiz öffnen": false,
+      "templates:Vorlage einfügen": false,
+      "command-palette:Befehlspalette öffnen": false,
+      "bases:Neue Base erstellen": false
+    }
+  },
+  "active": "47ec2bff893c09d0",
+  "lastOpenFiles": [
+    "CLAUDE.md",
+    "module_02_project_setup.md",
+    "presentation/module_02_slides.md.tmp.25032.fdfb5b96756b",
+    "presentation/module_02_slides.md.tmp.25032.626e4034304a",
+    "excercises/exercises_trainer.md",
+    "excercises",
+    "exercises/exercises.md",
+    "exercises/exercises_trainer.md",
+    "dbt_training_methodology.md",
+    "presentation/module_01_slides.md.tmp.19676.c81160915666",
+    "presentation/module_01_slides.md.tmp.19676.4d22aae6e16c",
+    "presentation/module_01_slides.md.tmp.19676.e9cb01f55dba",
+    "module_01_what_is_dbt.md",
+    "resources/reference.md",
+    "resources/Analytics Engineering with SQL and dbt.pdf",
+    "resources/file_BF350769-FD61-4644-BA79-637609D6FF48.pdf",
+    "resources/dbt_mindmap_light.png",
+    "resources/Data_Quality_Validation.md",
+    "README.md",
+    "presentation/course_overview_2slides.md.tmp.21716.74a76205cf17"
+  ]
+}

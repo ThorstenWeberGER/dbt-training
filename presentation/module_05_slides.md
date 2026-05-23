@@ -37,6 +37,10 @@ All four correct before continuing.
 
 # The Medallion Architecture
 
+<div class="grid grid-cols-2 gap-6 mt-4">
+<div>
+<div style="transform: scale(0.55); transform-origin: top center; margin-bottom: -160px;">
+
 ```mermaid
 flowchart TD
     SRC(["Source Systems — HubSpot · Shopify · APIs"])
@@ -61,8 +65,27 @@ flowchart TD
     class BRONZE bronze
 ```
 
-<div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+</div>
+</div>
+<div class="flex flex-col gap-4 pt-2">
+
+<div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
   dbt references Bronze as a <strong>source</strong>, not via <code>ref()</code>. Bronze tables are never built by dbt.
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
+  <div class="font-mono text-slate-400 text-xs mb-2">When referencing Bronze in a staging model</div>
+  <code class="text-emerald-600" v-pre>{{ source('hubspot', 'contacts') }}</code>
+  <div class="text-slate-500 text-xs mt-1">Declares a dependency on the source → DAG tracks it</div>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
+  <div class="font-mono text-slate-400 text-xs mb-2">When referencing any other dbt model</div>
+  <code class="text-emerald-600" v-pre>{{ ref('dim_patient') }}</code>
+  <div class="text-slate-500 text-xs mt-1">Resolves to correct schema per target environment</div>
+</div>
+
+</div>
 </div>
 
 <!--
@@ -73,37 +96,7 @@ The critical point: dbt starts at Staging. It references Bronze as a source (dec
 This architecture is also why we have freshness checks: if Lambda stops running, Bronze goes stale. dbt can detect this via source freshness before wasting compute building Silver on outdated data.
 
 Ask: "Who writes to the Bronze layer?" → Lambda / ingestion layer. Not dbt. Never dbt.
--->
 
----
-
-# Layer Ownership Rules
-
-<div class="mt-4">
-
-| Layer | Written by | Read by | dbt owns? |
-|---|---|---|---|
-| Bronze | Lambda / ingestion | dbt Staging | ❌ No |
-| Staging | dbt | dbt Silver | ✅ Yes |
-| Silver | dbt | dbt Gold, ad hoc analysis | ✅ Yes |
-| Gold | dbt | Power BI, business users | ✅ Yes |
-
-</div>
-
-<div class="mt-6 grid grid-cols-2 gap-4">
-<div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
-  <div class="font-mono text-slate-400 text-xs mb-2">When referencing Bronze in a staging model</div>
-  <code class="text-emerald-600" v-pre>{{ source('hubspot', 'contacts') }}</code>
-  <div class="text-slate-500 text-xs mt-1">Declares a dependency on the source → DAG tracks it</div>
-</div>
-<div class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
-  <div class="font-mono text-slate-400 text-xs mb-2">When referencing any other dbt model</div>
-  <code class="text-emerald-600" v-pre>{{ ref('dim_patient') }}</code>
-  <div class="text-slate-500 text-xs mt-1">Resolves to correct schema per target environment</div>
-</div>
-</div>
-
-<!--
 The source() vs ref() distinction is not just syntax — it's semantic. source() says "this data comes from outside dbt." ref() says "this data was built by dbt." The DAG reflects this distinction.
 
 If someone hardcodes BRONZE.HUBSPOT.contacts instead of using source(), dbt has no idea that model depends on that Bronze table. The lineage graph is incomplete. Source freshness won't work for that model.
@@ -148,7 +141,7 @@ Static tables like pipeline_stages don't need freshness — they change infreque
 
 ---
 
-# `{{ source() }}` vs Hardcoding
+# Hardcoding vs. `{{ source() }}`
 
 <div class="grid grid-cols-2 gap-6 mt-4">
 <div>
@@ -161,10 +154,10 @@ FROM BRONZE.HUBSPOT.contacts
 ```
 
 <div class="mt-3 space-y-2 text-sm">
-  <div class="flex gap-2 text-red-600"><span>✗</span> Does not appear in the DAG</div>
-  <div class="flex gap-2 text-red-600"><span>✗</span> Freshness check doesn't work</div>
-  <div class="flex gap-2 text-red-600"><span>✗</span> Always points to prod — ignores your dev target</div>
-  <div class="flex gap-2 text-red-600"><span>✗</span> Schema change requires updating every model</div>
+  <div class="flex gap-2 text-red-600"><span>-</span> Does not appear in the DAG</div>
+  <div class="flex gap-2 text-red-600"><span>-</span> Freshness check doesn't work</div>
+  <div class="flex gap-2 text-red-600"><span>-</span> Always points to prod — ignores your dev target</div>
+  <div class="flex gap-2 text-red-600"><span>-</span> Schema change requires updating every model</div>
 </div>
 
 </div>
@@ -178,10 +171,10 @@ FROM {{ source('hubspot', 'contacts') }}
 ```
 
 <div class="mt-3 space-y-2 text-sm">
-  <div class="flex gap-2 text-emerald-600"><span>✓</span> Appears in DAG with lineage</div>
-  <div class="flex gap-2 text-emerald-600"><span>✓</span> Freshness check works</div>
-  <div class="flex gap-2 text-emerald-600"><span>✓</span> Resolves to correct schema per target</div>
-  <div class="flex gap-2 text-emerald-600"><span>✓</span> Schema change: update sources.yml once</div>
+  <div class="flex gap-2 text-emerald-600"><span>-</span> Appears in DAG with lineage</div>
+  <div class="flex gap-2 text-emerald-600"><span>-</span> Freshness check works</div>
+  <div class="flex gap-2 text-emerald-600"><span>-</span> Resolves to correct schema per target</div>
+  <div class="flex gap-2 text-emerald-600"><span>-</span> Schema change: update sources.yml once</div>
 </div>
 
 </div>
@@ -261,6 +254,11 @@ Ask: "What does dbt do if a source is stale and freshness is set to error?" → 
   <div class="text-sm text-emerald-700">Run <code>dbt compile --select stg_hubspot__owners</code>. Verify the compiled output references <code>BRONZE.HUBSPOT.owners</code>.</div>
 </div>
 
+<div class="bg-white border border-emerald-200 rounded-xl p-4">
+  <div class="text-xs font-mono text-slate-400 mb-2">Step 4 — Read the docs</div>
+  <div class="text-sm text-slate-600">Google dbt docs about source configuration: <code>dbt docs add sources to your dag</code>. Browse, note diverse options.</div>
+</div>
+
 </div>
 
 <!--
@@ -274,17 +272,88 @@ dbt compile is the verification step — they can self-check. If compile succeed
 -->
 
 ---
-layout: center
+
+# What You Can Now Do — Module 05
+
+<div class="grid grid-cols-2 gap-4 mt-6">
+
+  <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-4">
+    <span class="text-emerald-500 text-xl mt-0.5">✓</span>
+    <div>
+      <div class="font-semibold text-slate-800 text-sm">Medallion Architecture</div>
+      <div class="text-slate-500 text-xs mt-1">Explain Bronze → Staging → Silver → Gold and why dbt never writes to Bronze</div>
+    </div>
+  </div>
+
+  <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-4">
+    <span class="text-emerald-500 text-xl mt-0.5">✓</span>
+    <div>
+      <div class="font-semibold text-slate-800 text-sm">Declare Sources</div>
+      <div class="text-slate-500 text-xs mt-1">Write a <code>sources.yml</code> with source name, database, schema, and table entries</div>
+    </div>
+  </div>
+
+  <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-4">
+    <span class="text-emerald-500 text-xl mt-0.5">✓</span>
+    <div>
+      <div class="font-semibold text-slate-800 text-sm">Use <code>source()</code> Correctly</div>
+      <div class="text-slate-500 text-xs mt-1">Reference Bronze via <code v-pre>{{ source() }}</code> — never hardcode — and explain what you lose without it</div>
+    </div>
+  </div>
+
+  <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-4">
+    <span class="text-emerald-500 text-xl mt-0.5">✓</span>
+    <div>
+      <div class="font-semibold text-slate-800 text-sm">Source Freshness</div>
+      <div class="text-slate-500 text-xs mt-1">Configure <code>warn_after</code> / <code>error_after</code> thresholds and interpret <code>dbt source freshness</code> output</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mt-5 bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-800">
+  <strong>Tier 1 checkpoint:</strong> You can read from any Bronze source, declare it correctly, and protect the pipeline from stale data — before a single Silver model runs.
+</div>
+
+<!--
+Use this slide as a verbal recap — ask participants to call out what each card means before you click to it.
+
+If anyone is uncertain on source() vs ref(), spend another 2 minutes here — it's the most common mistake in code review for new dbt writers.
+-->
+
+---
+layout: default
+background: '#f9f8f5'
 ---
 
-<div class="text-center">
+<div class="h-full flex flex-col items-center justify-center text-center">
   <div class="text-xs font-mono text-slate-400 tracking-widest uppercase mb-4">Module 05 Complete</div>
   <h2 class="text-3xl font-bold text-slate-800 mb-2">Next: Module 06</h2>
   <p class="text-slate-500 mb-8">Testing Data Quality</p>
   <div class="space-y-2 text-left max-w-md mx-auto">
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q1: What must exist before using {{ source('hubspot', 'contacts') }}?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q1: What must exist before using {{ source('hubspot', 'contacts') }}?</div>
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q2: Two things lost by hardcoding vs source()?</div>
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q3: What column does dbt query for freshness?</div>
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q4: Why does dbt NOT own the Bronze layer?</div>
   </div>
 </div>
+
+<!--
+ANSWERS — ask cold before revealing:
+
+Q1: A sources.yml declaration with the source name, database, schema, and the specific table entry.
+    Without it dbt errors at Parse phase: "source 'hubspot' not found."
+
+Q2: Any two of:
+    - DAG lineage — hardcoded table is invisible to dbt; the dependency is not tracked
+    - Source freshness — dbt source freshness only works for declared sources
+    - Environment-awareness — hardcoded name always points to the same database regardless of target
+    - Single update point — schema/database changes require editing every model, not just sources.yml
+
+Q3: The column declared as loaded_at_field in sources.yml — in our case _ingested_at.
+    dbt runs: SELECT MAX(_ingested_at) FROM BRONZE.HUBSPOT.contacts and compares to NOW().
+
+Q4: Bronze is written by Lambda (append-only ingestion). dbt only transforms data already in the warehouse.
+    dbt starts at Staging — it reads from Bronze via source(), but never writes to it.
+    If dbt owned Bronze it would conflict with Lambda's writes and break the ingestion contract.
+-->

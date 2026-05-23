@@ -7,6 +7,28 @@ This document is for you, the trainer. It covers what participants need to do pe
 
 ---
 
+## First: demonstration of dbt in snowflake
+
+#### Done by instructor only
+
+> Contains setup, config of `project.yml`, run in dev, prod, check folders, locate compiled code and see results.
+
+Steps:
+* open Snowflake
+* create new workspace
+* create new dbt project, select warehouse, schema (explain that is fallback)
+* edit profiles.yml
+	* explain what they see
+	* add user: your.email@bloomwell.de
+	* change database/schema: bloomwell_staging.dev_schema
+	* add prod environment bloomwell_staging.prod_schema
+* run it in dev
+	* look at output
+	* look at results in compiled -> a sql file
+	* look at database tables
+	* look at the DAG
+	* look at documentation in hubspot-tickets-tickets
+
 ## Deliberate Bugs in the Pre-built Project
 
 Two bugs have been planted in the scaffold. Participants aren't told about the second one — the test suite reveals it in Module 06.
@@ -25,6 +47,10 @@ Two bugs have been planted in the scaffold. Participants aren't told about the s
 ## Module 01 — Orientation (25 min)
 
 ### What participants do
+
+Download repo in their workspace.
+* add user, change dev to bloomwell_staging, schema: dev_tweber, dev_a...., dev_lastname
+
 
 1. Read `dbt_project.yml` and answer four questions
 2. List all `.sql` files in `models/silver/` and find one `{{ ref() }}` or `{{ source() }}` call in each

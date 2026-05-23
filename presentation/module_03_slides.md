@@ -220,6 +220,65 @@ Checkpoint: "What does {{ ref('dim_patient') }} compile to in your dev environme
 
 ---
 
+# Exercise: Read and Write (20 min)
+
+<div class="grid grid-cols-2 gap-6 mt-4">
+<div>
+
+**Task 1 — Predict compiled output (prod target)**
+
+```sql
+{{ config(materialized='table') }}
+
+SELECT
+    c.contact_id,
+    c.email,
+    p.pipeline_name
+FROM {{ source('hubspot', 'contacts') }} c
+LEFT JOIN {{ ref('dim_pipeline') }} p
+    ON c.pipeline_id = p.hubspot_pipeline_id
+```
+
+- What is the result of this select statement?
+- How would the adequate DDL statement look like?
+- What parts of the FROM/JOIN statement already exist as tables in Snowflake?
+
+</div>
+<div>
+
+**Task 2 — Write from scratch**
+
+Write `stg_hubspot__deals.sql` that:
+
+- References `hubspot` source, `deals` table
+- Selects: `deal_id`, `deal_name`, `pipeline_id`, `close_date`
+- Renames `close_date` → `expected_close_date`
+- Materialised as a `view`
+
+<div class="mt-3 bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-xs text-emerald-700">
+  After writing: run <code>dbt compile --select stg_hubspot__deals</code> and verify the output in <code>target/compiled/</code>. Then inspect the materialized database object.
+</div>
+
+</div>
+</div>
+
+<!--
+Task 1 expected answer:
+CREATE OR REPLACE TABLE SILVER.PUBLIC.your_model AS
+SELECT c.contact_id, c.email, p.pipeline_name
+FROM BRONZE.HUBSPOT.contacts c
+LEFT JOIN SILVER.PUBLIC.dim_pipeline p ON c.pipeline_id = p.hubspot_pipeline_id
+
+Most common errors to watch for:
+- Using {{ }} for if blocks
+- Forgetting to add {{ config(materialized='view') }} for Task 2
+- Using a hardcoded table name instead of source() or ref()
+
+Running dbt compile is the verification step — participants can self-check without needing the trainer.
+-->
+
+---
+
 # `{{ this }}` and `{% if is_incremental() %}`
 
 <div class="mt-4">
@@ -269,7 +328,7 @@ After the slide, ask: "What does {{ this }} refer to?" → The table this model 
 
 <div class="mt-4">
 
-```sql {4,5,6}
+```sql {3,4,5}
 SELECT *
 FROM {{ ref('fct_appointments') }}
 {% if target.name != 'prod' %}
@@ -302,63 +361,6 @@ The key insight: the same model file produces different SQL depending on which p
 Note that this is a {% %} statement (not {{ }}), and that target.name is lowercase. Both common trip-ups.
 
 Don't go deep into other target properties here. target.name is the one they'll actually use.
--->
-
----
-
-# Exercise: Read and Write (20 min)
-
-<div class="grid grid-cols-2 gap-6 mt-4">
-<div>
-
-**Task 1 — Predict compiled output (prod target)**
-
-```sql
-{{ config(materialized='table') }}
-
-SELECT
-    c.contact_id,
-    c.email,
-    p.pipeline_name
-FROM {{ source('hubspot', 'contacts') }} c
-LEFT JOIN {{ ref('dim_pipeline') }} p
-    ON c.pipeline_id = p.hubspot_pipeline_id
-```
-
-What SQL does Snowflake receive?
-
-</div>
-<div>
-
-**Task 2 — Write from scratch**
-
-Write `stg_hubspot__deals.sql` that:
-
-- References `hubspot` source, `deals` table
-- Selects: `deal_id`, `deal_name`, `pipeline_id`, `close_date`
-- Renames `close_date` → `expected_close_date`
-- Materialised as a `view`
-
-<div class="mt-4 bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-700">
-  After writing: run <code>dbt compile --select stg_hubspot__deals</code> and verify the output in <code>target/compiled/</code>
-</div>
-
-</div>
-</div>
-
-<!--
-Task 1 expected answer:
-CREATE OR REPLACE TABLE SILVER.PUBLIC.your_model AS
-SELECT c.contact_id, c.email, p.pipeline_name
-FROM BRONZE.HUBSPOT.contacts c
-LEFT JOIN SILVER.PUBLIC.dim_pipeline p ON c.pipeline_id = p.hubspot_pipeline_id
-
-Most common errors to watch for:
-- Using {{ }} for if blocks
-- Forgetting to add {{ config(materialized='view') }} for Task 2
-- Using a hardcoded table name instead of source() or ref()
-
-Running dbt compile is the verification step — participants can self-check without needing the trainer.
 -->
 
 ---

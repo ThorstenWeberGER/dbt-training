@@ -191,19 +191,17 @@ Don't go deep on the macro. Just establish the problem exists and that there's a
 
 | Command | What it does | When to use |
 |---|---|---|
-| `dbt debug` | Validates connection and config | First after cloning |
 | `dbt compile` | Renders Jinja → raw SQL, no execution | Inspecting compiled output |
-| `dbt run` | Executes models, no tests | ⚠️ Avoid — use `dbt build` |
+| `dbt run` | Executes models, no tests | **In production - seperate tests** |
 | `dbt test` | Runs tests only | Debugging one specific test |
-| **`dbt build`** | **Models + tests in DAG order** | **Always. In CI and locally.** |
-| `dbt docs generate` | Builds doc site artifact | Before `dbt docs serve` |
-| `dbt docs serve` | Serves docs at localhost:8080 | Browsing DAG and column docs |
-| `dbt ls` | Lists models matching a selector | Checking what a selector targets |
+| `dbt snapshot` | Creates snapshots| Update SCD2 models |
+| **`dbt build`** | **All of the above** | Default in **development** |
+| `dbt docs generate` | Builds doc site artifact | Regularly after new models |
 
 </div>
 
 <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
-  <strong>The most important distinction:</strong> <code>dbt run</code> does NOT run tests. <code>dbt build</code> does. Use <code>dbt build</code>.
+  <strong>Remember:</strong> <code>dbt run</code> does NOT include snapshots. In production set up a separate task for<code>dbt snapshots</code> after bronze.
 </div>
 
 <!--
@@ -221,31 +219,55 @@ Selective runs: mention dbt run --select dim_patient+ briefly. The + means "and 
 
 **What happens when you run `dbt run` or `dbt build`:**
 
-<div class="mt-4 space-y-3">
+<div class="mt-4 flex gap-6">
 
-<div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
-  <div class="bg-slate-800 text-white text-xs font-mono px-2 py-1 rounded shrink-0">1. PARSE</div>
+<div class="flex-1 space-y-3">
+
+<div v-click="1" class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
+  <div class="bg-purple-900 text-white text-xs font-mono px-2 py-1 rounded shrink-0">1. PARSE</div>
   <div class="text-sm">Read all <code>.sql</code> and <code>.yml</code> files, validate Jinja syntax<br><span class="text-red-500 text-xs">Fails here: Jinja syntax errors, missing macro definitions</span></div>
 </div>
 
-<div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
-  <div class="bg-slate-800 text-white text-xs font-mono px-2 py-1 rounded shrink-0">2. RESOLVE</div>
+<div v-click="1" class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
+  <div class="bg-purple-900 text-white text-xs font-mono px-2 py-1 rounded shrink-0">2. RESOLVE</div>
   <div class="text-sm">Build the DAG — resolve all <code v-pre>{{ ref() }}</code> and <code v-pre>{{ source() }}</code> calls<br><span class="text-red-500 text-xs">Fails here: circular refs, missing models</span></div>
 </div>
 
-<div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
-  <div class="bg-slate-800 text-white text-xs font-mono px-2 py-1 rounded shrink-0">3. COMPILE</div>
+<div v-click="1" class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
+  <div class="bg-purple-900 text-white text-xs font-mono px-2 py-1 rounded shrink-0">3. COMPILE</div>
   <div class="text-sm">Render Jinja → raw SQL, write to <code>target/compiled/</code><br><span class="text-red-500 text-xs">Fails here: undefined variables, bad config blocks</span></div>
 </div>
 
-<div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
-  <div class="bg-slate-800 text-white text-xs font-mono px-2 py-1 rounded shrink-0">4. EXECUTE</div>
+<div v-click="2" class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
+  <div class="bg-orange-700 text-white text-xs font-mono px-2 py-1 rounded shrink-0">4. EXECUTE</div>
   <div class="text-sm">Send compiled SQL to Snowflake<br><span class="text-red-500 text-xs">Fails here: SQL errors, permission errors, type mismatches</span></div>
 </div>
 
-<div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
-  <div class="bg-slate-800 text-white text-xs font-mono px-2 py-1 rounded shrink-0">5. REPORT</div>
+<div v-click="3" class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-4">
+  <div class="bg-green-900 text-white text-xs font-mono px-2 py-1 rounded shrink-0">5. REPORT</div>
   <div class="text-sm">Log results, write <code>manifest.json</code> and <code>run_results.json</code><br><span class="text-slate-400 text-xs">Always runs — even failed runs produce a report</span></div>
+</div>
+
+</div>
+
+<div v-click="4" class="w-1/4 shrink-0">
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-fit mt-0.5">
+    <div class="text-xs font-mono text-slate-400 uppercase tracking-widest mb-3">Legend</div>
+    <div class="space-y-3">
+      <div class="flex items-start gap-2">
+        <div class="w-3 h-3 rounded-full bg-purple-900 shrink-0 mt-0.5"></div>
+        <div class="text-xs text-slate-600">dbt only — no connection to the data warehouse</div>
+      </div>
+      <div class="flex items-start gap-2">
+        <div class="w-3 h-3 rounded-full bg-orange-700 shrink-0 mt-0.5"></div>
+        <div class="text-xs text-slate-600">First time connection to the data warehouse</div>
+      </div>
+      <div class="flex items-start gap-2">
+        <div class="w-3 h-3 rounded-full bg-green-900 shrink-0 mt-0.5"></div>
+        <div class="text-xs text-slate-600">No effect on models — always runs regardless of outcome</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 </div>

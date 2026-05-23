@@ -41,15 +41,15 @@ Probe {{ this }} specifically — it connects directly to today's is_incremental
 
 | Materialization | What dbt creates | Full rebuild? | Use case |
 |---|---|---|---|
-| `view` | `CREATE OR REPLACE VIEW` | ✅ view def only | Staging, lightweight transforms |
-| `table` | `DROP + CREATE TABLE AS SELECT` | ✅ full rebuild | Small Gold marts, reference tables |
+| `view` | `CREATE OR REPLACE VIEW` | ✅ view definition only | Staging, lightweight transforms |
+| `table` | `DROP + CREATE TABLE AS SELECT` | ❗ always rebuild | Small Silver models SCD1, Gold marts, reference tables |
 | `incremental` | `MERGE INTO` or `INSERT` | ❌ new/changed rows only | Large Silver facts, append-heavy |
 | `ephemeral` | Nothing (becomes a CTE) | N/A | Intermediate steps, no table needed |
 
 </div>
 
 <div class="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-  <strong>The decision matters because Snowflake charges per compute.</strong> A 50M-row Gold mart rebuilt as a <code>table</code> every night is expensive. The same model as <code>incremental</code> processes only new rows — a fraction of the cost.
+  For SCD2 type models dbt provides <STRONG>snapshots</STRONG>. We will cover this later.
 </div>
 
 <!--
@@ -331,43 +331,129 @@ If someone asks "should we switch?": it depends on how complex the incremental l
 -->
 
 ---
+layout: default
+background: '#f9f8f5'
+---
 
-# Mandatory Materialization Rules
+# Where to Configure Materializations
 
-<div class="mt-4">
+<div class="flex items-center gap-2 text-xs mt-2 mb-4">
+  <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">dbt_project.yml</span>
+  <span class="text-slate-400">lowest priority</span>
+  <span class="text-slate-300 mx-1">→</span>
+  <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">schema.yml</span>
+  <span class="text-slate-400">overrides project</span>
+  <span class="text-slate-300 mx-1">→</span>
+  <code class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono" v-pre>{{ config() }}</code>
+  <span class="text-slate-400">highest priority · last wins</span>
+</div>
 
-| Layer | Required materialization | Reason |
-|---|---|---|
-| Bronze | Append-only via Lambda — dbt does not own Bronze | Managed by ingestion layer |
-| **Staging** | **`view` or `ephemeral`** | No business logic, no storage needed |
-| Silver — dimensions | `table` (or `incremental` for SCD2) | Rebuilt nightly, medium size |
-| Silver — facts (large) | `incremental` with merge strategy | Too large to full-refresh every night |
-| Gold | `table` | Small aggregates; consumers need consistent reads |
+<div class="grid grid-cols-3 gap-4">
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="flex items-center justify-between mb-2">
+    <code class="text-xs font-semibold text-slate-700">dbt_project.yml</code>
+    <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-mono">default</span>
+  </div>
+  <div class="text-xs text-slate-500 mb-3">Project-wide defaults. Applies to all models. Lives in project root.</div>
+
+<div style="font-size: 11px">
+
+```yaml
+# dbt_project.yml
+models:
+  analytics:
+    +materialized: view    # all models
+    silver:
+      +materialized: table
+      facts:
+        +materialized: incremental
+```
 
 </div>
 
-<div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
-  <strong>CI enforcement:</strong> Staging models configured as <code>table</code> will fail the pre-merge review. This is checked via the <code>dbt-sql-reviewer</code> skill.
+</div>
+
+<div class="bg-white border-2 border-emerald-300 rounded-xl p-4">
+  <div class="flex items-center justify-between mb-2">
+    <code class="text-xs font-semibold text-slate-700">schema.yml</code>
+    <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-mono">✅ recommended</span>
+  </div>
+  <div class="text-xs text-slate-500 mb-3">Per-model config alongside tests, column descriptions &amp; grants. In model folders.</div>
+
+<div style="font-size: 11px">
+
+```yaml
+# models/silver/schema.yml
+models:
+  - name: dim_contact
+    config:
+      materialized: incremental
+      unique_key: contact_key
+      on_schema_change: sync_all_columns
+    columns:
+      - name: contact_key
+        description: "Surrogate key — hash of hubspot_contact_id"
+        tests: [not_null, unique]
+```
+
+</div>
+
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="flex items-center justify-between mb-2">
+    <code class="text-xs font-semibold text-slate-700" v-pre>model.sql</code>
+    <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-mono">highest priority</span>
+  </div>
+  <div class="text-xs text-slate-500 mb-3">Inline at the top of the model. Overrides both levels above. For development only.</div>
+
+<div style="font-size: 11px">
+
+```sql
+{{ config(
+    materialized     = 'incremental',
+    unique_key       = 'contact_key',
+    on_schema_change = 'sync_all_columns'
+) }}
+
+SELECT contact_key, email, updated_at
+FROM {{ ref('stg_hubspot__contacts') }}
+```
+
+</div>
+
+</div>
+
+</div>
+
+<div class="mt-4 bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-800">
+  <strong>Why schema.yml?</strong> Tests, column descriptions, grants, and materialization config all live in one file. Splitting config between model SQL and YAML creates drift. Move <code v-pre>{{ config() }}</code> to <code>schema.yml</code> before merging — the SQL file should be pure logic.
 </div>
 
 <!--
-Read this table aloud together. These are not suggestions — the pre-merge review checks materialization compliance.
+Walk through the hierarchy with a concrete example: a model in analytics/silver/facts/ inherits materialized=incremental from dbt_project.yml. If schema.yml says table, that wins. If the model has {{ config(materialized='view') }}, that wins over both.
 
-The most common violation: someone creates a staging model as table because they want it to be queryable and fast. The correct solution is to promote it to a Silver model if it needs to be persisted.
+Key message:
+- dbt_project.yml = broad strokes (folder defaults). Change it rarely.
+- schema.yml = where day-to-day config lives. Tests, descriptions, grants, and materialization in one place. Reviewers look here first.
+- {{ config() }} = for temporary overrides during development. Never commit it when schema.yml does the same job — splitting config across two files causes confusion in PRs.
 
-Ask: "What materialization is forbidden for staging models?" → table (and anything other than view or ephemeral).
+Ask: "If dbt_project.yml sets silver to table and schema.yml sets dim_contact to incremental, what materialization does dim_contact use?" → incremental (schema.yml wins).
+
+Checkpoint: "Where would you put on_schema_change for a new incremental model?" → schema.yml config block, not in the SQL.
 -->
 
 ---
 
-# Exercise: Find the Bugs (25 min)
+# Exercise: Find the Bugs
 
 **Three models are misconfigured. Identify the problem, explain why, write the fix.**
 
 <div class="space-y-4 mt-4">
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">
-  <div class="text-xs font-mono text-red-500 mb-2">Model 1 — stg_hubspot__pipeline_stages.sql</div>
+  <div class="text-xs font-mono text-red-500 mb-2">Model 1 — int_pipeline_stages.sql</div>
 
 ```sql
 {{ config(materialized='table') }}

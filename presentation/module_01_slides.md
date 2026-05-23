@@ -41,29 +41,29 @@ By the end of this session, the goal is one thing: you can explain what dbt is a
 
 **What happens without dbt**
 
-Someone needs to answer:
-> *"How many HubSpot contacts converted to active patients last month?"*
+Stakeholder needs an answer:
+> *"I need a monthly report about how many contacts converted to active patients last month?"*
 
-They write a SQL query. It works. They save it somewhere — a shared folder, a BI tool, their laptop.
+Data team writes pipelines, tables, views and connects it to a BI tool. Code gets stored in personal workspace. Execution is placed in a stored procedure and Snowflake task.
 
-Three months later: **broken**. A column was renamed. No tests. No docs. Two analysts got different numbers.
+Three months later: **broken**. A column was renamed. No tests. No docs. Two ad-hoc queries produce different numbers.
 
 </div>
 <div class="flex flex-col gap-3 mt-1">
 
-<div class="bg-red-50 border border-red-200 rounded-lg p-4">
+<div v-click class="bg-red-50 border border-red-200 rounded-lg p-4">
   <div class="text-red-700 font-semibold text-sm mb-1">❌ No single source of truth</div>
   <div class="text-red-600 text-xs">Same calculation in 10 different places</div>
 </div>
-<div class="bg-red-50 border border-red-200 rounded-lg p-4">
+<div v-click class="bg-red-50 border border-red-200 rounded-lg p-4">
   <div class="text-red-700 font-semibold text-sm mb-1">❌ No testing</div>
   <div class="text-red-600 text-xs">Transformations break silently</div>
 </div>
-<div class="bg-red-50 border border-red-200 rounded-lg p-4">
+<div v-click class="bg-red-50 border border-red-200 rounded-lg p-4">
   <div class="text-red-700 font-semibold text-sm mb-1">❌ No documentation</div>
   <div class="text-red-600 text-xs">Tribal knowledge about what columns mean</div>
 </div>
-<div class="bg-red-50 border border-red-200 rounded-lg p-4">
+<div v-click class="bg-red-50 border border-red-200 rounded-lg p-4">
   <div class="text-red-700 font-semibold text-sm mb-1">❌ No dependency management</div>
   <div class="text-red-600 text-xs">Nobody knows what breaks when a source changes</div>
 </div>
@@ -98,7 +98,7 @@ dbt is a **transformation framework** that lets you write SQL `SELECT` statement
 </div>
 
 </div>
-<div>
+<div v-click>
 
 **dbt does NOT:**
 
@@ -128,18 +128,17 @@ Checkpoint question after this slide: "Is dbt Core or dbt Cloud? What's the diff
 
 <div class="mt-6">
 
-| | dbt Core | dbt Cloud |
-|---|---|---|
-| What it is | Open-source CLI tool | Hosted platform: IDE, scheduler, CI |
-| **What we use** | **✅ dbt Core** | **❌ Not used** |
-| How we run it | `dbt run`, `dbt test`, `dbt build` | N/A |
-| How we schedule it | Your orchestrator | N/A |
+| | dbt Core | dbt Fusion | dbt Cloud |
+|---|---|---|---|
+| What it is | Open-source CLI tool | Next-gen local runtime (Rust-based, replaces Python engine) | Hosted platform: IDE, scheduler, CI |
+| **What we use** | **✅ dbt Core** | **⏳ Not yet** | **❌ Not used** |
+| How we run it | `dbt run`, `dbt test`, `dbt build` | Same CLI commands, much faster | N/A |
+| How we schedule it | Your orchestrator | Your orchestrator | N/A |
 
 </div>
 
-<div class="mt-8 bg-emerald-50 border border-emerald-200 rounded-xl p-5">
-  <div class="font-semibold text-emerald-800 mb-2">Everything in this training applies to dbt Core only.</div>
-  <div class="text-emerald-700 text-sm">All commands, all config, all patterns — dbt Core. If you see dbt Cloud tutorials online, they may look different. Ignore the Cloud-specific UI features.</div>
+<div class="mt-8 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+  <div class="font-semibold text-emerald-800 mb-2">Everything in this training applies to dbt Core  — running native in Snowflake or local.</div>
 </div>
 
 <!--
@@ -169,8 +168,69 @@ Ask: "What is the first model dbt touches?" — Answer: Staging. It reads from B
 -->
 
 ---
+layout: default
+background: '#f9f8f5'
+---
 
-# Live Demo: Project Structure
+# dbt Vocabulary
+
+<div class="grid grid-cols-3 gap-4 mt-4">
+
+  <div class="bg-white border-t-4 border-emerald-400 rounded-xl p-4 shadow-sm">
+    <div class="text-xs font-mono text-emerald-600 mb-1">dbt</div>
+    <div class="text-sm font-bold text-slate-800 mb-2">Data Build Tool</div>
+    <div class="text-xs text-slate-500">A transformation framework. You write SQL — dbt handles boilerplate code, compilation, run order, testing.</div>
+  </div>
+
+  <div class="bg-white border-t-4 border-sky-400 rounded-xl p-4 shadow-sm">
+    <div class="text-xs font-mono text-sky-600 mb-1">model</div>
+    <div class="text-sm font-bold text-slate-800 mb-2">A single SQL SELECT statement</div>
+    <div class="text-xs text-slate-500">Stored as a <code>.sql</code> file. dbt compiles it and creates a Snowflake object (table, view, etc.) from it.</div>
+  </div>
+
+  <div class="bg-white border-t-4 border-violet-400 rounded-xl p-4 shadow-sm">
+    <div class="text-xs font-mono text-violet-600 mb-1">materialization</div>
+    <div class="text-sm font-bold text-slate-800 mb-2">How a model is persisted</div>
+    <div class="text-xs text-slate-500">The Snowflake object dbt creates from a model. Options: <code>view</code>, <code>table</code>, <code>incremental</code>, <code>snapshot</code>.</div>
+  </div>
+
+  <div class="bg-white border-t-4 border-amber-400 rounded-xl p-4 shadow-sm">
+    <div class="text-xs font-mono text-amber-600 mb-1">DAG</div>
+    <div class="text-sm font-bold text-slate-800 mb-2">Directed Acyclic Graph</div>
+    <div class="text-xs text-slate-500">The dependency map between models. Determines run order. "Acyclic" means no circular dependencies — model A cannot depend on itself.</div>
+  </div>
+
+  <div class="bg-white border-t-4 border-rose-400 rounded-xl p-4 shadow-sm">
+    <div class="text-xs font-mono text-rose-600 mb-1">lineage</div>
+    <div class="text-sm font-bold text-slate-800 mb-2">The visual dependency chain</div>
+    <div class="text-xs text-slate-500">Shows what each model reads from (upstream) and what depends on it (downstream). Generated automatically by dbt docs.</div>
+  </div>
+
+  <div class="bg-white border-t-4 border-slate-400 rounded-xl p-4 shadow-sm">
+    <div class="text-xs font-mono text-slate-500 mb-1">macro</div>
+    <div class="text-sm font-bold text-slate-800 mb-2">Reusable Jinja-templated SQL</div>
+    <div class="text-xs text-slate-500">Like a function. Defined once in <code>macros/</code>, called from any model. Used to avoid repeating logic across the project.</div>
+  </div>
+
+</div>
+
+<!--
+This slide is a reference — don't lecture through every term.
+
+Read the room:
+- If the group has no dbt experience, spend 2 minutes here. Ask: "Has anyone heard of a DAG before?"
+- If there's prior experience, say "these are the six terms we'll use throughout the training" and move on.
+
+The two that need the most explanation in practice:
+- DAG: draw a simple 3-node graph on the whiteboard. Source → Staging → Silver. That's a DAG.
+- Macro: "think of it like a SQL function you write once and reuse everywhere."
+
+Lineage is best explained live in the dbt docs browser — come back to this in Module 06.
+-->
+
+---
+
+# Project Structure
 
 ### The basic folder structure applies to all projects.
 
@@ -188,7 +248,7 @@ analytics/
 ├── .secrets/          ← tokens, git protected
 │
 ├── dbt_project.yml    ← project config
-├── profiles.yml       ← NOT here (in ~/.dbt/)
+├── profiles.yml       ← in snowflake, local: in ~/.dbt/
 │
 ├── models/
 │   ├── staging/       ← hubspot__contacts etc.
@@ -211,6 +271,11 @@ analytics/
   </div>
 
   <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
+    <div class="font-mono text-slate-500 text-xs mb-1">profiles.yml</div>
+    Connection to Snowflake — account, role, warehouse. Environments: Prod and Dev.
+  </div>
+
+  <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
     <div class="font-mono text-slate-500 text-xs mb-1">models/silver/dim_patient.sql</div>
     Contains <code v-pre>{{ ref() }}</code> — we'll cover this in Module 03
   </div>
@@ -223,7 +288,6 @@ analytics/
 </div>
 </div>
 
-
 <!--
 Do NOT run dbt run here. Running a model requires ref(), materialisation, and schema config — all coming in later modules.
 
@@ -231,21 +295,32 @@ Make the deliberate navigation mistake — it's not optional. Participants need 
 
 Don't explain every file in depth. The goal is just: "here's the map." Depth comes in Module 02.
 
-After the demo, ask: "Point to where a Silver model lives." Make someone answer before moving on.
+After the demo, ask: 
+- "Point to where a Silver model lives." Make someone answer before moving on.
+- what are snapshots?
+- what could macros be?
 -->
 
 ---
 
-# Exercise: Explore the Project (25 min)
+# Exercise: Explore the Project (15 min)
 
 **Answer all four questions using only the dbt project — no Googling.**
+
+<div class="bg-amber-50 border-l-4 border-amber-400 rounded-lg px-4 py-3 mb-4 flex items-start gap-3">
+  <span class="text-amber-500 text-lg font-bold leading-none mt-0.5">!</span>
+  <div class="text-sm text-amber-800">
+    <strong>Before you start:</strong> clone the training repo and create a new Git branch as your personal workspace.
+    <code class="block mt-1 bg-amber-100 rounded px-2 py-1 text-xs font-mono">https://github.com/ThorstenWeberGER/dbt-training-excercise</code>
+  </div>
+</div>
 
 <div class="grid grid-cols-2 gap-6 mt-4">
 <div class="space-y-4">
 
 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
   <div class="text-xs font-mono text-slate-400 mb-1">Q1</div>
-  <div class="text-sm font-medium text-slate-800">What is the project name defined in <code>dbt_project.yml</code>?</div>
+  <div class="text-sm font-medium text-slate-800">What is the project name defined in <code>dbt_project.yml</code> and in which other file you will find this name?</div>
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
@@ -253,17 +328,22 @@ After the demo, ask: "Point to where a Silver model lives." Make someone answer 
   <div class="text-sm font-medium text-slate-800">Find one Silver dimension model (<code>dim_*</code>). What table does it reference using <code v-pre>{{ ref() }}</code>?</div>
 </div>
 
+<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+  <div class="text-xs font-mono text-slate-400 mb-1">Q3</div>
+  <div class="text-sm font-medium text-slate-800">What is the purpose of the <code>dbt_project.yml</code> file and what can you configure here?</div>
+</div>
+
 </div>
 <div class="space-y-4">
 
 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-  <div class="text-xs font-mono text-slate-400 mb-1">Q3</div>
+  <div class="text-xs font-mono text-slate-400 mb-1">Q4</div>
   <div class="text-sm font-medium text-slate-800">How many models are in <code>models/gold/</code>? List their names.</div>
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-  <div class="text-xs font-mono text-slate-400 mb-1">Q4</div>
-  <div class="text-sm font-medium text-slate-800">Open <code>dbt_project.yml</code>. What is the default materialisation for Silver models?</div>
+  <div class="text-xs font-mono text-slate-400 mb-1">Q5</div>
+  <div class="text-sm font-medium text-slate-800">Open <code>dbt_project.yml</code>. What is the default materialisation for Silver models? </div>
 </div>
 
 <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
@@ -297,7 +377,7 @@ All four questions must be answered correctly before you move on. Don't skip the
 
 <div class="bg-white border-l-4 border-emerald-500 rounded-r-xl p-5 shadow-sm">
   <div class="text-xs font-mono text-slate-400 mb-2">02</div>
-  <div class="text-lg font-semibold text-slate-800">In this project, dbt owns <span class="text-emerald-600">Staging → Silver → Gold</span>. Lambda handles ingestion into Bronze.</div>
+  <div class="text-lg font-semibold text-slate-800">Configuration substitutes boilerplate code. <span class="text-emerald-600">dbt handles it</span>, like materialization, tests.</div>
 </div>
 
 <div class="bg-white border-l-4 border-emerald-500 rounded-r-xl p-5 shadow-sm">
