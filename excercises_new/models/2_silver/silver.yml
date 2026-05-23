@@ -23,14 +23,29 @@ models:
     description: "Doctor dimension. Grain: one row per doctor (HubSpot owner). SCD1."
     columns:
       - name: doctor_key
-        description: "Surrogate key — MD5 of owner_id"
+        description: "A unique identifier for each doctor, generated using an MD5 hash of the owner_id. This ensures consistency and uniqueness across records."
         tests:
           - not_null
           - unique
-      - name: owner_id
+        data_type: varchar
+      - name: doctor_id
         tests:
           - not_null
           - unique
+        description: The identifier for the doctor, sourced from the stg_hubspot__owners table. Represents the business key for the owner entity.
+        data_type: integer
+      - name: first_name
+        description: The first name of the doctor, sourced directly from the stg_hubspot__owners table.
+        data_type: varchar
+      - name: last_name
+        description: The last name of the doctor, sourced from the HubSpot owners table.
+        data_type: varchar
+      - name: email
+        description: The email address of the doctor, sourced from the HubSpot owners table.
+        data_type: varchar
+      - name: loaded_at
+        description: The timestamp indicating when the data was loaded into the staging table.
+        data_type: timestamp
 
   - name: dim_pipeline_stage
     description: "Pipeline stage dimension. Grain: one row per stage."

@@ -1,0 +1,12 @@
+# dbt Training — Python requirements
+# Python 3.9–3.12 required (dbt-core is NOT compatible with Python 3.13+)
+# Install: pip install -r requirements.txt
+
+# dbt core
+dbt-core~=1.11.0
+
+# Adapters — install both so the project works in either mode:
+#   Training (Snowflake):  dbt run                      → uses profiles.yml dev target
+#   Local testing (DuckDB): dbt run --target test        → no credentials needed
+dbt-snowflake~=1.11.0
+dbt-duckdb~=1.10.0

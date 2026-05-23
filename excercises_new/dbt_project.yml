@@ -2,8 +2,9 @@ name: 'dbt_training'
 version: '1.0.0'
 config-version: 2
 
-profile: 'dbt_training'
+profile: 'dbt_training' # MUST match the profile name n profiles.yml
 
+# default paths, can be changed or added to as needed
 model-paths: ["models"]
 seed-paths: ["seeds"]
 macro-paths: ["macros"]
@@ -11,43 +12,36 @@ snapshot-paths: ["snapshots"]
 test-paths: ["tests"]
 analysis-paths: ["analyses"]
 
+# default target path for compiled SQL and run results; can be changed but not required
 target-path: "target"
+
+# directories to be removed by dbt clean; can be changed or added to as needed
 clean-targets: ["target", "dbt_packages"]
 
+# model configurations can be set here to apply to all models in subfolders, or models can be configured individually by adding config blocks to the relevant .sql files.
 models:
+  # persist_docs enables dbt to store descriptions in Snowflake  making it accessible for tools that can read database metadata. 
+  +persist_docs:
+      relation: true
+      column: true
   dbt_training:
     1_staging:
       +materialized: view
-      # +alias makes the database object name singular while keeping the file name plural.
-      # ref('stg_hubspot__contacts') still works — ref() uses the file/node name, not the alias.
-      stg_hubspot__contacts:
-        +alias: stg_hubspot__contact
-      stg_hubspot__deals:
-        +alias: stg_hubspot__deal
-      stg_hubspot__owners:
-        +alias: stg_hubspot__owner
-      stg_hubspot__pipeline_stages:
-        +alias: stg_hubspot__pipeline_stage
-      stg_prescriptions:
-        +alias: stg_prescription
-      stg_products:
-        +alias: stg_product
     2_silver:
       +materialized: table
     3_gold:
       +materialized: table
       mrt_patient_prescriptions:
+      # +alias makes the database object name singular while keeping the file name plural.
+      # ref('stg_hubspot__contacts') still works — ref() uses the file/node name, not the alias.
         +alias: mrt_patient_prescription
 
+# Variables for jinja can be defined heare and referenced in models, seeds, etc. with {{ var('variable_name') }}. They can also be overridden at runtime with --vars or in the dbt Cloud UI.
 seeds:
   dbt_training:
-    # ── Raw transactional seeds land in hubspot_raw schema ──────────────────
-    # For DuckDB testing: seeds simulate the Snowflake pre-loaded Bronze tables.
-    # For Snowflake training: these CSVs are pre-loaded by the trainer; participants
-    # do NOT run dbt seed for these — the trainer_guide explains the setup.
     raw_contacts:
       +schema: hubspot_raw
-      +alias: contacts      # DuckDB testing: seed lands as 'contacts' matching source name
+      +alias: contacts
       +column_types:
         id: integer
         pipeline_stage_id: integer
@@ -94,14 +88,6 @@ seeds:
       +column_types:
         owner_id: integer
         _loaded_at: timestamp
-
-    # ── Lookup seeds — participants load these with dbt seed in Module 08 ─────
-    country_codes:
-      +column_types:
-        country_code: varchar
-    product_categories:
-      +column_types:
-        is_prescription_required: boolean
 
 vars:
   min_deal_amount: 0

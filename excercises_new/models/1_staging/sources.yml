@@ -5,7 +5,7 @@ sources:
     # Database resolves via env var:
     #   Snowflake training  → set DBT_SOURCE_DATABASE=DBT_TRAINING
     #   DuckDB testing      → defaults to 'dbt_training' (the .duckdb file name)
-    database: "{{ env_var('DBT_SOURCE_DATABASE', 'dbt_training') }}"
+    database: dbt_training
     schema: hubspot_raw
     loaded_at_field: _loaded_at
     freshness:

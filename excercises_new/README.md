@@ -23,8 +23,8 @@ The trainer pre-loads all source tables into `DBT_TRAINING.HUBSPOT_RAW` before t
 Participants only seed the lookup tables:
 
 ```bash
-# Install dbt with Snowflake adapter
-pip install dbt-snowflake
+# Install all dependencies (both adapters)
+pip install -r requirements.txt
 
 # Install dbt packages (dbt_utils)
 dbt deps
@@ -44,8 +44,8 @@ py -3.12 -m venv .venv
 .venv\Scripts\activate              # Windows
 # source .venv/bin/activate         # macOS/Linux
 
-# Install dbt with DuckDB adapter
-pip install dbt-duckdb
+# Install all dependencies
+pip install -r requirements.txt
 
 # Install dbt packages (dbt_utils)
 dbt deps

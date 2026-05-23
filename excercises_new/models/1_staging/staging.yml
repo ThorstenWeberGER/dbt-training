@@ -3,6 +3,7 @@ version: 2
 models:
   - name: stg_hubspot__contacts
     description: "Staging layer for HubSpot contacts. One row per contact."
+    alias: stg_hubspot__contact
     columns:
       - name: contact_id
         description: "Source system contact ID (renamed from id)"
@@ -20,6 +21,7 @@ models:
 
   - name: stg_hubspot__pipeline_stages
     description: "Staging layer for HubSpot pipeline stages."
+    alias: stg_hubspot__pipeline_stage
     columns:
       - name: pipeline_stage_id
         description: "Source system stage ID (renamed from stage_id)"
@@ -31,6 +33,7 @@ models:
 
   - name: stg_hubspot__deals
     description: "Staging layer for HubSpot deals."
+    alias: stg_hubspot__deal
     columns:
       - name: deal_id
         tests:
@@ -41,6 +44,7 @@ models:
 
   - name: stg_products
     description: "Staging layer for pharmacy products."
+    alias: stg_product
     columns:
       - name: product_id
         tests:
@@ -49,6 +53,7 @@ models:
 
   - name: stg_prescriptions
     description: "Staging layer for prescriptions."
+    alias: stg_prescription
     columns:
       - name: prescription_id
         tests:
@@ -59,6 +64,7 @@ models:
 
   - name: stg_hubspot__owners
     description: "Staging layer for HubSpot owners (doctors). Added in Module 05."
+    alias: stg_hubspot__owner
     columns:
       - name: owner_id
         description: "Source system owner ID"

@@ -5,7 +5,7 @@
 
 SELECT
     {{ dbt_utils.generate_surrogate_key(['owner_id']) }}    AS doctor_key,
-    owner_id,
+    owner_id AS doctor_id,
     first_name,
     last_name,
     email,
