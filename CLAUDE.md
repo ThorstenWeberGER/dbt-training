@@ -2,11 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Mandatory Coding Guidelines (Karpathy Guidelines)
+## Mandatory 
+
+### Coding Guidelines (Karpathy Guidelines)
 
 **IMPORTANT: These four principles apply to EVERY coding task in this repository without exception. They override any default behavior.**
 
-The full skill is installed at `.claude/skills/karpathy-guidelines/SKILL.md`. The rules are:
+The full skill is installed at `.claude/skills/karpathy-guidelines/SKILL.md`. Read it before doing anything.
+
+### Human writing
+
+**IMPORTANT** The rules apply to all documents which are for participants and trainer to read, to present, to guide through excercises. It does NOT apply to the code.
+
+The full skill is installed at `.claude/skills/humanize/SKILL.md`. Read it before doing anything.
+
+
 
 ### 1. Think Before Coding
 **Don't assume. Don't hide confusion. Surface tradeoffs.**

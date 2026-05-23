@@ -1,0 +1,11 @@
+pipeline_stage_id,stage_name,is_closed,pipeline_id,_loaded_at
+PS001,New Lead,false,hs-pipeline-001,2024-01-15 08:00:00
+PS002,Qualified,false,hs-pipeline-001,2024-01-15 08:00:00
+PS003,Proposal Sent,false,hs-pipeline-001,2024-01-15 08:00:00
+PS004,Won,true,hs-pipeline-001,2024-01-15 08:00:00
+PS005,Lost,true,hs-pipeline-001,2024-01-15 08:00:00
+PS006,New Enquiry,false,hs-pipeline-002,2024-01-15 08:00:00
+PS007,Assessment,false,hs-pipeline-002,2024-01-15 08:00:00
+PS008,Closed,true,hs-pipeline-002,2024-01-15 08:00:00
+PS009,Initial Contact,false,hs-pipeline-003,2024-01-16 09:00:00
+PS010,Converted,true,hs-pipeline-003,2024-01-16 09:00:00

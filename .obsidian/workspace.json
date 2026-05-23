@@ -11,14 +11,10 @@
             "id": "47ec2bff893c09d0",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "presentation/claude_plan_to_create_tier2.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "claude_plan_to_create_tier2"
+              "title": "Neuer Tab"
             }
           }
         ]
@@ -185,19 +181,29 @@
   },
   "active": "47ec2bff893c09d0",
   "lastOpenFiles": [
+    "excercises_new/target/run/dbt_training/models/2_silver/silver.yml/not_null_dim_product_product_key.sql",
+    "excercises_new/target/run/dbt_training/models/2_silver/silver.yml/not_null_dim_product_product_id.sql",
+    "excercises_new/target/run/dbt_training/models/2_silver/silver.yml/unique_dim_product_product_id.sql",
+    "excercises_new/target/run/dbt_training/models/2_silver/silver.yml/unique_dim_product_product_key.sql",
+    "excercises_new/target/compiled/dbt_training/models/2_silver/silver.yml/not_null_dim_product_product_key.sql",
+    "excercises_new/target/compiled/dbt_training/models/2_silver/silver.yml/unique_dim_product_product_id.sql",
+    "excercises_new/target/compiled/dbt_training/models/2_silver/silver.yml/unique_dim_product_product_key.sql",
+    "excercises_new/target/compiled/dbt_training/models/2_silver/silver.yml/not_null_dim_product_product_id.sql",
+    "excercises_new/target/run/dbt_training/models/2_silver/silver.yml/unique_dim_doctor_owner_id.sql",
+    "excercises_new/target/compiled/dbt_training/models/2_silver/silver.yml/unique_dim_doctor_owner_id.sql",
+    "excercises_new/target/compiled/dbt_training/models/2_silver/silver.yml/unique_dim_doctor_doctor_key.sql",
+    "excercises_new/dbt_packages/dbt_utils/integration_tests/README.md",
+    "excercises_new/dbt_packages/dbt_utils/RELEASE.md",
+    "excercises_new/dbt_packages/dbt_utils/README.md",
+    "excercises_new/dbt_packages/dbt_utils/CONTRIBUTING.md",
+    "excercises_new/dbt_packages/dbt_utils/CHANGELOG.md",
+    "excercises_new/dbt_packages/dbt_utils/docs/decisions/README.md",
+    "excercises_new/dbt_packages/dbt_utils/docs/decisions/adr-0002-cross-database-utils.md",
+    "excercises_new/dbt_packages/dbt_utils/docs/decisions/adr-0001-decision-record-format.md",
+    "excercises_new/dbt_packages/dbt_utils/docs/decisions/adr-0000-documenting-architecture-decisions.md",
     "excercises/exercises_participant.md",
-    "excercises/exercises_participant.md.tmp.28000.6e9f180175e7",
-    "excercises/trainer_guide.md.tmp.28000.649e20c0308a",
-    "presentation/module_09_slides.md.tmp.28000.4c3a6b324a0f",
-    "presentation/module_10_slides.md.tmp.28000.44b7e3b04f6a",
-    "presentation/module_11_slides.md.tmp.28000.121a952d13aa",
     "module_01_what_is_dbt.md",
     "presentation/claude_plan_to_create_tier2.md",
-    "presentation/module_09_slides.md.tmp.28000.995fc9b77e2a",
-    "presentation/module_12_slides.md.tmp.28000.73b3c26beefb",
-    "excercises/target/run_results.json",
-    "excercises/target/compiled/dbt_training/models/silver/silver.yml/unique_fct_prescription_prescription_key.sql",
-    "excercises/target/compiled/dbt_training/models/silver/silver.yml/unique_fct_prescription_prescription_id.sql",
     "excercises/dbt_packages/dbt_utils/docs/decisions/README.md",
     "excercises/dbt_packages/dbt_utils/docs/decisions/adr-0002-cross-database-utils.md",
     "excercises/dbt_packages/dbt_utils/docs/decisions/adr-0001-decision-record-format.md",
@@ -211,16 +217,6 @@
     "excercises/dbt_packages/dbt-utils-1.3.0/CONTRIBUTING.md",
     "excercises/dbt_packages/dbt-utils-1.3.0/CHANGELOG.md",
     "excercises/README.md",
-    "module_06_testing.md",
-    "excercises/trainer_guide.md",
-    "presentation/module_12_slides.md",
-    "presentation/module_09_slides.md",
-    "presentation/module_10_slides.md",
-    "presentation/module_11_slides.md",
-    "module_12_cicd_slim_ci.md",
-    "presentation/module_08_slides.md",
-    "module_11_selectors_tags.md",
-    "module_10_snapshots_scd2.md",
     "resources/dbt_mindmap_light.png"
   ]
 }
