@@ -1,0 +1,9 @@
+target/
+dbt_packages/
+dbt_training.duckdb
+dbt_training.duckdb.wal
+logs/
+.DS_Store
+.venv/
+dbt_packages/
+logs/

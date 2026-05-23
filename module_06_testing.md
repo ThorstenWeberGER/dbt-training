@@ -57,9 +57,9 @@ models:
 
 #### 2. Singular tests — for complex business rules
 
-These are standalone `.sql` files in the `tests/` folder. They return rows on failure — no rows means the test passes.
+These are standalone `.sql` files in the `tests/` folder. 
 
-The most common pattern is a `GROUP BY ... HAVING` query that returns rows violating a business rule:
+> **They return rows on failure** — no rows means the test passes. The most common pattern is a `GROUP BY ... HAVING` query that returns rows violating a business rule:
 
 ```sql
 -- tests/assert_fct_revenue_no_negative_amounts.sql

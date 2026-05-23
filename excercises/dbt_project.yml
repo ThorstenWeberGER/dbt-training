@@ -1,0 +1,68 @@
+name: 'dbt_training'
+version: '1.0.0'
+config-version: 2
+
+profile: 'dbt_training'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  dbt_training:
+    staging:
+      +materialized: view
+    silver:
+      +materialized: table
+    gold:
+      +materialized: table
+
+seeds:
+  dbt_training:
+    raw_contacts:
+      +column_types:
+        id: integer
+        pipeline_stage_id: integer
+    raw_pipeline_stages:
+      +column_types:
+        stage_id: integer
+        pipeline_id: integer
+        sort_order: integer
+        probability: double
+        is_closed: boolean
+    raw_deals:
+      +column_types:
+        deal_id: integer
+        contact_id: integer
+        stage_id: integer
+        amount: double
+    raw_products:
+      +column_types:
+        product_id: integer
+        price: double
+    raw_prescriptions:
+      +column_types:
+        prescription_id: integer
+        contact_id: integer
+        doctor_id: integer
+        product_id: integer
+        quantity: integer
+    raw_doctors:
+      +column_types:
+        doctor_id: integer
+    country_codes:
+      +column_types:
+        country_code: varchar
+    product_categories:
+      +column_types:
+        is_prescription_required: boolean
+
+vars:
+  min_deal_amount: 0
+  start_date: '2024-01-01'

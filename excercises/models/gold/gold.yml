@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: mrt_deals_funnel
+    description: "Deals funnel by pipeline stage. Grain: one row per stage."
+    columns:
+      - name: stage_name
+        tests:
+          - not_null
+          - unique
+
+  - name: mrt_contact_prescriptions
+    description: "Contact-level prescription summary. Grain: one row per contact."
+    columns:
+      - name: contact_key
+        tests:
+          - not_null
+          - unique
+
+  - name: mrt_country_summary
+    description: "Deal and contact summary by country. Grain: one row per country in the country_codes seed."
+    columns:
+      - name: country_code
+        tests:
+          - not_null
+          - unique

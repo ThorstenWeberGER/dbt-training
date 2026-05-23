@@ -9,3 +9,5 @@ node_modules/
 .claude/*
 !.claude/skills/
 .temp
+.obsidian/
+.vscode/

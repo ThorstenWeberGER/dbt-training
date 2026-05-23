@@ -37,19 +37,20 @@ Probe {{ this }} specifically — it connects directly to today's is_incremental
 
 # The Four Materializations
 
+### Define the result object of the model.sql file
 <div class="mt-4">
 
 | Materialization | What dbt creates | Full rebuild? | Use case |
 |---|---|---|---|
 | `view` | `CREATE OR REPLACE VIEW` | ✅ view definition only | Staging, lightweight transforms |
 | `table` | `DROP + CREATE TABLE AS SELECT` | ❗ always rebuild | Small Silver models SCD1, Gold marts, reference tables |
-| `incremental` | `MERGE INTO` or `INSERT` | ❌ new/changed rows only | Large Silver facts, append-heavy |
+| `incremental` | `MERGE INTO` or `INSERT` |  New/changed rows | Large Silver facts, append-heavy |
 | `ephemeral` | Nothing (becomes a CTE) | N/A | Intermediate steps, no table needed |
 
 </div>
 
-<div class="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-  For SCD2 type models dbt provides <STRONG>snapshots</STRONG>. We will cover this later.
+<div class="mt-4 bg-orange100 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+1. For SCD2 type models dbt provides <STRONG>snapshots</STRONG>. We will cover this later.<br>2. Force <strong>incremental</strong> models to rebuild with <strong>dbt run --full-refresh</strong>
 </div>
 
 <!--
@@ -237,15 +238,15 @@ Also mention: --full-refresh forces a table DROP + CREATE instead of MERGE. Use 
 | Value | Behaviour | Recommendation |
 |---|---|---|
 | `ignore` *(default)* | New columns in SELECT are silently dropped | ❌ Never — silent data bug |
-| `fail` | Errors if SELECT has new columns | ⚠️ Useful in strict environments |
-| **`sync_all_columns`** | **Adds new columns, removes deleted ones** | **✅ Our standard** |
-| `append_new_columns` | Adds new columns only, never removes | ⚠️ Use case by case |
+| `fail` | Errors if SELECT has new columns | For strict environments |
+| `sync_all_columns` | Adds new columns, removes deleted ones | ⚠️ Careful, old data is gone |
+| `append_new_columns` | Adds new columns only, never removes | Gives flexibility. Nothing is lost |
 
 </div>
 
 <div class="mt-6 bg-red-50 border border-red-200 rounded-xl p-4">
-  <div class="font-semibold text-red-800 mb-2">Why `ignore` is dangerous</div>
-  <div class="text-red-700 text-sm">You add a new column to your SELECT. dbt says nothing. The column never appears in the table. Downstream models and Power BI reports that depend on it fail — but only at query time, not at build time. The bug is invisible until someone notices wrong data.</div>
+  <div class="font-semibold text-red-800 mb-2">Use append_new_columns for int_models</div>
+  <div class="text-red-700 text-sm">Gives flexibility and reduces need to change models at scale if API changes. Focus on silver models to apply new business rules and apply contracts for stability there.</div>
 </div>
 
 <!--
@@ -256,7 +257,7 @@ After the CI tooling is set up, the dbt-sql-reviewer skill checks this — but f
 
 ---
 
-# `ephemeral` — Brief but Important
+# `ephemeral` — The CTE equivalent
 
 ```sql
 {{ config(materialized='ephemeral') }}
@@ -445,12 +446,19 @@ Checkpoint: "Where would you put on_schema_change for a new incremental model?" 
 -->
 
 ---
+layout: default
+background: '#f9f8f5'
+---
 
-# Exercise: Find the Bugs
+# Exercise — Code Review (25 min)
 
-**Three models are misconfigured. Identify the problem, explain why, write the fix.**
+<div class="mb-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+  <strong>Scenario:</strong> A colleague pushed 3 new models. <code>dbt build</code> is now broken and they've asked for your help.
+  Run the project, read the code carefully, and find all the problems. There are <strong>5 bugs</strong> across the 3 models.
+  For each bug: explain what's wrong, why it matters, and write the fix.
+</div>
 
-<div class="space-y-4 mt-4">
+<div class="space-y-3">
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">
   <div class="text-xs font-mono text-red-500 mb-2">Model 1 — int_pipeline_stages.sql</div>
@@ -464,7 +472,7 @@ FROM {{ source('hubspot', 'pipeline_stages') }}
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">
-  <div class="text-xs font-mono text-red-500 mb-2">Model 2 — fct_daily_ticket_volume.sql (50M rows/day)</div>
+  <div class="text-xs font-mono text-red-500 mb-2">Model 2 — fct_daily_ticket_volume.sql · 50M rows/day</div>
 
 ```sql
 {{ config(materialized='table') }}
@@ -475,7 +483,7 @@ FROM {{ ref('dim_ticket') }} GROUP BY 1
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">
-  <div class="text-xs font-mono text-red-500 mb-2">Model 3 — dim_contact.sql (incremental)</div>
+  <div class="text-xs font-mono text-red-500 mb-2">Model 3 — dim_contact.sql · incremental</div>
 
 ```sql
 {{ config(materialized='incremental', unique_key='contact_key', on_schema_change='ignore') }}
@@ -488,14 +496,132 @@ SELECT contact_key, email, updated_at FROM {{ ref('stg_hubspot__contacts') }}
 </div>
 
 <!--
-Expected answers:
-1. Staging must be view, not table. Fix: config(materialized='view')
-2. 50M rows rebuilt nightly as table is expensive. Fix: incremental with unique_key='ticket_date' (or a surrogate key), on_schema_change='sync_all_columns'
-3. Three bugs: (a) on_schema_change='ignore' should be 'sync_all_columns', (b) {{ if }} should be {% if %}, (c) {{ endif }} should be {% endif %}
+SETUP NOTE: These files must be placed in an exercises/ folder that is excluded from the dbt_project.yml
+model paths — or provided on a separate Git branch. Model 3 contains a Jinja syntax error that breaks
+dbt compile entirely, so the project cannot run with it in an active model path.
 
-Model 3 has both a business logic bug and a Jinja syntax bug — watch whether participants catch both.
+Suggested setup: push these to a branch called exercises/module-04. Participants checkout the branch,
+run dbt build, see the Parse error from Model 3, then start the code review.
 
-Circulate. If someone finishes early, ask them to write the corrected full model including the WHERE clause with is_incremental().
+BUGS — 5 total:
+
+Model 1 — 1 bug:
+  ❌ materialized='table' on a staging model
+  Why: Staging models must be views (convention + CI check). A staging model is a thin wrapper —
+       no business logic, no persistence needed. Building it as a table wastes storage and build time.
+  Fix: {{ config(materialized='view') }}
+
+Model 2 — 1 bug:
+  ❌ materialized='table' on a 50M row/day fact table
+  Why: A full DROP + CREATE TABLE on 50M rows every night is extremely expensive.
+       Every run re-scans the entire source. This model must be incremental.
+  Fix: {{ config(materialized='incremental', unique_key='ticket_date', on_schema_change='sync_all_columns') }}
+       Add {% if is_incremental() %} WHERE ticket_date > (SELECT MAX(ticket_date) FROM {{ this }}) {% endif %}
+
+Model 3 — 3 bugs:
+  ❌ Bug A: on_schema_change='ignore'
+     Why: Silent data bug — new columns added to SELECT are silently dropped from the table.
+     Fix: on_schema_change='sync_all_columns'
+
+  ❌ Bug B: {{ if is_incremental() }} — wrong delimiter
+     Why: {{ }} outputs a value. {% %} executes logic. dbt raises a Parse error immediately.
+     Fix: {% if is_incremental() %}
+
+  ❌ Bug C: {{ endif }} — wrong delimiter
+     Why: Same issue — endif is a statement, not an expression.
+     Fix: {% endif %}
+
+Watch whether participants catch Bug B/C first (because dbt tells them via Parse error)
+and whether they also catch Bug A (silent, no error — the harder one to spot).
+-->
+
+---
+layout: default
+background: '#f9f8f5'
+---
+
+# Exercise — Solutions
+
+<div class="grid grid-cols-3 gap-4 mt-4">
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="text-xs font-mono text-slate-400 mb-1">Model 1 · 1 bug</div>
+  <div class="text-xs text-red-600 font-semibold mb-2">❌ staging as table</div>
+
+```sql
+{{ config(materialized='view') }}
+
+SELECT pipeline_stage_id,
+       stage_name,
+       is_closed
+FROM {{ source('hubspot',
+               'pipeline_stages') }}
+```
+
+  <div class="text-xs text-slate-500 mt-2">Staging = view. No storage, always fresh, CI-enforced.</div>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="text-xs font-mono text-slate-400 mb-1">Model 2 · 1 bug</div>
+  <div class="text-xs text-red-600 font-semibold mb-2">❌ large fact as table</div>
+
+```sql
+{{ config(
+    materialized='incremental',
+    unique_key='ticket_date',
+    on_schema_change='sync_all_columns'
+) }}
+SELECT ticket_date,
+       COUNT(*) AS ticket_count
+FROM {{ ref('dim_ticket') }}
+{% if is_incremental() %}
+WHERE ticket_date >
+  (SELECT MAX(ticket_date)
+   FROM {{ this }})
+{% endif %}
+GROUP BY 1
+```
+
+  <div class="text-xs text-slate-500 mt-2">50M rows/day must be incremental — full rebuild is not viable.</div>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl p-4">
+  <div class="text-xs font-mono text-slate-400 mb-1">Model 3 · 3 bugs</div>
+  <div class="text-xs text-red-600 font-semibold mb-2">❌ ignore · ❌ {{ if }} · ❌ {{ endif }}</div>
+
+```sql
+{{ config(
+    materialized='incremental',
+    unique_key='contact_key',
+    on_schema_change='sync_all_columns'
+) }}
+SELECT contact_key,
+       email,
+       updated_at
+FROM {{ ref('stg_hubspot__contacts') }}
+{% if is_incremental() %}
+WHERE updated_at >
+  (SELECT MAX(updated_at)
+   FROM {{ this }})
+{% endif %}
+```
+
+  <div class="text-xs text-slate-500 mt-2">3 fixes: sync_all_columns · {% if %} · {% endif %}</div>
+</div>
+
+</div>
+
+<!--
+Show this slide only after participants have finished or time is up.
+
+Debrief order:
+1. Start with Model 3 Bug B/C — these caused the compile failure. Most will find these first.
+2. Move to Model 3 Bug A — on_schema_change='ignore' is the silent killer. Ask: "Would dbt have warned you about this?" → No. Only noticed when a column goes missing downstream.
+3. Model 1 — straightforward convention violation.
+4. Model 2 — the cost argument. Ask: "How long would a full rebuild of 50M rows take?" → Make it real.
+
+Key takeaway: 2 of 5 bugs cause immediate failure (dbt tells you). 3 of 5 are silent — they only
+surface as wrong data or runaway costs in production. The dangerous bugs are the ones dbt doesn't catch.
 -->
 
 ---

@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "excercises/exercises_trainer.md",
+                "file": "presentation/claude_plan_to_create_tier2.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "exercises_trainer"
+              "title": "claude_plan_to_create_tier2"
             }
           }
         ]
@@ -185,25 +185,42 @@
   },
   "active": "47ec2bff893c09d0",
   "lastOpenFiles": [
-    "CLAUDE.md",
-    "module_02_project_setup.md",
-    "presentation/module_02_slides.md.tmp.25032.fdfb5b96756b",
-    "presentation/module_02_slides.md.tmp.25032.626e4034304a",
-    "excercises/exercises_trainer.md",
-    "excercises",
-    "exercises/exercises.md",
-    "exercises/exercises_trainer.md",
-    "dbt_training_methodology.md",
-    "presentation/module_01_slides.md.tmp.19676.c81160915666",
-    "presentation/module_01_slides.md.tmp.19676.4d22aae6e16c",
-    "presentation/module_01_slides.md.tmp.19676.e9cb01f55dba",
+    "excercises/exercises_participant.md",
+    "excercises/exercises_participant.md.tmp.28000.6e9f180175e7",
+    "excercises/trainer_guide.md.tmp.28000.649e20c0308a",
+    "presentation/module_09_slides.md.tmp.28000.4c3a6b324a0f",
+    "presentation/module_10_slides.md.tmp.28000.44b7e3b04f6a",
+    "presentation/module_11_slides.md.tmp.28000.121a952d13aa",
     "module_01_what_is_dbt.md",
-    "resources/reference.md",
-    "resources/Analytics Engineering with SQL and dbt.pdf",
-    "resources/file_BF350769-FD61-4644-BA79-637609D6FF48.pdf",
-    "resources/dbt_mindmap_light.png",
-    "resources/Data_Quality_Validation.md",
-    "README.md",
-    "presentation/course_overview_2slides.md.tmp.21716.74a76205cf17"
+    "presentation/claude_plan_to_create_tier2.md",
+    "presentation/module_09_slides.md.tmp.28000.995fc9b77e2a",
+    "presentation/module_12_slides.md.tmp.28000.73b3c26beefb",
+    "excercises/target/run_results.json",
+    "excercises/target/compiled/dbt_training/models/silver/silver.yml/unique_fct_prescription_prescription_key.sql",
+    "excercises/target/compiled/dbt_training/models/silver/silver.yml/unique_fct_prescription_prescription_id.sql",
+    "excercises/dbt_packages/dbt_utils/docs/decisions/README.md",
+    "excercises/dbt_packages/dbt_utils/docs/decisions/adr-0002-cross-database-utils.md",
+    "excercises/dbt_packages/dbt_utils/docs/decisions/adr-0001-decision-record-format.md",
+    "excercises/dbt_packages/dbt_utils/docs/decisions/adr-0000-documenting-architecture-decisions.md",
+    "excercises/dbt_packages/dbt_utils/integration_tests/README.md",
+    "excercises/dbt_packages/dbt_utils/RELEASE.md",
+    "excercises/dbt_packages/dbt_utils/README.md",
+    "excercises/dbt_packages/dbt_utils/CONTRIBUTING.md",
+    "excercises/dbt_packages/dbt_utils/CHANGELOG.md",
+    "excercises/dbt_packages/dbt-utils-1.3.0/README.md",
+    "excercises/dbt_packages/dbt-utils-1.3.0/CONTRIBUTING.md",
+    "excercises/dbt_packages/dbt-utils-1.3.0/CHANGELOG.md",
+    "excercises/README.md",
+    "module_06_testing.md",
+    "excercises/trainer_guide.md",
+    "presentation/module_12_slides.md",
+    "presentation/module_09_slides.md",
+    "presentation/module_10_slides.md",
+    "presentation/module_11_slides.md",
+    "module_12_cicd_slim_ci.md",
+    "presentation/module_08_slides.md",
+    "module_11_selectors_tags.md",
+    "module_10_snapshots_scd2.md",
+    "resources/dbt_mindmap_light.png"
   ]
 }

@@ -35,6 +35,85 @@ Phase 1 (Parse) — this connects directly to today's content.
 
 ---
 
+# Why Jinja? — Quick Check-in
+
+<div class="mb-4 bg-slate-100 border border-slate-200 rounded-xl p-3 flex items-center gap-3">
+  <div class="text-xl">🙋</div>
+  <div class="text-sm text-slate-700 font-semibold">Get Python Power into SQL - Create Dynamic SQL. What are advantages? Raise your hand!</div>
+</div>
+
+<div class="grid grid-cols-2 gap-3">
+
+  <div v-click class="bg-white border border-slate-200 rounded-xl p-4">
+    <div class="text-xs font-mono text-slate-400 mb-1">01</div>
+    <div class="font-semibold text-slate-800 mb-2">SQL that adapts — conditions, loops, vars</div>
+    <div class="space-y-1 text-slate-500 text-sm">
+      <div class="flex gap-2 items-start"><span class="inline-block w-3 h-1.5 bg-slate-300 rounded-sm shrink-0 mt-1.5"></span><span>Same file scans last 3 days in dev, full history in prod — automatically</span></div>
+      <div class="flex gap-2 items-start"><span class="inline-block w-3 h-1.5 bg-slate-300 rounded-sm shrink-0 mt-1.5"></span><span>Need 20 metric columns? A loop writes all 20 lines for you</span></div>
+    </div>
+  </div>
+
+  <div v-click class="bg-white border border-slate-200 rounded-xl p-4">
+    <div class="text-xs font-mono text-slate-400 mb-1">02</div>
+    <div class="font-semibold text-slate-800 mb-2">Write once, call everywhere — macros</div>
+    <div class="space-y-1 text-slate-500 text-sm">
+      <div class="flex gap-2 items-start"><span class="inline-block w-3 h-1.5 bg-slate-300 rounded-sm shrink-0 mt-1.5"></span><span>Complex logic (currency conversion, URL parsing) lives in one macro file</span></div>
+      <div class="flex gap-2 items-start"><span class="inline-block w-3 h-1.5 bg-slate-300 rounded-sm shrink-0 mt-1.5"></span><span>Business logic changes? Update one place — not 100 SQL scripts</span></div>
+    </div>
+  </div>
+
+  <div v-click class="bg-white border border-slate-200 rounded-xl p-4">
+    <div class="text-xs font-mono text-slate-400 mb-1">03</div>
+    <div class="font-semibold text-slate-800 mb-2">dbt figures out what to build first</div>
+    <div class="space-y-1 text-slate-500 text-sm">
+      <div class="flex gap-2 items-start"><span class="inline-block w-3 h-1.5 bg-slate-300 rounded-sm shrink-0 mt-1.5"></span><span><code v-pre>{{ ref('orders') }}</code> instead of hardcoded <code>prod_db.raw.orders</code></span></div>
+      <div class="flex gap-2 items-start"><span class="inline-block w-3 h-1.5 bg-slate-300 rounded-sm shrink-0 mt-1.5"></span><span>dbt reads the refs, maps the lineage graph, runs models in the right order</span></div>
+    </div>
+  </div>
+
+  <div v-click class="bg-white border border-slate-200 rounded-xl p-4">
+    <div class="text-xs font-mono text-slate-400 mb-1">04</div>
+    <div class="font-semibold text-slate-800 mb-2">Dev and prod — never confused</div>
+    <div class="space-y-1 text-slate-500 text-sm">
+      <div class="flex gap-2 items-start"><span class="inline-block w-3 h-1.5 bg-slate-300 rounded-sm shrink-0 mt-1.5"></span><span>Outputs go to your personal dev schema — not the live tables</span></div>
+      <div class="flex gap-2 items-start"><span class="inline-block w-3 h-1.5 bg-slate-300 rounded-sm shrink-0 mt-1.5"></span><span>CI/CD auto-switches to prod — no risk of overwriting real data</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!--
+AUDIENCE CHECK-IN — ask before moving to the cards.
+If most hands go up (f-strings, Liquid, etc.), you can move faster through delimiter syntax — they already have the mental model of "placeholder gets replaced." If few hands go up, spend an extra minute on slide 3 (the template → SQL compilation flow).
+
+CARD 01 — Dynamic SQL: conditions and loops
+Standard SQL has no programmatic controls. Jinja adds if/then and for loops directly into the query file.
+- Conditional: wrap a massive dataset filter in an {% if %} so it only scans the last 3 days during development. Same file, massive cost saving in dev, correct full result in prod.
+- Looping: pivoting a table across 20 event types into their own metric columns? A Jinja for loop writes all 20 lines automatically — and if you add a 21st event type, the loop picks it up.
+
+CARD 02 — Macros (reusability)
+In standard SQL warehousing, copy-pasting complex logic across files is common and dangerous. Macros work exactly like functions in programming.
+- Write Once: a currency conversion, string cleaner, or custom URL parser → one macro file, called in dozens of models with a single line.
+- Centralized Maintenance: business logic changes → update one macro. Without macros you're hunting through hundreds of SQL scripts.
+Note: macros are covered in Tier 2 (Module 10) — this card plants the seed. Don't go deep here.
+
+CARD 03 — Dependency management via ref()
+{{ ref('model_name') }} is the most important Jinja function in dbt.
+- Replaces hardcoded schema names: FROM {{ ref('orders') }} instead of FROM production_database.raw_data.orders.
+- dbt reads every ref() call and builds the entire lineage graph automatically. It determines exactly which models depend on which, and runs them in the correct order — no manual scheduling of upstream tasks.
+This is also why hardcoding table names is so harmful: dbt can't see the dependency and the lineage is broken.
+
+CARD 04 — Environment abstraction
+Data teams need dev/test/prod environments. Jinja makes the switch automatic via the {{ target.name }} variable.
+- In dev: output routes to your personal schema (e.g., dev_jane.my_model). You can't accidentally overwrite live data.
+- In prod: CI/CD activates the prod target, output goes to the real schema. Same file, zero manual changes.
+This is also covered in the target.name slide later in this module.
+
+WRAP — at the end of the module, come back and ask: "Which of these four did we see today?" All four map to concrete slides and the exercise. That closes the loop before the recap questions.
+-->
+
+---
+
 # What Jinja Is and How dbt Uses It
 
 <div class="grid grid-cols-2 gap-10 mt-4">
@@ -283,7 +362,7 @@ Running dbt compile is the verification step — participants can self-check wit
 
 <div class="mt-4">
 
-```sql {all|5-7|all}
+```sql {1-4|5-7|8-11|1-11}
 {{ config(
     materialized = 'incremental',
     unique_key   = 'contact_key'
