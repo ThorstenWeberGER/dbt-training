@@ -7,7 +7,7 @@ SELECT
     ps.sort_order,
     ps.probability,
     ps.is_closed,
-    COUNT(d.deal_key)           AS deal_count,
+    COUNT(d.deal_id)            AS deal_count,
     COALESCE(SUM(d.amount), 0)  AS total_amount,
     COALESCE(AVG(d.amount), 0)  AS avg_amount
 FROM {{ ref('dim_pipeline_stage') }} AS ps
