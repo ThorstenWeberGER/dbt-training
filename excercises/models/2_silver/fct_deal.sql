@@ -16,7 +16,6 @@ stages AS (
 )
 
 SELECT
-    {{ dbt_utils.generate_surrogate_key(['deal_id']) }} AS deal_key,
     s.deal_id,
     s.deal_name,
     p.patient_key,
