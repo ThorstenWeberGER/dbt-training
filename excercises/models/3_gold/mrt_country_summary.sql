@@ -11,7 +11,7 @@ SELECT
     cc.country_name,
     cc.region,
     COUNT(DISTINCT p.contact_id)    AS contact_count,
-    COUNT(d.deal_key)               AS deal_count,
+    COUNT(d.deal_id)                AS deal_count,
     COALESCE(SUM(d.amount), 0)      AS total_deal_amount
 FROM {{ ref('country_codes') }}    AS cc
 LEFT JOIN {{ ref('dim_patient') }} AS p  ON cc.country_code = p.patient_key  -- BUG: should be p.country_code

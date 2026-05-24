@@ -70,11 +70,6 @@ models:
   - name: fct_deal
     description: "Deal facts. Grain: one row per deal."
     columns:
-      - name: deal_key
-        description: "Surrogate key — MD5 of deal_id"
-        tests:
-          - not_null
-          - unique
       - name: deal_id
         tests:
           - not_null
