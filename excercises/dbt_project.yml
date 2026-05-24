@@ -29,12 +29,6 @@ models:
       +materialized: view
     2_silver:
       +materialized: table
-    3_gold:
-      +materialized: table
-      mrt_patient_prescriptions:
-      # +alias makes the database object name singular while keeping the file name plural.
-      # ref('stg_hubspot__contacts') still works — ref() uses the file/node name, not the alias.
-        +alias: mrt_patient_prescription
 
 # Variables for jinja can be defined heare and referenced in models, seeds, etc. with {{ var('variable_name') }}. They can also be overridden at runtime with --vars or in the dbt Cloud UI.
 seeds:
@@ -94,6 +88,3 @@ seeds:
         owner_id: integer
         _loaded_at: timestamp
 
-vars:
-  min_deal_amount: 0
-  start_date: '2024-01-01'

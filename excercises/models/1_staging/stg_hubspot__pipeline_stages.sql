@@ -1,7 +1,4 @@
-{{ config(materialized='table') }}
-
--- ⚠ BUG (deliberate — Module 04 fix task):
--- Staging models are always views. Change materialized='table' → materialized='view'.
+{{ config(materialized='view') }}
 
 SELECT
     stage_id                        AS pipeline_stage_id,
