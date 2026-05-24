@@ -81,6 +81,11 @@ seeds:
         owner_id: integer
         product_id: integer
         quantity: integer
+        prescription_date: date
+        medication_type: varchar
+        dosage_amount: double
+        notes: varchar
+        created_at: timestamp
         _loaded_at: timestamp
     raw_owners:
       +schema: hubspot_raw

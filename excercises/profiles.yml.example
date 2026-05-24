@@ -1,0 +1,37 @@
+dbt_training:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "xy12345.eu-west-1"        # replace with your Snowflake account identifier
+      user: "jane@company.com"            # replace with your Snowflake user email
+      password: "your_password_here"      # replace with your password (never commit this file with a real password)
+      role: "analytics_service_role"      # replace with your role
+      warehouse: "compute_wh"             # replace with your warehouse
+      database: "SILVER_DEV"             # replace with your dev database
+      schema: "TESTING__dev_yourname"    # replace yourname with your actual name
+      threads: 4
+
+    test:
+      type: duckdb
+      path: dbt_training.duckdb
+      schema: dev
+      threads: 4
+
+# -----------------------------------------------------------------------
+# Setup instructions:
+#
+# 1. Copy this file to ~/.dbt/profiles.yml
+#    Windows:  copy profiles.yml.example %USERPROFILE%\.dbt\profiles.yml
+#    Mac/Linux: cp profiles.yml.example ~/.dbt/profiles.yml
+#
+# 2. Replace every placeholder above with your real values.
+#
+# 3. Verify the connection:
+#    dbt debug
+#
+# All checks must show OK before starting exercises.
+#
+# The 'test' target uses DuckDB locally — no Snowflake credentials needed.
+# Run exercises against DuckDB with:  dbt run --target test
+# -----------------------------------------------------------------------

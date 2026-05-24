@@ -8,34 +8,39 @@ Across Modules 01–07 you'll build a working dbt project from the staging layer
 
 ```
 models/
-  staging/
-    hubspot/
-      sources.yml                        ← contacts + deals declared (no owners yet)
-      stg_hubspot__pipeline_stages.sql   ← pre-built with a deliberate bug
-  silver/
-    dim_pipeline.sql                     ← pre-built, no tests, no docs
-    dim_patient.sql                      ← pre-built, no tests, no docs
-    dim_doctor.sql                       ← pre-built, no tests, no docs
-    fct_prescription.sql                 ← pre-built, no tests, no docs
+  1_staging/
+    sources.yml                        ← contacts + deals + pipeline_stages declared (no owners yet)
+    stg_hubspot__pipeline_stages.sql   ← pre-built with a deliberate bug
+    stg_prescriptions.sql              ← pre-built
+    stg_products.sql                   ← pre-built
+    stg_hubspot__contacts.sql          ← stub (you write this in Module 03)
+    stg_hubspot__deals.sql             ← stub (you write this in Module 04)
+    stg_hubspot__owners.sql            ← stub (you write this in Module 05)
+  2_silver/
+    dim_pipeline_stage_stage.sql             ← pre-built, no tests, no docs
+    dim_patient.sql                    ← pre-built, no tests, no docs
+    dim_doctor.sql                     ← pre-built, no tests, no docs
+    fct_prescription.sql               ← pre-built, no tests, no docs
 ```
 
 **The project you'll have after Module 07:**
 
 ```
 models/
-  staging/
-    hubspot/
-      sources.yml                        ← extended: owners added with freshness
-      stg_hubspot__contacts.sql          ← written in Module 03
-      stg_hubspot__pipeline_stages.sql   ← fixed in Module 04
-      stg_hubspot__deals.sql             ← written in Module 04
-      stg_hubspot__owners.sql            ← written in Module 05
-  silver/
-    dim_pipeline.sql                     ← unchanged
-    dim_patient.sql                      ← unchanged
-    dim_doctor.sql                       ← unchanged
-    fct_prescription.sql                 ← unchanged
-    schema.yml                           ← created Module 06, extended Module 07
+  1_staging/
+    sources.yml                        ← extended: owners added with freshness
+    stg_hubspot__contacts.sql          ← written in Module 03
+    stg_hubspot__pipeline_stages.sql   ← fixed in Module 04
+    stg_hubspot__deals.sql             ← written in Module 04
+    stg_hubspot__owners.sql            ← written in Module 05
+    stg_prescriptions.sql              ← unchanged
+    stg_products.sql                   ← unchanged
+  2_silver/
+    dim_pipeline_stage_stage.sql             ← unchanged
+    dim_patient.sql                    ← unchanged
+    dim_doctor.sql                     ← unchanged
+    fct_prescription.sql               ← unchanged
+    schema.yml                         ← created Module 06, extended Module 07
 
 tests/
   assert_fct_prescription_no_zero_dosage.sql  ← written in Module 06
@@ -45,23 +50,17 @@ tests/
 
 ## Reference Data
 
-Sample data matching all exercises lives in `data/`:
+The `seeds/` folder contains CSV files that serve as Bronze mock data for local testing with DuckDB. Use them to understand column names, data types, and expected values before writing SQL:
 
-```
-data/
-  bronze/
-    hubspot_contacts.csv          ← source for stg_hubspot__contacts
-    hubspot_deals.csv             ← source for stg_hubspot__deals
-    hubspot_pipeline_stages.csv   ← source for stg_hubspot__pipeline_stages
-    hubspot_owners.csv            ← source for stg_hubspot__owners
-  silver/
-    dim_pipeline.csv              ← expected output of dim_pipeline (SCD2 example)
-    dim_patient.csv               ← expected output of dim_patient
-    dim_doctor.csv                ← expected output of dim_doctor
-    fct_prescription.csv          ← expected output of fct_prescription (clean state)
-```
+| Seed file | What it simulates |
+|---|---|
+| `seeds/raw_contacts.csv` | `BRONZE.HUBSPOT.contacts` — source for `stg_hubspot__contacts` |
+| `seeds/raw_deals.csv` | `BRONZE.HUBSPOT.deals` — source for `stg_hubspot__deals` |
+| `seeds/raw_pipeline_stages.csv` | `BRONZE.HUBSPOT.pipeline_stages` — source for `stg_hubspot__pipeline_stages` |
+| `seeds/raw_owners.csv` | `BRONZE.HUBSPOT.owners` — source for `stg_hubspot__owners` |
+| `seeds/raw_prescriptions.csv` | `BRONZE.HUBSPOT.prescriptions` — source for `stg_prescriptions` |
 
-Check these files before writing SQL. They'll show you the column names, data types, and expected values you're working toward.
+Check these files before writing SQL. They'll show you the exact column names and data types you're working with.
 
 ---
 
@@ -104,17 +103,17 @@ You've been given a partially built dbt project. Nothing is yours yet — everyt
 Open `dbt_project.yml`. Answer without Googling:
 
 1. What is the project name?
-2. What materialization is set for `staging` models?
-3. What materialization is set for `silver` models?
-4. What does the `+database` key under `silver` do?
+2. What materialization is set for `1_staging` models?
+3. What materialization is set for `2_silver` models?
+4. What is the `profile:` key and why does it matter?
 
 ### Task 2 — Count and list Silver models
 
-Navigate to `models/silver/`. List every `.sql` file. For each one, open it and find the first `{{ ref() }}` or `{{ source() }}` call.
+Navigate to `models/2_silver/`. List every `.sql` file. For each one, open it and find the first `{{ ref() }}` or `{{ source() }}` call.
 
 ### Task 3 — Find the bug
 
-Open `models/staging/hubspot/stg_hubspot__pipeline_stages.sql`. Something is wrong with this file. Can you spot it? Don't fix it yet — that's Module 04.
+Open `models/1_staging/stg_hubspot__pipeline_stages.sql`. Something is wrong with this file. Can you spot it? Don't fix it yet — that's Module 04.
 
 ### Task 4 — Run `dbt ls`
 
@@ -145,7 +144,7 @@ All checks must show `OK` before you proceed to Module 03.
 
 ### Task 1 — Write `stg_hubspot__contacts.sql`
 
-Create `models/staging/hubspot/stg_hubspot__contacts.sql`.
+Create `models/1_staging/stg_hubspot__contacts.sql`.
 
 The Bronze source table (`BRONZE.HUBSPOT.contacts`) has these columns:
 
@@ -167,7 +166,7 @@ Write a staging model that:
 dbt compile --select stg_hubspot__contacts
 ```
 
-Open `target/compiled/analytics/models/staging/hubspot/stg_hubspot__contacts.sql`.
+Open `target/compiled/dbt_training/models/1_staging/stg_hubspot__contacts.sql`.
 
 Verify:
 - `{{ source('hubspot', 'contacts') }}` compiled to `BRONZE.HUBSPOT.contacts`
@@ -272,7 +271,7 @@ FROM {{ source('hubspot', 'pipeline_stages') }}
 
 ### Task 2 — Write `stg_hubspot__deals.sql`
 
-Create `models/staging/hubspot/stg_hubspot__deals.sql`.
+Create `models/1_staging/stg_hubspot__deals.sql`.
 
 The Bronze source table (`BRONZE.HUBSPOT.deals`) has these columns:
 
@@ -354,7 +353,7 @@ FROM {{ ref('stg_hubspot__contacts') }}
 
 ### Task 1 — Extend `sources.yml`
 
-Open `models/staging/hubspot/sources.yml`. The file currently declares `contacts` and `deals` under the `hubspot` source.
+Open `models/1_staging/sources.yml`. The file currently declares `contacts`, `deals`, and `pipeline_stages` under the `hubspot` source.
 
 Add the `owners` table to the same source block:
 - Table name: `owners`
@@ -377,7 +376,7 @@ Add the `owners` table to the same source block:
 
 ### Task 2 — Write `stg_hubspot__owners.sql`
 
-Create `models/staging/hubspot/stg_hubspot__owners.sql`.
+Create `models/1_staging/stg_hubspot__owners.sql`.
 
 The Bronze source table (`BRONZE.HUBSPOT.owners`) has these columns:
 
@@ -432,9 +431,9 @@ Four staging models should run `OK`. The freshness output will show `owners` as 
 ## Module 06 — Test the Silver Layer (30 min)
 
 **Prerequisite:** Module 05 complete
-**Project state at start:** Full staging layer. Silver models exist but `models/silver/schema.yml` does not yet exist.
+**Project state at start:** Full staging layer. Silver models exist but `models/2_silver/schema.yml` does not yet exist.
 
-### Task 1 — Create `models/silver/schema.yml`
+### Task 1 — Create `models/2_silver/schema.yml`
 
 Create the file. Add a `models:` block for `fct_prescription`.
 
@@ -582,7 +581,7 @@ Watch the output order. Models run first; tests run immediately after each model
 
 ### Task 1 — Add documentation to `fct_prescription`
 
-In `models/silver/schema.yml`, add a `description:` field to the `fct_prescription` model entry.
+In `models/2_silver/schema.yml`, add a `description:` field to the `fct_prescription` model entry.
 
 The description must include:
 - A **grain statement**: what does one row in this model represent?
@@ -590,26 +589,26 @@ The description must include:
 
 Then add `description:` fields to every column that already has a test.
 
-### Task 2 — Document `dim_pipeline`
+### Task 2 — Document `dim_pipeline_stage`
 
-Add a new entry to `schema.yml` for `dim_pipeline`. This model is SCD2 — one row per pipeline per validity period.
+Add a new entry to `schema.yml` for `dim_pipeline_stage`. This is an SCD1 dimension — one row per pipeline stage, rebuilt on each run.
 
 Columns to document:
 
 | Column | Type | Role |
 |---|---|---|
-| `pipeline_key` | Surrogate PK | Unique per pipeline version |
-| `hubspot_pipeline_id` | String | Business key — stable across SCD2 versions |
-| `pipeline_name` | String | Human-readable name |
-| `is_active` | Boolean | Whether this pipeline is in use |
-| `dbt_valid_from` | Timestamp | When this version became effective |
-| `dbt_valid_to` | Timestamp | When superseded. NULL means current |
-| `is_current` | Boolean | True if `dbt_valid_to IS NULL` — convenience flag |
+| `pipeline_stage_key` | Surrogate PK | Unique per stage — MD5 of pipeline_stage_id |
+| `pipeline_stage_id` | String | Business key from HubSpot |
+| `stage_name` | String | Human-readable stage label |
+| `pipeline_id` | String | The pipeline this stage belongs to |
+| `sort_order` | Integer | Display order within the pipeline |
+| `probability` | Double | Win probability (0–1) assigned to this stage |
+| `is_closed` | Boolean | Whether this stage represents a closed deal |
 
 Requirements:
-- Grain statement explaining the SCD2 pattern (see `data/silver/dim_pipeline.csv` for an example: `hs-pipeline-003` appears twice — once historical, once current)
+- Grain statement (one row per HubSpot pipeline stage)
 - Description for every column
-- Tests: `pipeline_key` (unique + not_null), `is_current` (not_null)
+- Tests: `pipeline_stage_key` (unique + not_null), `pipeline_stage_id` (unique + not_null)
 
 ### Task 3 — Generate and browse docs
 
@@ -620,8 +619,8 @@ dbt docs serve
 
 In the browser:
 1. Search for `fct_prescription`. Confirm your grain statement appears in the model description.
-2. Search for `dim_pipeline`. Click into the lineage DAG. Find the upstream staging model.
-3. Click on `dbt_valid_to`. Confirm your column description appears.
+2. Search for `dim_pipeline_stage`. Click into the lineage DAG. Find the upstream staging model.
+3. Click on `pipeline_stage_key`. Confirm your column description appears.
 4. Return to the DAG. Trace the full lineage from Bronze source to `fct_prescription`.
 
 <details>
@@ -698,15 +697,13 @@ models:
       - name: notes
         description: Optional free-text clinical notes added by the doctor.
 
-  - name: dim_pipeline
+  - name: dim_pipeline_stage
     description: >
-      Grain: one row per HubSpot pipeline per validity period (SCD2).
-      A pipeline that has been renamed appears as two rows — one historical
-      (dbt_valid_to set) and one current (dbt_valid_to NULL).
-      Filter on is_current = true to get the latest version of each pipeline.
+      Grain: one row per HubSpot pipeline stage. SCD1 — full rebuild on each run.
+      Each row represents a single pipeline stage with its current configuration.
     columns:
-      - name: pipeline_key
-        description: Surrogate primary key. Unique per pipeline version — not per pipeline.
+      - name: pipeline_stage_key
+        description: Surrogate primary key — MD5 hash of pipeline_stage_id.
         tests:
           - unique:
               config:
@@ -715,32 +712,30 @@ models:
               config:
                 severity: error
 
-      - name: hubspot_pipeline_id
-        description: Business key assigned by HubSpot. Stable across SCD2 versions.
-
-      - name: pipeline_name
-        description: Human-readable pipeline name as configured in HubSpot.
-
-      - name: is_active
-        description: True if the pipeline is currently active and visible in HubSpot.
-
-      - name: dbt_valid_from
-        description: Timestamp when this version of the pipeline record became effective.
-
-      - name: dbt_valid_to
-        description: >
-          Timestamp when this version was superseded by a newer record.
-          NULL means this is the current active version.
-
-      - name: is_current
-        description: >
-          True if this row is the current state of the pipeline.
-          Equivalent to dbt_valid_to IS NULL. Provided as a convenience flag
-          to avoid repeating the NULL check in downstream queries.
+      - name: pipeline_stage_id
+        description: Business key assigned by HubSpot. Stable identifier for this stage.
         tests:
+          - unique:
+              config:
+                severity: error
           - not_null:
               config:
                 severity: error
+
+      - name: stage_name
+        description: Human-readable stage label as configured in HubSpot.
+
+      - name: pipeline_id
+        description: The pipeline this stage belongs to.
+
+      - name: sort_order
+        description: Display order of this stage within its pipeline.
+
+      - name: probability
+        description: Win probability (0–1) assigned to deals in this stage.
+
+      - name: is_closed
+        description: True if this stage represents a closed deal (won or lost).
 ```
 
 </details>
@@ -763,18 +758,14 @@ At the end of Module 07 you can:
 
 ---
 
-## Modules 08–16 — Tier 2 and Tier 3
+## Modules 08–12 — Tier 2: Working Effectively
 
-Whats comes next?
+What comes next?
 
-| Module | Planned exercise |
-|---|---|
-| 08 — Advanced Materializations | Debug an incremental model with a late-arriving data bug; fix the lookback window |
-| 09 — Seeds and Variables | Add a status mapping seed; wire it into a Silver model via `ref()` |
-| 10 — Jinja and Macros | Write a `safe_divide` macro; use it in two models |
-| 11 — SCD2 and Snapshots | Compare native snapshot output against `scd2_merge` macro output |
-| 12 — Selectors | Write selector expressions to target specific layers; trace downstream impact |
-| 13 — CI/CD and Slim CI | Simulate a slim CI run using a saved `manifest.json`; observe which models are selected |
-| 14 — Advanced Testing | Add `store_failures: true` to a test; query the failure table in Snowsight |
-| 15 — Incremental Patterns | Reproduce the reopened-ticket bug; apply the fix |
-| 16 — Governance | Write a model contract for a Gold mart; break it deliberately; read the compile error |
+| Module | Topic | Exercise |
+|---|---|---|
+| 08 | Seeds and Variables | Load lookup seeds; debug a Gold mart JOIN bug; add a runtime-configurable variable to `fct_deal` |
+| 09 | Jinja and Macros | Write the `safe_cast` macro; use it in `stg_hubspot__deals`; add `generate_surrogate_key` to `fct_deal` |
+| 10 | SCD2 and Snapshots | Review `snap_patients.sql`; run the initial snapshot; simulate a data change and observe SCD2 rows |
+| 11 | Selectors and Tags | Write `dbt ls` and `dbt build` commands for 5 real scenarios using graph operators and tags |
+| 12 | CI/CD and Slim CI | Fix three bugs in a broken GitHub Actions YAML; write the Slim CI `dbt build` command |
