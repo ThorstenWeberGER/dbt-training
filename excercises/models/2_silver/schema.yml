@@ -83,16 +83,14 @@ models:
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('dim_patient')
-                field: patient_key
+              to: ref('dim_patient')
+              field: patient_key
       - name: pipeline_stage_key
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('dim_pipeline_stage')
-                field: pipeline_stage_key
+              to: ref('dim_pipeline_stage')
+              field: pipeline_stage_key
 
   - name: fct_prescription
     description: >
