@@ -3,9 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "slidev --open module_01_slides.md",
-    "build": "slidev build module_01_slides.md",
-    "export": "slidev export module_01_slides.md"
+    "launcher": "node launcher.js",
+    "dev": "slidev --open module_01.md",
+    "build": "slidev build module_01.md",
+    "export": "slidev export module_01.md"
   },
   "devDependencies": {
     "@slidev/cli": "^52.15.2"
