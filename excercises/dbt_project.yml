@@ -29,8 +29,13 @@ models:
       +materialized: view
     2_silver:
       +materialized: table
+    2_silver:
+      fct_deal:
+        +tags: ['daily', 'finance']
     3_gold:
       +materialized: table
+      mrt_deals_funnel:
+        +tags: ['weekly', 'finance']
       mrt_patient_prescriptions:
       # +alias makes the database object name singular while keeping the file name plural.
       # ref('stg_hubspot__contacts') still works — ref() uses the file/node name, not the alias.
