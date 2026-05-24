@@ -4,7 +4,6 @@
 
 WITH source AS (
     SELECT * FROM {{ ref('stg_hubspot__deals') }}
-    WHERE amount >= {{ var('min_deal_amount', 0) }}
 ),
 
 patients AS (
@@ -16,7 +15,6 @@ stages AS (
 )
 
 SELECT
-    {{ dbt_utils.generate_surrogate_key(['deal_id']) }} AS deal_key,
     s.deal_id,
     s.deal_name,
     p.patient_key,

@@ -94,6 +94,3 @@ seeds:
         owner_id: integer
         _loaded_at: timestamp
 
-vars:
-  min_deal_amount: 0
-  start_date: '2024-01-01'
