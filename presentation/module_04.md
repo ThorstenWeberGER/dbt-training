@@ -96,8 +96,8 @@ FROM BRONZE.HUBSPOT.contacts
 
 ```sql
 -- dbt compiles to:
-DROP TABLE IF EXISTS SILVER.PUBLIC.dim_pipeline_stage;
-CREATE TABLE SILVER.PUBLIC.dim_pipeline_stage AS
+DROP TABLE IF EXISTS SILVER.PUBLIC.dim_pipeline;
+CREATE TABLE SILVER.PUBLIC.dim_pipeline AS
 SELECT ...
 ```
 
@@ -217,7 +217,7 @@ WHEN NOT MATCHED THEN INSERT (contact_key, hubspot_contact_id, email, updated_at
 VALUES (DBT_INTERNAL_SOURCE.contact_key, ...)
 ```
 
-<div class="mt-3 text-sm text-slate-500">Find this in <code>target/compiled/dbt_training/models/2_silver/dim_patient.sql</code></div>
+<div class="mt-3 text-sm text-slate-500">Find this in <code>target/compiled/analytics/models/silver/dim_contact.sql</code></div>
 
 <!--
 This slide answers "what does dbt actually do?" at the SQL level. No magic.
@@ -385,7 +385,7 @@ models:
 <div style="font-size: 11px">
 
 ```yaml
-# models/2_silver/schema.yml
+# models/silver/schema.yml
 models:
   - name: dim_contact
     config:
