@@ -29,7 +29,6 @@ models:
       +materialized: view
     2_silver:
       +materialized: table
-    2_silver:
       fct_deal:
         +tags: ['daily', 'finance']
     3_gold:
