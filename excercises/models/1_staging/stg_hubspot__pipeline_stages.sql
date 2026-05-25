@@ -7,5 +7,5 @@ SELECT
     sort_order,
     CAST(probability AS DOUBLE)     AS probability,
     is_closed::BOOLEAN              AS is_closed,
-    _loaded_at                      AS loaded_at
+    {{ cast_timestamp_tz('_loaded_at') }}   AS loaded_at
 FROM {{ source('hubspot', 'pipeline_stages') }}

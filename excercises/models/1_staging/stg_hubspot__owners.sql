@@ -8,5 +8,5 @@ SELECT
     first_name,
     last_name,
     email,
-    _loaded_at                      AS loaded_at
+    {{ cast_timestamp_tz('_loaded_at') }}   AS loaded_at
 FROM {{ source('hubspot', 'owners') }}
