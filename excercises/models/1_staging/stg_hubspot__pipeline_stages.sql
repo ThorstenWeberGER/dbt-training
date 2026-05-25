@@ -1,7 +1,7 @@
 {{ config(materialized='table') }}
 
--- ÃƒÂ¢Ã…Â¡Ã‚Â  BUG (deliberate ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Module 04 fix task):
--- Staging models are always views. Change materialized='table' ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ materialized='view'.
+-- ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â  BUG (deliberate ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Module 04 fix task):
+-- Staging models are always views. Change materialized='table' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ materialized='view'.
 
 SELECT
     stage_id                        AS pipeline_stage_id,
