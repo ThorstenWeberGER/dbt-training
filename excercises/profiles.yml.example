@@ -14,7 +14,7 @@ dbt_training:
 
     test:
       type: duckdb
-      path: dbt_training.duckdb
+      path: dbt_training.duckdb         # just the name of the file
       schema: dev
       threads: 4
 
