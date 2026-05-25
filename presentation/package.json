@@ -9,7 +9,8 @@
     "export": "slidev export module_01.md"
   },
   "devDependencies": {
-    "@slidev/cli": "^52.15.2"
+    "@slidev/cli": "^52.15.2",
+    "playwright-chromium": "^1.60.0"
   },
   "dependencies": {
     "@slidev/theme-default": "^0.25.0"
