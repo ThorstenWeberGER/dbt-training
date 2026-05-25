@@ -314,8 +314,8 @@ SELECT
     c.email,
     p.pipeline_name
 FROM {{ source('hubspot', 'contacts') }} c
-LEFT JOIN {{ ref('dim_pipeline_stage') }} p
-    ON c.pipeline_id = p.pipeline_stage_id
+LEFT JOIN {{ ref('dim_pipeline') }} p
+    ON c.pipeline_id = p.hubspot_pipeline_id
 ```
 
 - What is the result of this select statement?
@@ -346,7 +346,7 @@ Task 1 expected answer:
 CREATE OR REPLACE TABLE SILVER.PUBLIC.your_model AS
 SELECT c.contact_id, c.email, p.pipeline_name
 FROM BRONZE.HUBSPOT.contacts c
-LEFT JOIN SILVER.PUBLIC.dim_pipeline_stage p ON c.pipeline_id = p.pipeline_stage_id
+LEFT JOIN SILVER.PUBLIC.dim_pipeline p ON c.pipeline_id = p.hubspot_pipeline_id
 
 Most common errors to watch for:
 - Using {{ }} for if blocks

@@ -276,7 +276,7 @@ analytics/
   </div>
 
   <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
-    <div class="font-mono text-slate-500 text-xs mb-1">models/2_silver/dim_patient.sql</div>
+    <div class="font-mono text-slate-500 text-xs mb-1">models/silver/dim_patient.sql</div>
     Contains <code v-pre>{{ ref() }}</code> — we'll cover this in Module 03
   </div>
 
