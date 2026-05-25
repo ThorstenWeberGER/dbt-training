@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Mandatory 
+## Mandatory
 
 ### Coding Guidelines (Karpathy Guidelines)
 
@@ -12,69 +12,73 @@ The full skill is installed at `.claude/skills/karpathy-guidelines/SKILL.md`. Re
 
 ### Human writing
 
-**IMPORTANT** The rules apply to all documents which are for participants and trainer to read, to present, to guide through excercises. It does NOT apply to the code.
+**IMPORTANT** The rules apply to all documents which are for participants and trainer to read, to present, to guide through exercises. It does NOT apply to code.
 
 The full skill is installed at `.claude/skills/humanize/SKILL.md`. Read it before doing anything.
-
-
-
-### 1. Think Before Coding
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
-- State assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them — don't pick silently.
-- If a simpler approach exists, say so and push back when warranted.
-- If something is unclear, stop, name what's confusing, and ask.
-
-### 2. Simplicity First
-**Minimum code that solves the problem. Nothing speculative.**
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-### 3. Surgical Changes
-**Touch only what you must. Clean up only your own mess.**
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it — don't delete it.
-- Every changed line must trace directly to the user's request.
-
-### 4. Goal-Driven Execution
-**Define success criteria. Loop until verified.**
-- Transform vague tasks into testable objectives before starting.
-- For multi-step tasks, state a brief plan with explicit verify steps.
-- Strong success criteria let you loop independently; weak ones ("make it work") require constant clarification.
 
 ## Repository Purpose
 
 This is a **dbt training curriculum** for the data team — not an actual dbt project. It teaches dbt Core + Snowflake from foundations to production patterns, using the project's data stack as the running example throughout.
 
-## No Build System
+## Repository Structure
 
-There are no build, test, or lint commands. The repository contains only markdown lesson files and two standalone React visualization components. Nothing needs to be compiled or installed.
+The repo has two distinct parts:
+
+**Curriculum content** (root): Markdown lesson plans, Slidev presentation decks, participant/trainer guides. No build system — nothing to compile.
+
+**Exercise project** (`excercises/`): A fully runnable dbt project (Snowflake primary / DuckDB local test). It has real commands. Always run from inside `excercises/`:
+
+```bash
+# Standard verification sequence — always in this order
+NO_COLOR=1 dbt seed --target test --full-refresh
+NO_COLOR=1 dbt run  --target test
+NO_COLOR=1 dbt test --target test
+```
+
+**Critical rules for the exercise project:**
+- **Never use `dbt build` with the DuckDB `--target test`**. DuckDB validates table existence at view creation time — `dbt build` parallelises seeds and models, causing staging views to fail because seed tables don't exist yet. Always sequence manually.
+- **Delete `dbt_training.duckdb` before branch-switching verification**. The single file persists across branch checkouts; Tier 2 tables pollute Tier 1 test results.
+- **Use Bash, not PowerShell, for git operations**. PowerShell's `2>&1 | Out-Null` suppresses stderr silently; checkout failures go undetected.
+- **`NO_COLOR=1`** before any dbt command used in a script. dbt outputs ANSI escape codes that break `grep`.
+
+**Exercise branches** (8 total, all off `main`):
+
+| Branch | Starting state for |
+|---|---|
+| `dbt-project-module-03-04` | M01 orientation through M04 fix & extend |
+| `dbt-project-module-05` | M05 sources + owners |
+| `dbt-project-module-06-07` | M06 testing + M07 documentation |
+| `dbt-project-module-08` | M08 seeds & variables (full Tier 1 result) |
+| `dbt-project-module-09` | M09 Jinja & macros |
+| `dbt-project-module-10` | M10 SCD2 & snapshots |
+| `dbt-project-module-11` | M11 selectors & tags |
+| `dbt-project-module-12` | M12 CI/CD |
+
+Each branch is a standalone complete snapshot — no dependency on prior branches.
 
 ## Key Files
 
-| File | Purpose |
+| File / Path | Purpose |
 |------|---------|
-| `dbt_training_agenda_bloomwell.md` | Full 16-module curriculum outline with durations and learning goals |
-| `dbt_training_methodology.md` | How to structure and deliver sessions; the pedagogical framework |
-| `module_0X_[topic].md` | Detailed lesson plans — `module_01_what_is_dbt.md` through `module_07_documentation.md` |
-| `module_0X_slides.md` | Slidev presentation decks mirroring each lesson plan |
+| `dbt_training_agenda_bloomwell.md` | Curriculum outline with durations and learning goals |
+| `dbt_training_methodology.md` | How to structure and deliver sessions; pedagogical framework |
+| `presentation/module_XX.md` | Slidev decks — `module_01.md` through `module_12.md` |
+| `excercises/guide_participants_tier1.md` | Participant handout for Tier 1 (M01–07) |
+| `excercises/guide_participants_tier2.md` | Participant handout for Tier 2 (M08–12) |
+| `excercises/guide_trainer_all.md` | Trainer guide with answers and facilitation notes for all modules |
+| `excercises/` | Runnable dbt project — seeds, models, macros, snapshots, tests |
+| `docs/session_retrospective.md` | Session retrospective with operational lessons learned |
 | `reference.md` | Book-to-module mapping for *Analytics Engineering with SQL and dbt* (O'Reilly) |
-| `Data_Quality_Validation.md` | Data quality validation framework and patterns |
 | `dbt_mindmap.jsx` | React mind map visualizing the full curriculum |
-| `dbt_quality_validation.tsx` | React UI component for demonstrating validation patterns |
 
 ## Curriculum Architecture
 
-Three tiers across 16 planned modules:
+Two tiers, 12 modules total:
 
-- **Tier 1 — Foundations** (Modules 1–7, ~7.5h): Why dbt, project setup, Jinja basics, materializations, sources, testing, documentation. **Full lesson content exists.**
-- **Tier 2 — Working Effectively** (Modules 8–12, ~7h): Advanced materializations, seeds/variables, macros, SCD2/snapshots, selectors. Slides only or planned.
-- **Tier 3 — Production & Advanced** (Modules 13–16): CI/CD, advanced testing, custom macros, governance. Planned only.
+- **Tier 1 — Foundations** (Modules 1–7, ~7.5h): Why dbt, project setup, materializations, sources, testing, documentation. Full lesson content + exercise project branches exist.
+- **Tier 2 — Working Effectively** (Modules 8–12, ~7h): Seeds/variables, Jinja/macros, SCD2/snapshots, selectors, CI/CD. Full lesson content + exercise project branches exist.
+
+Tier 3 (Production & Advanced, Modules 13–16) is planned but not yet implemented — no content or branches exist yet.
 
 When adding or editing module content, use Modules 1–7 as the style and depth reference.
 
