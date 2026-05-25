@@ -81,6 +81,7 @@ seeds:
         owner_id: integer
         product_id: integer
         quantity: integer
+        dosage_amount: double
         _loaded_at: timestamp
     raw_owners:
       +schema: hubspot_raw

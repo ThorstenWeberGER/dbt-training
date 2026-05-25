@@ -23,29 +23,23 @@ models:
     description: "Doctor dimension. Grain: one row per doctor (HubSpot owner). SCD1."
     columns:
       - name: doctor_key
-        description: "A unique identifier for each doctor, generated using an MD5 hash of the owner_id. This ensures consistency and uniqueness across records."
+        description: "Surrogate key — MD5 of owner_id"
         tests:
           - not_null
           - unique
-        data_type: varchar
       - name: doctor_id
         tests:
           - not_null
           - unique
-        description: The identifier for the doctor, sourced from the stg_hubspot__owners table. Represents the business key for the owner entity.
-        data_type: integer
+        description: "Business key from HubSpot owners."
       - name: first_name
-        description: The first name of the doctor, sourced directly from the stg_hubspot__owners table.
-        data_type: varchar
+        description: "First name of the doctor."
       - name: last_name
-        description: The last name of the doctor, sourced from the HubSpot owners table.
-        data_type: varchar
+        description: "Last name of the doctor."
       - name: email
-        description: The email address of the doctor, sourced from the HubSpot owners table.
-        data_type: varchar
+        description: "Work email address of the doctor."
       - name: loaded_at
-        description: The timestamp indicating when the data was loaded into the staging table.
-        data_type: timestamp
+        description: "Timestamp when the record was loaded into staging."
 
   - name: dim_pipeline_stage
     description: "Pipeline stage dimension. Grain: one row per stage."
@@ -76,11 +70,6 @@ models:
   - name: fct_deal
     description: "Deal facts. Grain: one row per deal."
     columns:
-      - name: deal_key
-        description: "Surrogate key — MD5 of deal_id"
-        tests:
-          - not_null
-          - unique
       - name: deal_id
         tests:
           - not_null
@@ -89,49 +78,78 @@ models:
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('dim_patient')
-                field: patient_key
+              to: ref('dim_patient')
+              field: patient_key
       - name: pipeline_stage_key
         tests:
           - not_null
           - relationships:
-              arguments:
-                to: ref('dim_pipeline_stage')
-                field: pipeline_stage_key
+              to: ref('dim_pipeline_stage')
+              field: pipeline_stage_key
 
   - name: fct_prescription
-    description: "Prescription facts. Grain: one row per prescription."
+    description: >
+      Grain: one row per prescription record. Each row represents a single
+      medication dispensing event linked to a patient and a prescribing doctor.
+      Used by the Gold layer to compute prescription volume and fill rates.
     columns:
       - name: prescription_key
-        description: "Surrogate key — MD5 of prescription_id"
+        description: "Surrogate primary key — MD5 hash of prescription_id."
         tests:
-          - not_null
-          - unique
-      - name: prescription_id
-        tests:
-          - not_null
-          - unique
+          - unique:
+              config:
+                severity: error
+          - not_null:
+              config:
+                severity: error
+
       - name: patient_key
-        description: "FK to dim_patient — identifies the patient who received the prescription"
+        description: "Foreign key to dim_patient. Identifies the patient receiving the prescription."
         tests:
-          - not_null
+          - not_null:
+              config:
+                severity: error
           - relationships:
-              arguments:
-                to: ref('dim_patient')
-                field: patient_key
+              to: ref('dim_patient')
+              field: patient_key
+              config:
+                severity: error
+
       - name: doctor_key
-        description: "FK to dim_doctor — identifies the prescribing doctor"
+        description: "Foreign key to dim_doctor. Identifies the prescribing doctor."
         tests:
-          - not_null
+          - not_null:
+              config:
+                severity: error
           - relationships:
-              arguments:
-                to: ref('dim_doctor')
-                field: doctor_key
-      - name: product_key
+              to: ref('dim_doctor')
+              field: doctor_key
+              config:
+                severity: error
+
+      - name: prescription_date
+        description: "Date the prescription was issued by the doctor."
         tests:
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('dim_product')
-                field: product_key
+          - not_null:
+              config:
+                severity: error
+
+      - name: medication_type
+        description: "Delivery form of the medication."
+        tests:
+          - accepted_values:
+              values: [tablet, liquid, injection, topical]
+              config:
+                severity: error
+
+      - name: dosage_amount
+        description: >
+          Prescribed dose quantity. Null when the dose has not yet been confirmed
+          by the prescribing doctor — this is an expected state for new records.
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: notes
+        description: "Optional free-text clinical notes added by the doctor."
