@@ -6,5 +6,10 @@ SELECT
     owner_id,
     product_id,
     quantity,
-    created_at::TIMESTAMP           AS created_at
+    prescription_date,
+    medication_type,
+    dosage_amount::DOUBLE               AS dosage_amount,
+    notes,
+    {{ cast_timestamp_tz('created_at') }}   AS created_at,
+    {{ cast_timestamp_tz('_loaded_at') }}   AS loaded_at
 FROM {{ source('hubspot', 'prescriptions') }}
