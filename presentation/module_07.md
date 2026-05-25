@@ -171,7 +171,7 @@ Ask: "Write a grain statement for fct_prescription." Someone should be able to a
 <div class="mt-4 grid grid-cols-2 gap-4">
 <div>
 
-**`models/2_silver/_silver_docs.md`**
+**`models/silver/_silver_docs.md`**
 ```markdown
 {% docs fct_prescription %}
 One prescription per patient per doctor per date.

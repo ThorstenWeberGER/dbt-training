@@ -213,17 +213,26 @@ function renderHTML(decks) {
 function killSlidev() {
   return new Promise(resolve => {
     if (!slidevProcess) return resolve();
-    slidevProcess.kill('SIGTERM');
+    const proc = slidevProcess;
     slidevProcess = null;
-    setTimeout(resolve, 500);
+    if (process.platform === 'win32') {
+      // SIGTERM is not reliable on Windows — use taskkill to force-kill the
+      // entire process tree (cmd.exe + child npx/node), freeing port 3030
+      exec(`taskkill /F /T /PID ${proc.pid}`, () => setTimeout(resolve, 1000));
+    } else {
+      proc.kill('SIGTERM');
+      setTimeout(resolve, 500);
+    }
   });
 }
 
 async function startSlidev(file) {
   await killSlidev();
-  // On Windows, spawn cmd.exe /c explicitly — shell:true + args array breaks on Node v24
+  // On Windows, use cmd.exe /c without quoting the filename — quotes were passed
+  // as literal characters to Slidev, which then appended .md again ("file.md".md).
+  // Presentation filenames never contain spaces so quoting is not needed.
   const [cmd, args] = process.platform === 'win32'
-    ? ['cmd.exe', ['/c', `npx slidev "${file}" --port ${SLIDEV_PORT} --no-open`]]
+    ? ['cmd.exe', ['/c', `npx slidev ${file} --port ${SLIDEV_PORT} --no-open`]]
     : ['npx', ['slidev', file, '--port', String(SLIDEV_PORT), '--no-open']];
   slidevProcess = spawn(cmd, args, { cwd: __dirname, stdio: 'inherit' });
   slidevProcess.on('error', (err) => {
