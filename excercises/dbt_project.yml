@@ -1,8 +1,10 @@
-name: 'dbt_training'
+# project name - must be unique across all dbt projects in the same database
+name: 'dbt_training'            
 version: '1.0.0'
 config-version: 2
 
-profile: 'dbt_training' # MUST match the profile name n profiles.yml
+# profile MUST match the profile name in profiles.yml
+profile: 'dbt_training'         
 
 # default paths, can be changed or added to as needed
 model-paths: ["models"]
@@ -18,13 +20,14 @@ target-path: "target"
 # directories to be removed by dbt clean; can be changed or added to as needed
 clean-targets: ["target", "dbt_packages"]
 
-# model configurations can be set here to apply to all models in subfolders, or models can be configured individually by adding config blocks to the relevant .sql files.
+# default model configurations is set here to apply to all models in subfolders. overwritten by schema.yml in subfolders
 models:
   # persist_docs enables dbt to store descriptions in Snowflake  making it accessible for tools that can read database metadata. 
   +persist_docs:
       relation: true
       column: true
-  dbt_training:
+  # must match project name - gives default namespace for models
+  dbt_training:                 
     1_staging:
       +materialized: view
     2_silver:
@@ -36,13 +39,14 @@ models:
       # ref('stg_hubspot__contacts') still works — ref() uses the file/node name, not the alias.
         +alias: mrt_patient_prescription
 
-# Variables for jinja can be defined heare and referenced in models, seeds, etc. with {{ var('variable_name') }}. They can also be overridden at runtime with --vars or in the dbt Cloud UI.
+# Seeds are CSV files that dbt can load into the database. They are useful for static data, such as lookup tables or small datasets that don't change often. The configuration for seeds allows you to specify the schema, alias, and column types for each seed file. This ensures that the data is stored in the correct format in the database.
 seeds:
   dbt_training:
     raw_contacts:
       +schema: hubspot_raw
       +alias: contacts
       +column_types:
+        # column types definition makes sure that dbt stores data in required data type. Important especially for CSV files.
         id: integer
         pipeline_stage_id: integer
         _loaded_at: timestamp
@@ -90,6 +94,7 @@ seeds:
         owner_id: integer
         _loaded_at: timestamp
 
+# Variables for jinja can be defined heare and referenced in models, seeds, etc. with {{ var('variable_name') }}. They can also be overridden at runtime with --vars or in the dbt Cloud UI.
 vars:
   min_deal_amount: 0
   start_date: '2024-01-01'

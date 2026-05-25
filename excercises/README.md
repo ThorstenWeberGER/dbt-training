@@ -9,20 +9,15 @@
 
 ### Training mode (Snowflake)
 
-Set the following environment variables before running:
-
-```bash
-export DBT_SNOWFLAKE_ACCOUNT=<your_account>
-export DBT_SNOWFLAKE_USER=<your_user>
-export DBT_SNOWFLAKE_PASSWORD=<your_password>
-export DBT_USER_NAME=<yourname>          # determines your dev schema: DEV_<yourname>
-export DBT_SOURCE_DATABASE=DBT_TRAINING  # Snowflake database with pre-loaded source tables
-```
-
 The trainer pre-loads all source tables into `DBT_TRAINING.HUBSPOT_RAW` before training starts.
 Participants only seed the lookup tables:
 
 ```bash
+# Create and activate virtual environment (Python 3.12 required — 3.13+ breaks dbt)
+py -3.12 -m venv .venv
+.venv\Scripts\activate              # Windows
+# source .venv/bin/activate         # macOS/Linux
+
 # Install all dependencies (both adapters)
 pip install -r requirements.txt
 
