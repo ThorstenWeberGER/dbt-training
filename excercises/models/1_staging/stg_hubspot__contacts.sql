@@ -7,7 +7,7 @@ SELECT
     email,
     UPPER(TRIM(country_code))       AS country_code,
     pipeline_stage_id,
-    _loaded_at                      AS loaded_at,
-    created_at::TIMESTAMP           AS created_at,
-    updated_at::TIMESTAMP           AS updated_at
+    {{ cast_timestamp_tz('_loaded_at') }}   AS loaded_at,
+    {{ cast_timestamp_tz('created_at') }}   AS created_at,
+    {{ cast_timestamp_tz('updated_at') }}   AS updated_at
 FROM {{ source('hubspot', 'contacts') }}
