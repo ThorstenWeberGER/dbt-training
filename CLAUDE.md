@@ -45,7 +45,7 @@ NO_COLOR=1 dbt test --target test
 
 | Branch | Starting state for |
 |---|---|
-| `dbt-project-module-03-04` | M01 orientation through M04 fix & extend |
+| `dbt-project-module-01---04` | M01 orientation through M04 fix & extend |
 | `dbt-project-module-05` | M05 sources + owners |
 | `dbt-project-module-06-07` | M06 testing + M07 documentation |
 | `dbt-project-module-08` | M08 seeds & variables (full Tier 1 result) |
