@@ -68,16 +68,19 @@ analytics:
 <div class="flex flex-col gap-3 mt-2">
 
 <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-  <strong>NOT in the repo.</strong> Lives at <code>~/.dbt/profiles.yml</code>. Contains credentials — never commit to git.
+  <div class="font-mono text-xs text-slate-400 mb-1">Working local</div>
+  <strong>DO NOT store credentials and push it got Git.</strong><br> Store your token in .secrets and .gitignore it.
 </div>
 
 <div class="bg-white border border-slate-200 rounded-lg p-3 text-sm">
-  <div class="font-mono text-xs text-slate-400 mb-1">Dev schema rule</div>
-  Your dev target writes to <code>TESTING.dev_{yourname}</code>. You cannot write to Silver or Gold from your laptop — that's the orchestrator's job.
+  <div class="font-mono text-xs text-slate-400 mb-1">Dev/ Prod schema rule</div>
+  1. <strong>Dev</strong> is for development and testing.<br>
+  2. You <strong>don't write to prod</strong> from your laptop — that's the orchestrator's job-<br>
+  3. Create a <strong>pull request</strong>, get confirmation, merge your branch to main. The orchestrator write to prod.
 </div>
 
 <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-800">
-  <code class="font-mono">dbt debug</code> — run this first after cloning. Validates your connection before anything else.
+  <code class="font-mono">dbt debug</code> — run <strong>local</strong> this after setup. Validates connection. Not required in Snowflake.
 </div>
 
 </div>
@@ -101,7 +104,7 @@ Emphasise: the orchestrator uses the prod target. You as a developer always use 
 
 **YAML — human-readable config. Indentation is everything: two spaces = one level.**
 
-```yaml {all|3|5|7-10|all}
+```yaml {all|1-3|4-5|7-10|all}
 name: analytics
 version: "1.0.0"
 profile: analytics          # must match the key in profiles.yml
@@ -111,15 +114,16 @@ source-paths: ["sources"]   # one or multiple folders to look for sources
 
 models:
   analytics:                # ← project namespace — must match name above
+    +persist_docs:          # writes comments and relationships to Snowflake
+      relation: true
+      columns: true
     staging:                # folder structure
       +materialized: view
-      +tags: ["staging"]    # used for selective exectution
+      +tags: ["staging", "analytics"]    # used for selective exectution, 
+                                         # MANDATORY: layer and project-name or source or schema
     silver:
       +materialized: table
-      +tags: ["silver"]
-      +persist_docs:       # ddl for comments and relationships
-        relation: true
-        columns: true
+      +tags: ["silver", "analytics"]
 ```
 
 <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
@@ -153,7 +157,6 @@ models:
       +materialized: table
       +database: SILVER    # Silver models always write to this database
       +schema: PUBLIC
-
     gold:
       +materialized: table
       +database: GOLD      # Gold models write to a separate database
@@ -172,7 +175,7 @@ models:
 </div>
 
 <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-  <strong>Caution:</strong> Hardcoding <code>GOLD</code> writes to production even on a dev run. Environment-aware routing requires a <code>generate_database_name</code> macro — covered in the Intermediate tier.
+  <strong>Irritating default behaviour:</strong><code>+schema/ +database</code> will take the default namespace and concat +schema. e.g. <code>database = dbt_training, schema = dbt_tweber, +schema = hubspot</code> creates <code>dbt.training.dbt_tweber_hubspot</code>.
 </div>
 
 <!--
@@ -368,14 +371,17 @@ layout: center
   <h2 class="text-3xl font-bold text-slate-800 mb-2">Next: Module 03</h2>
   <p class="text-slate-500 mb-8">Jinja Basics for dbt</p>
   <div class="space-y-2">
-    <div class="inline-flex items-center gap-2 bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600 block">
-      Prep Q1: Where does profiles.yml live — inside the repo or outside it?
+    <div class="flex items-center gap-2 bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600 w-full">
+      Prep Q1: What to be careful of when editing <code>profiles.yml</code>?
     </div>
-    <div class="inline-flex items-center gap-2 bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600 block">
+    <div class="flex items-center gap-2 bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600 w-full">
       Prep Q2: What does dbt build do that dbt run does not?
     </div>
-    <div class="inline-flex items-center gap-2 bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600 block">
+    <div class="flex items-center gap-2 bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600 w-full">
       Prep Q3: At which phase does a Jinja syntax error appear?
+    </div>
+    <div class="flex items-center gap-2 bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600 w-full">
+      Prep Q4: Read book pages 223-241!
     </div>
   </div>
 </div>
