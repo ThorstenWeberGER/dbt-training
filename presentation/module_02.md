@@ -104,7 +104,7 @@ Emphasise: the orchestrator uses the prod target. You as a developer always use 
 
 **YAML — human-readable config. Indentation is everything: two spaces = one level.**
 
-```yaml {all|1-3|4-5|7-10|all}
+```yaml {all|1-3|5-6|8-12|13-20}
 name: analytics
 version: "1.0.0"
 profile: analytics          # must match the key in profiles.yml
@@ -194,12 +194,12 @@ Don't go deep on the macro. Just establish the problem exists and that there's a
 
 | Command | What it does | When to use |
 |---|---|---|
-| `dbt compile` | Renders Jinja → raw SQL, no execution | Inspecting compiled output |
+| `dbt compile` | Parse Jinja → raw SQL, no execution | Inspecting compiled output |
 | `dbt run` | Executes models, no tests | **In production - seperate tests** |
 | `dbt test` | Runs tests only | Debugging one specific test |
+| **`dbt build`** | **All of the above** | Mostly in **development** |
 | `dbt snapshot` | Creates snapshots| Update SCD2 models |
-| **`dbt build`** | **All of the above** | Default in **development** |
-| `dbt docs generate` | Builds doc site artifact | Regularly after new models |
+| `dbt docs generate` | Builds doc site artifact | Accessible only after deployment |
 
 </div>
 
@@ -285,50 +285,6 @@ The key message: when you get an error message, the phase tells you WHERE to loo
 Ask: "At which phase does a Jinja syntax error appear?" → Phase 1 (Parse). This is a prep question for Module 03.
 
 Make sure everyone knows target/compiled/ exists and that it's their best debugging tool. Show it in VS Code briefly.
--->
-
----
-
-# Execution Sequence — Visualised
-
-**This gets very important when developing and debuging. When can a mistake happen and be caught.**
-
-```mermaid
-flowchart LR
-    P["1. PARSE\nRead .sql + .yml\nValidate Jinja"]
-    R["2. RESOLVE\nBuild DAG\nResolve ref() source()"]
-    C["3. COMPILE\nJinja to SQL\nWrite target/compiled/"]
-    E["4. EXECUTE\nSend SQL\nto Snowflake"]
-    X["5. REPORT\nLog results\nWrite artifacts"]
-
-    P --> R --> C --> E --> X
-
-    EP["Jinja syntax\nmissing macros"]
-    ER["circular refs\nmissing models"]
-    EC["undefined vars\nbad config"]
-    EE["SQL errors\ntype mismatches"]
-    EX["always runs"]
-
-    P -.-> EP
-    R -.-> ER
-    C -.-> EC
-    E -.-> EE
-    X -.-> EX
-
-    classDef phase fill:#f8fafc,stroke:#64748b,color:#1e293b
-    classDef fail fill:#fef2f2,stroke:#fca5a5,color:#991b1b
-    classDef pass fill:#f0fdf4,stroke:#86efac,color:#166534
-    class P,R,C,E,X phase
-    class EP,ER,EC,EE fail
-    class EX pass
-```
-
-<!--
-The diagram maps each error type to its phase. When debugging: read the error header first — "Compilation Error", "Database Error", "Dependency Error". That tells you which phase failed, which tells you where to look.
-
-Dotted lines point downward from each phase to the error type that can occur there. REPORT has a green node — it always runs, even on failure.
-
-Have participants use this diagram as a reference during the exercise in Module 03 when they first encounter Jinja errors.
 -->
 
 ---
