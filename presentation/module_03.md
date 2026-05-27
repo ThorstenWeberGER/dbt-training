@@ -358,6 +358,102 @@ Running dbt compile is the verification step — participants can self-check wit
 
 ---
 
+# Bonus — Variables and Environment-Aware Filtering
+
+<div class="mb-3 bg-amber-50 border border-amber-200 rounded-lg p-2 text-xs text-amber-800">
+  🤖 No starter code — use an AI assistant to work this out. The goal is to combine <code v-pre>{{ var() }}</code> with <code>target.name</code> in a real model.
+</div>
+
+<div class="grid grid-cols-2 gap-6">
+<div>
+
+**Task 1 — Declare a variable**
+
+In `dbt_project.yml`, add a `vars:` block with a variable called `limit_rows` and set value to 5.
+
+**Task 2 — Add a dev-only filter**
+
+In `stg_hubspot__contacts.sql`, add a SQL + Jinja clause that:
+- only activates when `target.name` equals `'dev'`.
+- uses `limit_rows` to restrict the rows returned.
+
+<div class="mt-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-600">
+  Hint: you'll need both <code>{% if %}</code> and <code v-pre>{{ var() }}</code> — one for logic, one for the value.
+</div>
+
+</div>
+<div>
+
+**Task 3 — Compile and inspect**
+
+```bash
+dbt compile --select stg_hubspot__contacts
+```
+
+Open `target/compiled/`. Does the WHERE/LIMIT clause appear? Now switch target to `prod` — what changes?
+
+**Task 4 — Override from the CLI**
+
+```bash
+dbt compile --select stg_hubspot__contacts \
+  --vars '{"limit_rows": 10}'
+```
+
+* Confirm the compiled SQL reflects the override.
+
+**Task 5 - Raise the limit**
+
+* Update the value in `dbt_profiles.yml` to 30
+
+<div class="mt-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-600">
+  💭 Why is this useful when Bronze tables have millions of rows?
+</div>
+
+</div>
+</div>
+
+<!--
+SOLUTION
+
+dbt_project.yml — add under the existing keys:
+  vars:
+    limit_rows: 100
+
+stg_hubspot__contacts.sql — add at the end of the SELECT:
+  {% if target.name == 'dev' %}
+  LIMIT {{ var('limit_rows') }}
+  {% endif %}
+
+Full model after the change:
+  {{ config(materialized='view') }}
+  SELECT
+      id                                    AS contact_id,
+      first_name, last_name, email,
+      UPPER(TRIM(country_code))             AS country_code,
+      pipeline_stage_id,
+      {{ cast_timestamp_tz('_loaded_at') }} AS loaded_at,
+      {{ cast_timestamp_tz('created_at') }} AS created_at,
+      {{ cast_timestamp_tz('updated_at') }} AS updated_at
+  FROM {{ source('hubspot', 'contacts') }}
+  {% if target.name == 'dev' %}
+  LIMIT {{ var('limit_rows') }}
+  {% endif %}
+
+Task 3 — with --target test (DuckDB dev), the LIMIT clause appears in compiled output.
+With --target prod the {% if %} block is skipped entirely — the clause disappears.
+
+Task 4 — --vars overrides the dbt_project.yml default at runtime. Compiled SQL changes to LIMIT 10.
+The dbt_project.yml value is unchanged — --vars is ephemeral.
+
+Why it matters: Bronze tables can hold years of data. In dev you're iterating fast — you don't want to
+scan 50M rows to test a column rename. This pattern keeps dev fast and free without touching the
+production query.
+
+TIMING: ~10 min. If time is short, skip Task 4 — Tasks 1–3 are the core lesson.
+-->
+
+---
+
 # `{{ this }}` and `{% if is_incremental() %}`
 
 <div class="mt-4">
@@ -455,5 +551,6 @@ layout: center
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q2: Difference between {{ }} and {% %}?</div>
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q3: When use {{ config() }} over dbt_project.yml?</div>
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q4: What does {{ this }} refer to?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q5: Read book pp. 233-241</div>
   </div>
 </div>

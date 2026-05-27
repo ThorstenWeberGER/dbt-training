@@ -127,16 +127,17 @@ The DROP TABLE in the table materialization is worth flagging explicitly: if the
 
 ```sql {all|1-5|7-9|11-13|all}
 {{ config(
-    materialized     = 'incremental',
-    unique_key       = 'contact_key',
-    on_schema_change = 'sync_all_columns'   -- our standard
+    materialized     = 'incremental',       -- default is append
+    unique_key       = 'contact_key',       -- switches to merge
+    on_schema_change = 'append_new_columns' -- flexibility for staging models. default ignores silently
 ) }}
 
 SELECT contact_key, hubspot_contact_id, email, updated_at
 FROM {{ ref('stg_hubspot__contacts') }}
 
+-- focus on current rows only
 {% if is_incremental() %}
-    WHERE updated_at > (SELECT MAX(updated_at) FROM {{ this }})
+    WHERE updated_at > (SELECT MAX(updated_at) FROM {{ this }})  -- this resolves to current model 
 {% endif %}
 ```
 
@@ -216,6 +217,11 @@ WHEN MATCHED THEN UPDATE SET
 WHEN NOT MATCHED THEN INSERT (contact_key, hubspot_contact_id, email, updated_at)
 VALUES (DBT_INTERNAL_SOURCE.contact_key, ...)
 ```
+
+<div class="bg-green-100 border border-slate-200 rounded-lg p-3 text-sm">
+  <div class="font-semibold text-slate-700 mb-1">dbt does boileterplate for you</div>
+  <code>You choose the materialization, configure the details. dbt does the rest.</code>
+</div>
 
 <div class="mt-3 text-sm text-slate-500">Find this in <code>target/compiled/analytics/models/silver/dim_contact.sql</code></div>
 
@@ -454,35 +460,33 @@ background: '#f9f8f5'
 
 <div class="mb-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
   <strong>Scenario:</strong> A colleague pushed 3 new models. <code>dbt build</code> is now broken and they've asked for your help.
-  Run the project, read the code carefully, and find all the problems. There are <strong>5 bugs</strong> across the 3 models.
+  Read the code carefully, <strong>5 bugs</strong> across the 3 models.
   For each bug: explain what's wrong, why it matters, and write the fix.
 </div>
 
 <div class="space-y-3">
 
-<div class="bg-white border border-slate-200 rounded-xl p-4">
+<div class="bg-white border border-slate-200 rounded-xl p-2">
   <div class="text-xs font-mono text-red-500 mb-2">Model 1 — int_pipeline_stages.sql</div>
 
 ```sql
 {{ config(materialized='table') }}
-SELECT pipeline_stage_id, stage_name, is_closed
-FROM {{ source('hubspot', 'pipeline_stages') }}
+SELECT pipeline_stage_id, stage_name, is_closed FROM {{ source('hubspot', 'pipeline_stages') }}
 ```
 
 </div>
 
-<div class="bg-white border border-slate-200 rounded-xl p-4">
+<div class="bg-white border border-slate-200 rounded-xl p-2">
   <div class="text-xs font-mono text-red-500 mb-2">Model 2 — fct_daily_ticket_volume.sql · 50M rows/day</div>
 
 ```sql
 {{ config(materialized='table') }}
-SELECT ticket_date, COUNT(*) AS ticket_count
-FROM {{ ref('dim_ticket') }} GROUP BY 1
+SELECT ticket_date, COUNT(*) AS ticket_count FROM {{ ref('dim_ticket') }} GROUP BY 1
 ```
 
 </div>
 
-<div class="bg-white border border-slate-200 rounded-xl p-4">
+<div class="bg-white border border-slate-200 rounded-xl p-2">
   <div class="text-xs font-mono text-red-500 mb-2">Model 3 — dim_contact.sql · incremental</div>
 
 ```sql
@@ -635,7 +639,8 @@ layout: center
   <div class="space-y-2 text-left max-w-md mx-auto">
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q1: What SQL does a table materialization generate?</div>
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q2: What does is_incremental() return on first run?</div>
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q3: Mandatory on_schema_change setting for incremental models?</div>
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q4: Why never use table for a staging model?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q3: Optional on_schema_change setting for incremental models?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q4: Materialization type for a staging model?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q5: Read book pp. 223-232</div>
   </div>
 </div>
