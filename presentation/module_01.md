@@ -103,10 +103,10 @@ dbt is a **transformation framework** that lets you write SQL `SELECT` statement
 **dbt does NOT:**
 
 <div class="space-y-2 mt-1">
-  <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Extract data from HubSpot — that's Lambda</div>
-  <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Load data into Snowflake — already done before dbt runs</div>
+  <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Ingest data into Snowflake — that's Lambda</div>
   <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Schedule itself — that's your orchestrator</div>
-  <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Store any data itself</div>
+  <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Creating database or schema</div>
+  <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600">Visualize results</div>
 </div>
 
 <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
@@ -131,14 +131,14 @@ Checkpoint question after this slide: "Is dbt Core or dbt Cloud? What's the diff
 | | dbt Core | dbt Fusion | dbt Cloud |
 |---|---|---|---|
 | What it is | Open-source CLI tool | Next-gen local runtime (Rust-based, replaces Python engine) | Hosted platform: IDE, scheduler, CI |
-| **What we use** | **✅ dbt Core** | **⏳ Not yet** | **❌ Not used** |
-| How we run it | `dbt run`, `dbt test`, `dbt build` | Same CLI commands, much faster | N/A |
-| How we schedule it | Your orchestrator | Your orchestrator | N/A |
+| **What we use** | **✅ dbt Core 1.10.15** | **⏳ Not yet** | **❌ Not used** |
+| How we run it | `dbt run`, `dbt test`, `dbt build` | Same CLI commands, much faster | - |
+| How we schedule it | Your orchestrator | Your orchestrator | - |
 
 </div>
 
 <div class="mt-8 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-  <div class="font-semibold text-emerald-800 mb-2">Everything in this training applies to dbt Core  — running native in Snowflake or local.</div>
+  <div class="font-semibold text-emerald-800 mb-2">Use dbt v 1.10.15 in Snowflake already to reduce incompatibility with dbt Fusion later.</div>
 </div>
 
 <!--
@@ -230,14 +230,10 @@ Lineage is best explained live in the dbt docs browser — come back to this in 
 
 ---
 
-# Project Structure
-
-### The basic folder structure applies to all projects.
+# Project Structure - applies to all projects.
 
 <div class="grid grid-cols-2 gap-10 mt-4">
 <div>
-
-**Open VS Code — dbt project**
 
 ```
 analytics/
@@ -303,15 +299,15 @@ After the demo, ask:
 
 ---
 
-# Exercise: Explore the Project (15 min)
+# Exercise: Explore our Project (15 min)
 
 **Answer all four questions using only the dbt project — no Googling.**
 
 <div class="bg-amber-50 border-l-4 border-amber-400 rounded-lg px-4 py-3 mb-4 flex items-start gap-3">
   <span class="text-amber-500 text-lg font-bold leading-none mt-0.5">!</span>
   <div class="text-sm text-amber-800">
-    <strong>Before you start:</strong> clone the training repo and create a new Git branch as your personal workspace.
-    <code class="block mt-1 bg-amber-100 rounded px-2 py-1 text-xs font-mono">https://github.com/ThorstenWeberGER/dbt-training-excercise</code>
+    <strong>Before you start:</strong> clone the training repo <strong>and</strong> branch your personal workspace.
+    <code class="block mt-1 bg-amber-100 rounded px-2 py-1 text-xs font-mono">https://https://github.com/data-bloomwell/dbt-training</code>
   </div>
 </div>
 
@@ -330,7 +326,7 @@ After the demo, ask:
 
 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
   <div class="text-xs font-mono text-slate-400 mb-1">Q3</div>
-  <div class="text-sm font-medium text-slate-800">What is the purpose of the <code>dbt_project.yml</code> file and what can you configure here?</div>
+  <div class="text-sm font-medium text-slate-800">What is the purpose of the <code>dbt_project.yml</code>, what can you configure here? What is default materialization for Sivler models?</div>
 </div>
 
 </div>
@@ -343,12 +339,12 @@ After the demo, ask:
 
 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
   <div class="text-xs font-mono text-slate-400 mb-1">Q5</div>
-  <div class="text-sm font-medium text-slate-800">Open <code>dbt_project.yml</code>. What is the default materialisation for Silver models? </div>
+  <div class="text-sm font-medium text-slate-800">Open <code>profiles.yml</code>. What is the purpose and how doesit connect with dbt_project.yml? </div>
 </div>
 
 <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
   <div class="text-xs font-mono text-emerald-600 mb-1">Bonus</div>
-  <div class="text-sm font-medium text-emerald-800">Run <code>dbt ls</code> in the terminal. How many models are listed?</div>
+  <div class="text-sm font-medium text-emerald-800">1. Run <code>dbt list</code>. How many models are listed?<br>2. What are <strong>seed</strong> files.</div>
 </div>
 
 </div>
