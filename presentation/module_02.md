@@ -56,13 +56,9 @@ analytics:
       threads: 4
 
     prod:
-      type: snowflake
-      role: analytics_service_role
-      warehouse: COMPUTE_WH_PROD
-      database: SILVER
-      schema: PUBLIC
-      threads: 8
 ```
+
+## Task: Write a prod profile, which stores in `dbt_training.prod_<your_name>`. Check availability in dropdown.
 
 </div>
 <div class="flex flex-col gap-3 mt-2">
