@@ -35,6 +35,16 @@ All four correct before continuing.
 
 ---
 
+# Switch branch to `module-05`
+
+### Task:
+
+* Commit your last changes before
+* Switch branch
+* Create your personal workspace branch `module-05_<yourname>`
+
+---
+
 # The Medallion Architecture
 
 <div class="grid grid-cols-2 gap-6 mt-4">
