@@ -42,23 +42,22 @@ Don't move on until all four are correct. Fix any wrong answers now — they'll 
 
 ```yaml
 analytics:
-  target: dev
-  outputs:
+  target: dev      # defines active output profile
+  
+  outputs:         # specify connections 
     dev:
       type: snowflake
       account: abc123.eu-west-1
       user: jane@company.com
-      authenticator: externalbrowser
-      role: analytics_service_role
-      warehouse: COMPUTE_WH_DEV
-      database: SILVER_DEV
-      schema: TESTING__dev_jane
+      role: <dbt_role>
+      warehouse: <dbt_warehouse>    # default
+      database: dbt_training        # default
+      schema: <dbt_dev_jane>        # default
       threads: 4
 
     prod:
+      ....
 ```
-
-## Task: Write a prod profile, which stores in `dbt_training.prod_<your_name>`. Check availability in dropdown.
 
 </div>
 <div class="flex flex-col gap-3 mt-2">
@@ -76,7 +75,7 @@ analytics:
 </div>
 
 <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-800">
-  <code class="font-mono">dbt debug</code> — run <strong>local</strong> this after setup. Validates connection. Not required in Snowflake.
+  <strong>Task:</strong> Write a <code class="font-mono">prod profile</code>, which stores in `dbt_training.prod_your_name`. Check availability in dropdown.
 </div>
 
 </div>
@@ -100,26 +99,26 @@ Emphasise: the orchestrator uses the prod target. You as a developer always use 
 
 **YAML — human-readable config. Indentation is everything: two spaces = one level.**
 
-```yaml {all|1-3|4-5|7-10|all}
-name: analytics
+```yaml {all|1-3|5-6|8-12|13-20|all}
+name: dbt_training
 version: "1.0.0"
-profile: analytics          # must match the key in profiles.yml
+profile: dbt_training          # must match the key in profiles.yml
 
 model-paths: ["models"]    # one or multiple folders to look for models
 source-paths: ["sources"]   # one or multiple folders to look for sources
 
 models:
-  analytics:                # ← project namespace — must match name above
+  dbt_training:             # ← project namespace — must match name above
     +persist_docs:          # writes comments and relationships to Snowflake
       relation: true
       columns: true
-    staging:                # folder structure
+    staging:                # must meet folder structure
       +materialized: view
-      +tags: ["staging", "analytics"]    # used for selective exectution, 
-                                         # MANDATORY: layer and project-name or source or schema
+      +tags: ["staging", "analytics", "finance"]    # used for selective exectution, 
+                                                    # MANDATORY: layer and source and gold schema
     silver:
       +materialized: table
-      +tags: ["silver", "analytics"]
+      +tags: ["silver", "analytics", "finance"]
 ```
 
 <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
@@ -146,7 +145,7 @@ Individual models can override any of this with a {{ config() }} block — cover
 
 `+materialized` controls *how* dbt builds a model. `+database` and `+schema` control *where* it lands in Snowflake.
 
-```yaml
+```yaml {all|3-6|7-10|all}
 models:
   analytics:
     silver:
@@ -194,13 +193,13 @@ Don't go deep on the macro. Just establish the problem exists and that there's a
 | `dbt run` | Executes models, no tests | **In production - seperate tests** |
 | `dbt test` | Runs tests only | Debugging one specific test |
 | `dbt snapshot` | Creates snapshots| Update SCD2 models |
-| **`dbt build`** | **All of the above** | Default in **development** |
+| **`dbt build`** | **All of the above** | Mostly in **development** |
 | `dbt docs generate` | Builds doc site artifact | Regularly after new models |
 
 </div>
 
 <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
-  <strong>Remember:</strong> <code>dbt run</code> does NOT include snapshots. In production set up a separate task for<code>dbt snapshots</code> after bronze.
+  <strong>Remember:</strong> <code>dbt run</code> In production don't use dbt build but use separate task different steps for granular error inspection.
 </div>
 
 <!--
@@ -281,50 +280,6 @@ The key message: when you get an error message, the phase tells you WHERE to loo
 Ask: "At which phase does a Jinja syntax error appear?" → Phase 1 (Parse). This is a prep question for Module 03.
 
 Make sure everyone knows target/compiled/ exists and that it's their best debugging tool. Show it in VS Code briefly.
--->
-
----
-
-# Execution Sequence — Visualised
-
-**This gets very important when developing and debuging. When can a mistake happen and be caught.**
-
-```mermaid
-flowchart LR
-    P["1. PARSE\nRead .sql + .yml\nValidate Jinja"]
-    R["2. RESOLVE\nBuild DAG\nResolve ref() source()"]
-    C["3. COMPILE\nJinja to SQL\nWrite target/compiled/"]
-    E["4. EXECUTE\nSend SQL\nto Snowflake"]
-    X["5. REPORT\nLog results\nWrite artifacts"]
-
-    P --> R --> C --> E --> X
-
-    EP["Jinja syntax\nmissing macros"]
-    ER["circular refs\nmissing models"]
-    EC["undefined vars\nbad config"]
-    EE["SQL errors\ntype mismatches"]
-    EX["always runs"]
-
-    P -.-> EP
-    R -.-> ER
-    C -.-> EC
-    E -.-> EE
-    X -.-> EX
-
-    classDef phase fill:#f8fafc,stroke:#64748b,color:#1e293b
-    classDef fail fill:#fef2f2,stroke:#fca5a5,color:#991b1b
-    classDef pass fill:#f0fdf4,stroke:#86efac,color:#166534
-    class P,R,C,E,X phase
-    class EP,ER,EC,EE fail
-    class EX pass
-```
-
-<!--
-The diagram maps each error type to its phase. When debugging: read the error header first — "Compilation Error", "Database Error", "Dependency Error". That tells you which phase failed, which tells you where to look.
-
-Dotted lines point downward from each phase to the error type that can occur there. REPORT has a green node — it always runs, even on failure.
-
-Have participants use this diagram as a reference during the exercise in Module 03 when they first encounter Jinja errors.
 -->
 
 ---
