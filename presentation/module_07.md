@@ -51,7 +51,7 @@ If the column isn't documented, the answer requires:
 - Tracing back through staging to Bronze
 - Hoping the source system has docs
 
-That's 30 minutes of investigation that a two-sentence description would have prevented.
+That's 20 minutes of investigation that a two-sentence description would have prevented.
 
 </div>
 <div>
@@ -69,8 +69,11 @@ That's 30 minutes of investigation that a two-sentence description would have pr
     ❌ Undocumented columns → PR rejected
   </div>
   <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-700">
-    ✅ Bronze and Staging: optional (but encouraged)
+    ✅ Bronze and Staging: optional (but encouraged*)
   </div>
+<br>
+Bronze is the start of the linage. Understanding the data starts here - document here! Use AI to build on that documentation for your silver models.
+
 </div>
 
 </div>
