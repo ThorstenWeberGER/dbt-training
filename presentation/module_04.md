@@ -397,7 +397,7 @@ models:
     config:
       materialized: incremental
       unique_key: contact_key
-      on_schema_change: sync_all_columns
+      on_schema_change: append_new_columns
     columns:
       - name: contact_key
         description: "Surrogate key — hash of hubspot_contact_id"
@@ -421,7 +421,7 @@ models:
 {{ config(
     materialized     = 'incremental',
     unique_key       = 'contact_key',
-    on_schema_change = 'sync_all_columns'
+    on_schema_change = 'append_new_columns'
 ) }}
 
 SELECT contact_key, email, updated_at
