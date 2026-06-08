@@ -83,141 +83,63 @@ Ask: "What's the worst thing that can happen if a transformation breaks silently
 
 ---
 
-# Two Types of dbt Tests
+# The Four Build In Generic Tests
 
-<div class="grid grid-cols-2 gap-8 mt-4">
-<div>
+**Generic tests — 95% of what you'll write.** Defined in `schema.yml`. Parameterised.
 
-**Generic tests — 95% of what you'll write**
-
-Defined in `schema.yml`. Reusable. Parameterised.
-
-```yaml
-models:
-  - name: fct_prescription
-    columns:
-      - name: prescription_key
-        tests:
-          - unique
-          - not_null
-      - name: patient_key
-        tests:
-          - relationships:
-              to: ref('dim_patient')
-              field: patient_key
-```
-
-</div>
-<div>
-
-**Singular tests — for complex business rules**
-
-Standalone `.sql` files in `tests/`. Return rows on failure. Two common patterns:
-
-**Pattern 1 — business rule on aggregates (`GROUP BY ... HAVING`):**
-```sql
--- tests/assert_fct_revenue_no_negative_amounts.sql
-SELECT customer_key, SUM(amount_net) AS total
-FROM {{ ref('fct_revenue') }}
-GROUP BY 1
-HAVING total < 0
-```
-
-**Pattern 2 — orphan FK check (`LEFT JOIN ... WHERE IS NULL`):**
-```sql
--- tests/assert_no_orphan_prescriptions.sql
-SELECT p.prescription_key
-FROM {{ ref('fct_prescription') }} p
-LEFT JOIN {{ ref('dim_patient') }} d ON p.patient_key = d.patient_key
-WHERE d.patient_key IS NULL
-```
-
-<div class="mt-3 bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600">
-  Use singular tests only when the rule can't be expressed in YAML. Harder to read — prefer generic.
-</div>
-
-</div>
-</div>
-
-<!--
-The no-rows-means-pass convention is counterintuitive — worth saying explicitly. The SQL selects the *failing* rows. No rows = no failures = test passes.
-
-Pattern 1 (GROUP BY + HAVING) is the most common new pattern here — it handles business rules like "no negative revenue" or "no zero dosage" that operate on aggregated values. Generic tests can't express these.
-
-Pattern 2 (LEFT JOIN) is what they've already seen for orphan FK checks — but `relationships` generic test handles this more elegantly in most cases. Write a singular LEFT JOIN version only when the generic relationships test can't cover the logic.
--->
-
----
-
-# The Four Generic Tests
-
-<div class="mt-4 space-y-3">
+<div class="grid grid-cols-2 gap-3 mt-4">
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">
-  <div class="grid grid-cols-2 gap-4">
-  <div>
-    <div class="font-mono text-emerald-600 font-semibold mb-1">unique</div>
+  <div class="font-mono text-emerald-600 font-semibold mb-2">unique</div>
 
 ```yaml
 - name: prescription_key
-  tests:
+  data_tests:
     - unique
 ```
 
-  </div>
-  <div class="text-sm text-slate-600 flex items-center">Fails if any value appears more than once. Required on all <code>_key</code> columns.</div>
-  </div>
+  <div class="text-sm text-slate-600 mt-2">Fails if any value appears more than once. <code>mandatory</code> on all <code>_key</code> columns.</div>
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">
-  <div class="grid grid-cols-2 gap-4">
-  <div>
-    <div class="font-mono text-emerald-600 font-semibold mb-1">not_null</div>
+  <div class="font-mono text-emerald-600 font-semibold mb-2">not_null</div>
 
 ```yaml
 - name: prescription_key
-  tests:
+  data_tests:
     - not_null
 ```
 
-  </div>
-  <div class="text-sm text-slate-600 flex items-center">Fails if any value is NULL. Required on all <code>_key</code> columns.</div>
-  </div>
+  <div class="text-sm text-slate-600 mt-2">Fails if any value is NULL. <code>mandatory</code> on all <code>_key</code> columns.</div>
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">
-  <div class="grid grid-cols-2 gap-4">
-  <div>
-    <div class="font-mono text-emerald-600 font-semibold mb-1">accepted_values</div>
+  <div class="font-mono text-emerald-600 font-semibold mb-2">accepted_values</div>
 
 ```yaml
 - name: medication_type
-  tests:
+  data_tests:
     - accepted_values:
-        values: ['tablet','liquid','injection']
+        arguments:
+          values: ['tablet','liquid','injection']
 ```
 
-  </div>
-  <div class="text-sm text-slate-600 flex items-center">Fails if any value outside the list appears. Use for status/type columns.</div>
-  </div>
+  <div class="text-sm text-slate-600 mt-2">Fails if any value outside the list appears. Deliberate use for status/type columns <code>when static</code>.</div>
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">
-  <div class="grid grid-cols-2 gap-4">
-  <div>
-    <div class="font-mono text-emerald-600 font-semibold mb-1">relationships</div>
+  <div class="font-mono text-emerald-600 font-semibold mb-2">relationships</div>
 
 ```yaml
 - name: patient_key
-  tests:
+  data_tests:
     - relationships:
-        to: ref('dim_patient')
-        field: patient_key
+        arguments:
+          to: ref('dim_patient')
+          field: patient_key
 ```
 
-  </div>
-  <div class="text-sm text-slate-600 flex items-center">FK integrity check. Required on all FK columns in Silver facts and Gold marts.</div>
-  </div>
+  <div class="text-sm text-slate-600 mt-2">FK integrity check. Required on all FK columns in Silver facts and Gold marts.</div>
 </div>
 
 </div>
@@ -244,7 +166,7 @@ Checkpoint: "Write the YAML for a unique + not_null test on prescription_key." �
 Global default — `dbt_project.yml`:
 
 ```yaml
-tests:
+data_tests:
   analytics:
     +severity: warn    # project-wide default
     silver:
@@ -253,43 +175,29 @@ tests:
       +severity: error # Gold always errors
 ```
 
-Per individual test — `schema.yml`:
+`dbt build` runs models and tests **in DAG order**.
+- If `dim_patient` fails a test, `fct_prescription` (which depends on it) is **never built**.
+- All independent models continue to **build**.
+
+</div>
+<div>
+
+**Per individual test — `schema.yml`:**
 
 ```yaml
 - name: prescription_key
-  tests:
+  data_tests:
     - unique:
         config:
           severity: error  # ← CI stops, pipeline halts
 - name: dosage_amount
-  tests:
+  data_tests:
     - not_null:
         config:
           severity: warn   # ← logged, continues
 ```
 
-Per-test overrides the global setting.
-
-</div>
-<div>
-
-**`dbt build` — the only correct command**
-
-```bash
-# ❌ WRONG
-dbt run && dbt test
-
-# ✅ CORRECT — always
-dbt build
-```
-
-`dbt build` runs models and tests **in DAG order**. If `dim_patient` fails a test, `fct_prescription` (which depends on it) is **never built**.
-
-`dbt run && dbt test` runs all models first — loading bad data into `fct_prescription` before the tests even run.
-
-<div class="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
-  Never use <code>dbt run && dbt test</code> in CI. Always <code>dbt build</code>.
-</div>
+Per-test config overrides the global setting.
 
 </div>
 </div>
@@ -313,36 +221,79 @@ Ask: "What does dbt build do that dbt run && dbt test does not?" → Runs tests 
 
 ---
 
-# Mandatory Test Requirements
+# Self-Written Tests
 
-<div class="mt-4">
+<div class="grid grid-cols-2 gap-8 mt-4">
+<div>
 
-| Column type | Required tests |
-|---|---|
-| `_key` columns (surrogate PKs) | `unique` + `not_null` (both, always) |
-| FK columns (referencing another model) | `relationships` |
-| Status / type columns | `accepted_values` (if finite value set exists) |
-| Business-critical measures | `not_null` |
+**Singular tests — specific business rules**
+
+Plain `.sql` files in `tests/`. 
+
+**Positive Values: `SUM > 0`**
+```sql
+-- tests/assert_fct_revenue_no_negative_amounts.sql
+SELECT customer_key, SUM(amount_net) AS total
+FROM {{ ref('fct_revenue') }}
+GROUP BY 1
+HAVING total < 0
+```
+
+**Orphan FK check: `not null`:**
+```sql
+-- tests/assert_no_orphan_prescriptions.sql
+SELECT p.prescription_key
+FROM {{ ref('fct_prescription') }} p
+LEFT JOIN {{ ref('dim_patient') }} d
+       ON p.patient_key = d.patient_key
+WHERE d.patient_key IS NULL
+```
 
 </div>
+<div>
 
-<div class="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-  <strong>CI check:</strong> Silver and Gold models must have at least one test per <code>_key</code> column. A PR with zero tests on a new Silver model will not pass review. This is checked manually via the <code>dbt-test-strategy</code> skill until CI automation is complete.
+**Custom generic tests — reusable + parameterised**
+
+Macros in `tests/generic/`. 
+
+```sql
+-- tests/generic/assert_within_range.sql
+{% test assert_within_range(model, column_name,
+                            min_val, max_val) %}
+   SELECT {{ column_name }} FROM {{ model }}
+   WHERE {{ column_name }} < {{ min_val }}
+      OR {{ column_name }} > {{ max_val }}
+{% endtest %}
+```
+
+**Usage in `schema.yml`:**
+```yaml
+- name: dosage_mg
+  data_tests:
+    - assert_within_range:
+        arguments:
+          min_val: 0
+          max_val: 1000
+```
+
 </div>
-
-<div class="mt-3 text-xs text-slate-400">Full test placement guide (when to test in Bronze vs Silver vs Gold, store_failures config, dbt-expectations) → <code>dbt-test-strategy</code> skill</div>
+</div>
 
 <!--
-Read this table aloud together. Treat it like a checklist — because that's exactly how it's used in the pre-merge review.
+Singular tests: the no-rows-means-pass convention is counterintuitive — say it explicitly. The SQL selects the *failing* rows. No rows = no failures = test passes.
 
-Ask: "Name the two tests mandatory on every Silver _key column." → unique + not_null. Both. Always. Not one or the other.
+GROUP BY + HAVING covers business rules that operate on aggregated values ("no negative revenue", "no zero dosage"). Generic tests can't express these.
 
-Don't use warn as a workaround. warn means "this test failing is acceptable." If it's acceptable for prescription_key to be null, the model design is wrong, not the test severity.
+Custom generic tests: the key insight is that the macro receives `model` (the ref) and `column_name` as positional arguments, then any extra named params you define. dbt compiles it the same way as built-in tests — the test appears in `dbt test` output with a generated name.
+
+Good use case to mention: any validation you find yourself writing as a singular test in more than one model should become a custom generic test instead.
+
+Ask: "When would you write a singular test instead of a custom generic test?" → When the rule is genuinely one-off and specific to one model's business logic.
 -->
 
 ---
 
-# Exercise: Write Tests for `fct_prescription` (30 min)
+# Exercise: Write Tests for `fct_prescription`
 
 **The model has no tests. Add the complete test suite to `schema.yml`.**
 
@@ -350,11 +301,11 @@ Don't use warn as a workaround. warn means "this test failing is acceptable." If
 
 | Column | Type | Notes |
 |---|---|---|
-| `prescription_key` | Surrogate PK | MD5 hash |
-| `patient_key` | FK → `dim_patient` | — |
-| `doctor_key` | FK → `dim_doctor` | — |
+| `prescription_id` | Business key| - |
+| `patient_key` | FK → `dim_patient` | - |
+| `doctor_key` | FK → `dim_doctor` | - |
 | `prescription_date` | Date | Required |
-| `medication_type` | String | `tablet`, `liquid`, `injection`, `topical` |
+| `medication_type` | String | Only `tablet`, `liquid`, `injection`, `topical` allowed|
 | `dosage_amount` | Number | Can be null — not yet confirmed |
 | `notes` | String | Optional free text |
 
@@ -370,7 +321,7 @@ Don't use warn as a workaround. warn means "this test failing is acceptable." If
 Step 3 is essential — reading failure output is a skill. They need to do it at least once in a controlled environment.
 
 Expected mandatory tests:
-- prescription_key: unique + not_null
+- prescription_id: unique + not_null
 - patient_key: not_null + relationships to dim_patient
 - doctor_key: not_null + relationships to dim_doctor
 - prescription_date: not_null
@@ -379,6 +330,54 @@ Expected mandatory tests:
 - notes: no test required (optional free text)
 
 Circulate. If anyone finishes early, ask them to also write a singular test that checks for any prescription with a prescription_date in the future.
+-->
+
+---
+
+# Storing Test Failures with `store_failures`
+
+<div class="grid grid-cols-2 gap-8 mt-4">
+<div>
+
+**What gets stored — and what doesn't**
+
+Failing tests get written into a separate table. The rows that failed are still present in the model itself — `store_failures` does not remove or quarantine them. 
+
+Failures land in a dedicated audit schema for inspection:
+
+```
+<target_schema>_dbt_test__audit
+```
+
+The table is **replaced on every run.** Store results immediately for observability tools.
+
+</div>
+<div>
+
+**Configuration**
+
+Globally in `dbt_project.yml`:
+
+```yaml
+data_tests:
+  analytics:
+    silver:
+      +store_failures: true
+```
+
+**What matters for you**
+
+- Enable on Silver/Gold `_key` columns where root-cause investigation matters
+- Pair with `severity: warn` for ongoing monitoring: pipeline continues, failures accumulate for inspection
+</div>
+</div>
+
+<!--
+Concrete scenario: prescription_key has 12 duplicate rows after a bad Lambda run. dbt test fails with "Got 12 results." Without store_failures you know there are 12 duplicates but not which ones. With store_failures you query the audit table and see exactly which prescription_keys are affected — and can trace them back to the source.
+
+Key point: the model itself is unchanged. The duplicates are in fct_prescription AND in the failures table. store_failures is for observability, not data correction.
+
+Ask: "What would you do after finding the bad rows in the failures table?" → Fix the upstream issue (Lambda dedup, staging dedup logic), re-run dbt build, confirm the failures table is empty.
 -->
 
 ---
@@ -392,7 +391,7 @@ layout: center
   <div class="space-y-2 text-left max-w-md mx-auto">
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q1: Generic test vs singular test — difference?</div>
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q2: Name the four built-in generic tests</div>
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q3: What does dbt build do differently from dbt run && dbt test?</div>
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q4: Two mandatory tests on every _key column in Silver?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q3: Why should be push tests to the left?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Read: dbt blog "Test smarter not harder"</div>
   </div>
 </div>
