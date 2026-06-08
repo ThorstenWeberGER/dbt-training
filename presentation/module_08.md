@@ -37,14 +37,14 @@ Probe question 3 specifically — freshness thresholds connect directly to today
 
 # The Problem: Hardcoded Lookups in SQL
 
-<div class="mb-4 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 font-semibold">
+<div class="mb-4 bg-orange-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 font-semibold">
   Three models. Same lookup. Three places to update when a label changes.
 </div>
 
 <div class="grid grid-cols-3 gap-4">
 
-<div class="bg-white border border-red-200 rounded-xl p-4">
-  <div class="text-xs font-mono text-red-400 mb-2">mrt_deals_funnel.sql</div>
+<div class="bg-white border border-black-200 rounded-xl p-4">
+  <div class="text-xs font-mono text-black-800 mb-2"><code>mrt_deals_funnel.sql</code></div>
 
 ```sql
 SELECT
@@ -60,8 +60,8 @@ FROM fct_deal
 
 </div>
 
-<div class="bg-white border border-red-200 rounded-xl p-4">
-  <div class="text-xs font-mono text-red-400 mb-2">mrt_contact_prescriptions.sql</div>
+<div class="bg-white border border-black-200 rounded-xl p-4">
+  <div class="text-xs font-mono text-black-400 mb-2"><code>mrt_contact_prescriptions.sql</code></div>
 
 ```sql
 SELECT
@@ -77,8 +77,8 @@ FROM dim_contact
 
 </div>
 
-<div class="bg-white border border-red-200 rounded-xl p-4">
-  <div class="text-xs font-mono text-red-400 mb-2">mrt_country_summary.sql</div>
+<div class="bg-white border border-black-200 rounded-xl p-4">
+  <div class="text-xs font-mono text-black-400 mb-2"><code>mrt_country_summary.sql</code></div>
 
 ```sql
 SELECT
@@ -97,8 +97,8 @@ GROUP BY 1
 
 </div>
 
-<div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-  Switzerland expands DACH coverage to include Liechtenstein. <strong>You need to add 'LI' to all three CASE statements.</strong> Miss one → inconsistent country labels in Power BI.
+<div class="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-black-700">
+  <strong>Risk: </strong>Business expands to include Liechtenstein. You need to add 'LI' to all three CASE statements. Miss one → inconsistent country labels in Power BI.
 </div>
 
 <!--
@@ -153,12 +153,14 @@ FR,France,Western Europe
 dbt seed
 ```
 
-  Creates a table in your warehouse from the CSV. Every model can reference it with <code v-pre>{{ ref('country_codes') }}</code>.
+  Creates a table in your warehouse from the CSV. 
+* Table name is the filename `country_codes` 
+* Reference it with <code v-pre>{{ ref('country_codes') }}</code>.
 </div>
 
 <div v-click class="bg-white border border-slate-200 rounded-xl p-4 text-sm">
-  <div class="font-semibold text-slate-700 mb-1">Why it works</div>
-  The CSV lives in Git. Changes go through code review. You can <code>git diff</code> a label change. You can <code>git revert</code> a bad update.
+  <div class="font-semibold text-slate-700 mb-1">The CSV lives in Git</div>
+   Changes go through code review. You can <code>git diff</code> a label change. You can <code>git revert</code> a bad update.
 </div>
 
 <div v-click class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800">
@@ -179,81 +181,6 @@ After the demo they'll see this is a 30-second operation that eliminates hours o
 
 ---
 
-# Seeds: Two Patterns
-
-<div class="grid grid-cols-2 gap-8 mt-6">
-
-<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
-  <div class="font-semibold text-emerald-800 mb-3">Lookup seeds — production use</div>
-  <ul class="text-sm text-slate-700 space-y-2 list-disc list-inside">
-    <li>Static reference tables: <code>country_codes</code>, <code>product_categories</code></li>
-    <li>Version-controlled in Git, curated by a human</li>
-    <li>Available in all medallion layers via <code v-pre>{{ ref() }}</code></li>
-    <li>This is what the module teaches</li>
-  </ul>
-</div>
-
-<div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
-  <div class="font-semibold text-slate-700 mb-3">Development seeds — local DuckDB only</div>
-  <ul class="text-sm text-slate-600 space-y-2 list-disc list-inside">
-    <li>Files like <code>raw_contacts.csv</code>, <code>raw_deals.csv</code></li>
-    <li>Simulate the Bronze layer so exercises work without Snowflake</li>
-    <li>In production, these are Lambda-ingested Bronze tables — not seeds</li>
-    <li>Scaffolding only — this pattern does not go to production</li>
-  </ul>
-</div>
-
-</div>
-
-<!--
-This distinction trips up trainees in the exercise project. They see raw_contacts.csv and assume all CSVs in seeds/ are the same thing. They are not.
-
-The development seeds exist purely so the exercise compiles locally in DuckDB. The lookup seeds (country_codes, product_categories) are the actual pattern worth learning and replicating in production.
-
-Point out: "When you join country_codes in your Gold mart, that's a lookup seed. When dbt seed loads raw_deals.csv, that's just us faking a Lambda pipeline locally."
--->
-
----
-
-# Seeds: When to Use Them
-
-<div class="mt-4">
-
-| Situation | Use... | Because... |
-|---|---|---|
-| Static lookup data you curate manually (country codes, status labels, category mappings) | **seed** | Version-controlled, small, changes only when you decide |
-| Raw data loaded by an external pipeline (HubSpot contacts, deals, prescriptions) | **source** | A pipeline owns it — you observe it, you don't manage it |
-| A dimension that derives from source data with transformation logic | **dim table** | dbt builds it from raw source data, not from a spreadsheet |
-| Large reference data produced by a pipeline (e.g. product catalogue from ERP API) | **source → staging → dim** | Even "reference data" is a source if a pipeline populates it |
-
-</div>
-
-<div class="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
-  <div class="font-semibold text-amber-800 mb-2">The key question</div>
-  <div class="grid grid-cols-2 gap-4 text-sm">
-    <div class="bg-white rounded-lg p-3 border border-amber-200">
-      <div class="font-semibold text-emerald-700 mb-1">Human curated?</div>
-      <div class="text-slate-600">A person maintains a spreadsheet or decides the values → <strong>seed</strong></div>
-    </div>
-    <div class="bg-white rounded-lg p-3 border border-amber-200">
-      <div class="font-semibold text-red-600 mb-1">Pipeline produced?</div>
-      <div class="text-slate-600">A system or API populates it → <strong>source</strong>, not a seed</div>
-    </div>
-  </div>
-</div>
-
-<!--
-This decision table is the one they'll actually use in their day-to-day work. The human-vs-pipeline distinction is the reliable heuristic.
-
-Common confusion: "but our product categories come from the ERP, they're pretty stable..." → Stable doesn't mean seed. If a pipeline updates it, it's a source. Seeds are for data where a human decides when it changes and commits the CSV.
-
-Ask: "Would you make `raw_deals` a seed?" → No — HubSpot Lambda populates it. It's a source (or in our DuckDB training setup, a Bronze-equivalent data seed used only for local dev).
-
-Medallion architecture note: Seeds are NOT a medallion layer. They sit alongside Bronze/Silver/Gold — any layer can join to them. They live in their own schema (configured via `+schema: seeds` in dbt_project.yml) and are separate from the medallion tables. A Gold mart that joins country_codes is still a Gold mart; the seed is reference data it uses, not a layer it belongs to.
--->
-
----
-
 # Seeds Config in `dbt_project.yml`
 
 <div class="grid grid-cols-2 gap-8 mt-4">
@@ -268,11 +195,10 @@ seeds:
   your_project:
     +schema: seeds
     +tags: ['reference']
-    country_codes:
+    country_codes: # looks for country_codes.csv file
       +column_types:
-        country_code: varchar(2)
-        country_name: varchar(100)
-        region: varchar(100)
+        country_code: varchar
+        region_code: varchar
 ```
 
 <div class="mt-4 text-sm text-slate-600 space-y-2">
@@ -288,21 +214,21 @@ seeds:
   <div class="font-semibold text-slate-700 mb-2">Useful commands</div>
 
 ```bash
-# Load all seeds
-dbt seed
+# dbt build includes seeds — no separate step needed
+dbt build
 
-# Load one seed
+# Reload one seed (useful for isolated debugging)
 dbt seed --select country_codes
 
-# Force full reload
+# Force drop + recreate (required after schema change)
 dbt seed --full-refresh
 ```
 
 </div>
 
-<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-  <div class="font-semibold mb-1">Column types matter</div>
-  DuckDB and Snowflake infer types from CSV content. A country code of <code>01</code> becomes integer <code>1</code> without an explicit type override. Always define types for code columns.
+<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800">
+  <div class="font-semibold mb-1">Seeds are part of <code>dbt build</code></div>
+  No separate <code>dbt seed</code> step needed in CI. <code>dbt build</code> loads seeds in DAG order alongside models and tests.
 </div>
 
 </div>
@@ -313,7 +239,9 @@ The +schema config is worth pointing out — in production, it's common to separ
 
 Column types: this is a practical gotcha. Codes that look like numbers (postal codes, product IDs with leading zeros) will be silently cast to integers unless you explicitly override. Lost leading zeros cause silent join failures downstream.
 
-dbt seed --full-refresh: seeds are special — by default dbt seed does a TRUNCATE + INSERT, not an incremental merge. --full-refresh drops and recreates the table entirely. For small lookup tables this is almost always what you want.
+dbt build includes seeds — no separate dbt seed step needed in CI. dbt seed is still useful for isolated reloads during development (e.g. reloading one seed while debugging without running all models).
+
+dbt seed --full-refresh: by default dbt seed does a TRUNCATE + INSERT (data overwrite, same schema). --full-refresh drops and recreates the table entirely — required when the CSV schema has changed (new column, type change). For data-only changes, plain dbt seed is sufficient.
 -->
 
 ---
@@ -359,13 +287,13 @@ WHERE deal_created_at
 </div>
 
 <div class="mt-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800">
-  <div class="font-semibold mb-2">The fix: one variable, one place to override</div>
+  <div class="font-semibold mb-2">The fix: one variable, one place to edit</div>
 
 ```sql
-WHERE close_date >= '{{ var("start_date", "2024-01-01") }}'
+WHERE close_date >= '{{ var("start_date") }}'
 ```
 
-  Change the date across all models at runtime: <code>dbt run --vars '{"start_date": "2023-01-01"}'</code>
+  Change the date across all models by editing <code>dbt_project.yml</code>
 </div>
 
 <!--
@@ -396,6 +324,19 @@ WHERE close_date >= '{{ var("start_date", "2024-01-01") }}'
   <strong>Always provide a default</strong> for variables used in production models. A missing <code>--vars</code> flag on a scheduled run breaks your pipeline silently.
 </div>
 
+<div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
+  <div class="font-semibold text-slate-700 mb-1">How dbt resolves the value</div>
+  <ol class="list-decimal list-inside space-y-1">
+    <li><code>--vars</code> flag (highest priority)</li>
+    <li><code>dbt_project.yml vars</code> block</li>
+    <li>Default in <code>var("name", "default")</code></li>
+  </ol>
+</div>
+
+</div>
+
+<div>
+
 **Runtime override**
 
 ```bash
@@ -407,10 +348,6 @@ dbt run --select fct_deal \
 dbt run --vars \
   '{"start_date": "2023-01-01", "min_deal_amount": 500}'
 ```
-
-</div>
-
-<div>
 
 **What the compiled SQL looks like**
 
@@ -426,15 +363,6 @@ FROM dev.stg_hubspot__deals
 WHERE close_date >= '2023-06-01'
 --                   ↑ substituted
 ```
-
-<div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
-  <div class="font-semibold text-slate-700 mb-1">How dbt resolves the value</div>
-  <ol class="list-decimal list-inside space-y-1">
-    <li><code>--vars</code> flag (highest priority)</li>
-    <li><code>dbt_project.yml vars</code> block</li>
-    <li>Default in <code>var("name", "default")</code></li>
-  </ol>
-</div>
 
 </div>
 </div>
@@ -547,7 +475,7 @@ background: '#f9f8f5'
     <span class="bg-slate-100 text-slate-600 text-xs font-mono px-2 py-1 rounded-full">Task 2</span>
     <span class="text-sm font-semibold text-slate-700">Write <code>mrt_country_summary.sql</code></span>
   </div>
-  <div class="text-sm text-slate-600">Create <code>models/gold/mrt_country_summary.sql</code>. Join <code>dim_contact</code> with <code>{{ ref('country_codes') }}</code> on <code>country_code</code>. Group by <code>country_name</code> and <code>region</code>. Count distinct contacts as <code>contact_count</code>. Use <code>materialized='table'</code>.</div>
+  <div class="text-sm text-slate-600" v-pre>Create <code>models/gold/mrt_country_summary.sql</code>. Join <code>dim_contact</code> with <code>{{ ref('country_codes') }}</code> on <code>country_code</code>. Group by <code>country_name</code> and <code>region</code>. Count distinct contacts as <code>contact_count</code>. Use <code>materialized='table'</code>.</div>
 </div>
 
 <div class="bg-white border border-slate-200 rounded-xl p-4">
@@ -555,7 +483,7 @@ background: '#f9f8f5'
     <span class="bg-slate-100 text-slate-600 text-xs font-mono px-2 py-1 rounded-full">Task 3</span>
     <span class="text-sm font-semibold text-slate-700">Add <code>min_deal_amount</code> variable to <code>fct_deal.sql</code></span>
   </div>
-  <div class="text-sm text-slate-600">Add <code>min_deal_amount: 0</code> to <code>vars</code> in <code>dbt_project.yml</code>. Add <code>WHERE amount >= {{ var('min_deal_amount', 0) }}</code> to <code>fct_deal.sql</code>. Run normally, then override with <code>--vars '{"min_deal_amount": 500}'</code>. Use <code>dbt compile</code> to verify the substitution in <code>target/compiled/</code>.</div>
+  <div class="text-sm text-slate-600" v-pre>Add <code>min_deal_amount: 0</code> to <code>vars</code> in <code>dbt_project.yml</code>. Add <code>WHERE amount >= {{ var('min_deal_amount', 0) }}</code> to <code>fct_deal.sql</code>. Run normally, then override with <code>--vars '{"min_deal_amount": 500}'</code>. Use <code>dbt compile</code> to verify the substitution in <code>target/compiled/</code>.</div>
 </div>
 
 </div>
@@ -613,9 +541,9 @@ layout: center
   <h2 class="text-3xl font-bold text-slate-800 mb-2">Next: Module 09</h2>
   <p class="text-slate-500 mb-8">Jinja and Macros — writing reusable SQL logic</p>
   <div class="space-y-2 text-left max-w-md mx-auto">
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q1: What is the difference between {{ }} and {% %} in Jinja?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q1: What is the difference between {{ }} and {% %} in Jinja?</div>
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q2: What does is_incremental() return on the first run of a model?</div>
-    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q3: What does {{ ref('stg_hubspot__deals') }} compile to in your dev environment?</div>
+    <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600" v-pre>Prep Q3: What does {{ ref('stg_hubspot__deals') }} compile to in your dev environment?</div>
     <div class="bg-slate-100 rounded-lg px-4 py-2 text-sm font-mono text-slate-600">Prep Q4: Which Jinja tag would you use to loop over a list of column names?</div>
   </div>
 </div>
