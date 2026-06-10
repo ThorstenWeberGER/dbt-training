@@ -1,0 +1,36 @@
+name: payments_system
+version: 1.0.0
+config-version: 2
+require-dbt-version: ["=1.10.15"]
+
+profile: payments_system
+
+model-paths:
+  - models
+analysis-paths:
+  - analyses
+test-paths:
+  - tests
+seed-paths:
+  - seeds
+macro-paths:
+  - macros
+snapshot-paths:
+  - snapshots
+
+models:
+  payments_system:
+    +persist_docs:
+      relation: true
+      columns: true
+    1_staging:
+      +materialized: view
+    2_silver:
+      +materialized: table
+    3_gold:
+      +materialized: view
+    
+tests:
+  +store_failures: true
+  +store_failures_as: table   
+  severity: warn              
