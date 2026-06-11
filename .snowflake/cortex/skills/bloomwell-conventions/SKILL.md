@@ -32,6 +32,8 @@ medallion architecture. These rules are **mandatory** — no exceptions without 
 | dbt YAML documentation requirements | [dbt Documentation](#dbt-documentation-requirements) |
 | Snowflake PK/FK constraints | [Snowflake Constraints](#snowflake-constraints) |
 | Things never to do | [Naming Don'ts](#naming-donts) |
+| SQL style, CTE patterns, model SQL patterns | `references/sql_style_guide.md` |
+| Project setup, env routing, sentinel/ghost patterns | `dbt-project-checklist` skill |
 
 ---
 
@@ -256,9 +258,11 @@ models:
 
 ## Full Reference
 
-📄 `references/datawarehouse_sql_styleguide.md` — Complete style guide with detailed
-examples, open questions, and extended suffix tables. Load when reviewing an existing
-model for compliance, onboarding a new team member, or resolving a naming dispute.
+📄 `references/sql_style_guide.md` — CTE pattern, SQL formatting rules, staging/dim/fact/mart
+model patterns, and anti-patterns table. Load when writing or reviewing SQL structure.
+
+📄 `references/datawarehouse_sql_styleguide.md` — Extended naming examples, open questions,
+and full suffix tables. Load when resolving a naming dispute or onboarding a new team member.
 
 📄 `references/go_live_checklist.md` — Pre-merge checklist covering grain, measures,
 dimensions, keys, constraints, and Bloomwell conventions. Use before every PR to production.

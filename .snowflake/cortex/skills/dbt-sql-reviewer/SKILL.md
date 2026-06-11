@@ -16,8 +16,28 @@ description: >
 Reviews code against Bloomwell conventions, Kimball principles, and production-safety rules.
 Output is always a **checklist**: what is missing or wrong, severity, and how to fix it.
 
+---
+
+## Skill Map
+
+| Situation | Skill to invoke |
+|---|---|
+| Starting a new dbt project | `dbt-project-checklist` (setup phase) |
+| Adding a new dim, fact, or bronze model | `dbt-project-checklist` (per-model phase) |
+| Pre-PR check before merging | This skill |
+| Naming a table, column, or schema | `bloomwell-conventions` |
+| SQL style, CTE structure, model patterns | `bloomwell-conventions` → `references/sql_style_guide.md` |
+| Where and how many tests to add | `dbt-test-strategy` |
+| Designing dims, facts, SCDs, grain | `dimensional-modeling` |
+| Running dbt commands (build, test, compile) | `dbt-agents-running-dbt-commands` |
+| Building or modifying models interactively | `dbt-agents-using-dbt-for-analytics-engineering` |
+| dbt Cloud job failed | `dbt-agents-troubleshooting-dbt-job-errors` |
+| Documenting a model or pipeline | `analytics-code-documentation` |
+
+---
+
 > **Cross-reference skills — load when review requires deeper guidance:**
-> - `bloomwell-conventions` — naming, schema, layer conventions, Bloomwell-specific anti-patterns
+> - `bloomwell-conventions` — naming, schema, layer conventions, SQL style, Bloomwell-specific anti-patterns
 > - `dbt-test-strategy` — test type selection, severity, net-new principle, email notifications; use this instead of Checklist 3 when the review is primarily about test coverage design
 > - `dimensional-modeling` — Kimball rules, fact table types, SCD patterns, grain decisions
 > - `analytics-code-documentation` — full documentation standards; use this when Checklist 6 findings need to be acted on (writing new docs, not just flagging gaps)
