@@ -29,8 +29,4 @@ models:
       +materialized: table
     3_gold:
       +materialized: view
-    
-tests:
-  +store_failures: true
-  +store_failures_as: table   
-  severity: warn              
+            
