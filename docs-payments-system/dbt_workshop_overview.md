@@ -60,3 +60,19 @@
 | 9 | **Derive Silver from Gold** | Know exactly which Silver models to build and why | Trace every Gold column back to a Bronze source, group by entity, filter columns | Silver model list with grain + column contracts |
 | 10 | **Build Silver & Gold** | Build Silver models then Gold | Assigned pairs | TEsted and documented Silver and Gold models |
 | 11 | **Retro** | Learn from the process | Open discussion — what worked, what didn't | Actions to take |
+
+
+# Workshop 2 (18.06.2026)
+
+**Goal for today:** Generate staging models for Payments and Baskets
+
+### AGENDA
+
+* Review last session and *homework* (clarifications, dbt build successful)
+* Staging models setting (one model for data typing and renaming, one for cleaning, one for decuplication) with tests on clean data
+* Use of Claude Skills in Snowflake 
+  * `Bloomwell conventions` 
+  * Read skill `dbt-test-strategy` and apply for singular tests (finished after created), relationships, and expectations (non negative)
+* dbt compile, dbt test in dev
+* Error handling, debugging
+* Evtl. add items to the "to clarify list"
