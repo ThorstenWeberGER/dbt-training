@@ -76,3 +76,8 @@
 * dbt compile, dbt test in dev
 * Error handling, debugging
 * Evtl. add items to the "to clarify list"
+
+
+----
+
+For next workshop: Introduce macros for auto switch of dev and prod and demo difference of +schema "verhalten"
