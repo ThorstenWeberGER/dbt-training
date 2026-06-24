@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: scd2_invoices
+    description: >
+      SCD Type 2 history of invoice-basket associations, built from the Bronze
+      append-only log using LEAD() window functions. Handles per-run duplicates
+      and same-run multi-row scenarios that dbt native snapshots cannot.
+    columns:
+      - name: scd_id
+        description: Surrogate key — hash of invoice_id + basket_id + updated_at. Stable across full refreshes.
+      - name: invoice_id
+      - name: basket_id
+      - name: is_active
+        description: Source is_active flag at the time this row was loaded.
+      - name: valid_from
+        description: Timestamp when this (invoice, basket) state became active.
+      - name: valid_to
+        description: Timestamp when this state was superseded. NULL = current row.
+      - name: batch_id
+        description: Which Bronze batch introduced this row.

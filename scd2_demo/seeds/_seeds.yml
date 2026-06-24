@@ -1,0 +1,27 @@
+version: 2
+
+seeds:
+  - name: bronze_batch_1
+    config:
+      column_types:
+        invoice_id: varchar
+        basket_id: varchar
+        is_active: boolean
+        updated_at: timestamp
+        loaded_at: timestamp
+  - name: bronze_batch_2
+    config:
+      column_types:
+        invoice_id: varchar
+        basket_id: varchar
+        is_active: boolean
+        updated_at: timestamp
+        loaded_at: timestamp
+  - name: bronze_batch_3
+    config:
+      column_types:
+        invoice_id: varchar
+        basket_id: varchar
+        is_active: boolean
+        updated_at: timestamp
+        loaded_at: timestamp

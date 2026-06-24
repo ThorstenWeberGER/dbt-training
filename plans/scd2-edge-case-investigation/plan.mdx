@@ -1,0 +1,358 @@
+---
+kind: recap
+title: "SCD2 Edge Case Investigation — dbt/DuckDB"
+brief: "How scd2_demo is built, why each architectural decision was made, and what each of the three SCD2 implementations does and doesn't handle across four real-world Bronze edge cases."
+localOnly: true
+---
+
+<RichText id="intro">
+
+This project puts three SCD2 implementations side by side and runs the same four Bronze edge cases through each one. The data source is an invoices-baskets Bronze log — append-only, with duplicates and out-of-order rows that arrive in hourly batches. All three implementations run against a local DuckDB file (`scd2_demo.duckdb`). A `current_batch` dbt variable simulates hourly loads arriving one batch at a time.
+
+The three implementations are:
+- **snap_invoices_ts** — native dbt snapshot, `strategy='timestamp'`
+- **snap_invoices_check** — native dbt snapshot, `strategy='check'` on `basket_id` + `is_active`
+- **scd2_invoices** — custom incremental model using `LEAD()` window functions over an append-only Bronze log
+
+</RichText>
+
+<RichText id="lineage-h">
+
+### Data Lineage
+
+</RichText>
+
+<Diagram
+  id="lineage-diagram"
+  data={{
+    html: `<div style="display:flex;gap:28px;padding:20px;align-items:flex-start;font-size:12px;flex-wrap:wrap">
+  <div style="display:flex;flex-direction:column;gap:8px;min-width:160px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--wf-muted);letter-spacing:.08em;margin-bottom:2px">Seeds (CSV)</div>
+    <div class="diagram-node" style="padding:5px 10px">bronze_batch_1<br/><span style="font-size:10px;color:var(--wf-muted)">3 rows · baseline</span></div>
+    <div class="diagram-node" style="padding:5px 10px">bronze_batch_2<br/><span style="font-size:10px;color:var(--wf-muted)">5 rows · EC1 EC2 EC4</span></div>
+    <div class="diagram-node" style="padding:5px 10px">bronze_batch_3<br/><span style="font-size:10px;color:var(--wf-muted)">2 rows · EC3</span></div>
+  </div>
+  <div style="align-self:center;color:var(--wf-muted);font-size:20px;padding-top:20px">→</div>
+  <div style="display:flex;flex-direction:column;gap:6px;min-width:210px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--wf-muted);letter-spacing:.08em;margin-bottom:2px">Staging</div>
+    <div class="diagram-panel" style="padding:8px 12px;border:1.5px solid var(--wf-line);border-radius:6px">
+      <div style="font-weight:700;font-size:12px">stg_bronze_invoices</div>
+      <div style="font-size:10px;color:var(--wf-muted);margin-top:3px">UNION ALL 3 seeds<br/>WHERE batch_id ≤ current_batch<br/>(cumulative — grows each run)</div>
+    </div>
+    <div style="text-align:center;color:var(--wf-muted);font-size:14px">↓</div>
+    <div class="diagram-panel" style="padding:8px 12px;border:1.5px solid var(--wf-line);border-radius:6px">
+      <div style="font-weight:700;font-size:12px">stg_snapshot_input</div>
+      <div style="font-size:10px;color:var(--wf-muted);margin-top:3px">WHERE batch_id = current_batch<br/>(only this run's new rows)</div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-self:stretch;justify-content:space-around;padding:20px 0">
+    <div style="color:var(--wf-muted);font-size:14px;text-align:center">→<br/><span style="font-size:9px">snapshots<br/>read here</span></div>
+    <div style="color:var(--wf-muted);font-size:14px;text-align:center">→<br/><span style="font-size:9px">scd2 reads<br/>here directly</span></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;min-width:210px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--wf-muted);letter-spacing:.08em;margin-bottom:2px">Outputs</div>
+    <div class="diagram-node" style="padding:5px 10px;border:1.5px solid var(--wf-accent)">snap_invoices_ts<br/><span style="font-size:10px;color:var(--wf-muted)">native snapshot · strategy=timestamp</span></div>
+    <div class="diagram-node" style="padding:5px 10px;border:1.5px solid var(--wf-accent)">snap_invoices_check<br/><span style="font-size:10px;color:var(--wf-muted)">native snapshot · strategy=check</span></div>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--wf-line)">
+      <div class="diagram-node" style="padding:5px 10px;border:1.5px solid var(--wf-ok)">scd2_invoices<br/><span style="font-size:10px;color:var(--wf-muted)">incremental LEAD() model</span></div>
+      <div style="font-size:10px;color:var(--wf-muted);margin-top:4px">reads stg_bronze_invoices; detects<br/>new batches via MAX(batch_id)</div>
+    </div>
+  </div>
+</div>`,
+    caption: "stg_snapshot_input feeds both native snapshots with only the current batch's rows. scd2_invoices reads the full cumulative stg_bronze_invoices log and uses MAX(batch_id) as its watermark."
+  }}
+/>
+
+<RichText id="files-h">
+
+### Project Files
+
+</RichText>
+
+<FileTree
+  id="file-tree"
+  entries={[
+    { path: "scd2_demo/seeds/bronze_batch_1.csv", change: "added", note: "Baseline: 3 invoices (INV-001/BKT-A, INV-002/BKT-B, INV-003/BKT-C), all active, loaded Jan 15 09:00" },
+    { path: "scd2_demo/seeds/bronze_batch_2.csv", change: "added", note: "EC1 (INV-001 exact dup), EC2 (INV-002 two rows ±1s), EC4 (INV-003 new basket without prior false)" },
+    { path: "scd2_demo/seeds/bronze_batch_3.csv", change: "added", note: "EC3 (INV-001 batch-1 row re-appears) + real new change (INV-001 switches to BKT-F)" },
+    { path: "scd2_demo/seeds/_seeds.yml", change: "added", note: "Explicit column types — DuckDB infers varchar by default for all CSV columns" },
+    { path: "scd2_demo/models/staging/stg_bronze_invoices.sql", change: "added", note: "UNION ALL of 3 seeds + WHERE batch_id <= current_batch cumulative filter" },
+    { path: "scd2_demo/models/staging/stg_snapshot_input.sql", change: "added", note: "WHERE batch_id = current_batch — gates snapshots to only the current batch's rows" },
+    { path: "scd2_demo/snapshots/snap_invoices_ts.sql", change: "added", note: "Native dbt snapshot: strategy=timestamp, unique_key=invoice_id" },
+    { path: "scd2_demo/snapshots/snap_invoices_check.sql", change: "added", note: "Native dbt snapshot: strategy=check, check_cols=[basket_id, is_active]" },
+    { path: "scd2_demo/models/marts/scd2_invoices.sql", change: "added", note: "Incremental LEAD()-based SCD2: merge strategy, dedup, rows_to_close guard" },
+    { path: "scd2_demo/run_edge_cases.sh", change: "added", note: "Bash script: resets DB, loads seeds, then drives 3 simulated runs and shows results after each" },
+    { path: "scd2_demo/profiles.yml", change: "added", note: "DuckDB adapter config — path: scd2_demo.duckdb, schema: main" },
+  ]}
+/>
+
+<RichText id="schema-h">
+
+### Data Schemas
+
+</RichText>
+
+<DataModel
+  id="data-model"
+  entities={[
+    {
+      id: "bronze-log",
+      name: "Bronze Invoice Log (stg_bronze_invoices)",
+      fields: [
+        { name: "invoice_id", type: "varchar" },
+        { name: "basket_id", type: "varchar" },
+        { name: "is_active", type: "boolean" },
+        { name: "updated_at", type: "timestamp" },
+        { name: "loaded_at", type: "timestamp" },
+        { name: "batch_id", type: "integer" },
+      ],
+    },
+    {
+      id: "snap-output",
+      name: "Snapshot Output (snap_invoices_ts / snap_invoices_check)",
+      fields: [
+        { name: "dbt_scd_id", type: "varchar", pk: true },
+        { name: "invoice_id", type: "varchar" },
+        { name: "basket_id", type: "varchar" },
+        { name: "is_active", type: "boolean" },
+        { name: "updated_at", type: "timestamp" },
+        { name: "loaded_at", type: "timestamp" },
+        { name: "dbt_valid_from", type: "timestamp" },
+        { name: "dbt_valid_to", type: "timestamp" },
+        { name: "dbt_updated_at", type: "timestamp" },
+      ],
+    },
+    {
+      id: "scd2-output",
+      name: "scd2_invoices (LEAD-based)",
+      fields: [
+        { name: "scd_id", type: "varchar", pk: true },
+        { name: "invoice_id", type: "varchar" },
+        { name: "basket_id", type: "varchar" },
+        { name: "is_active", type: "boolean" },
+        { name: "valid_from", type: "timestamp" },
+        { name: "valid_to", type: "timestamp" },
+        { name: "batch_id", type: "integer" },
+      ],
+    },
+  ]}
+/>
+
+<RichText id="schema-note">
+
+**Key schema difference:** Snapshot outputs have `dbt_scd_id` (hash of unique_key + row state, managed by dbt), while `scd2_invoices` has `scd_id` (a `dbt_utils.generate_surrogate_key` hash of `invoice_id + basket_id + updated_at` — stable across full refreshes). The snapshot `dbt_updated_at` column means **different things** depending on the strategy — see Key Findings below.
+
+</RichText>
+
+<RichText id="batch-h">
+
+### How the Batch Simulation Works
+
+</RichText>
+
+<RichText id="batch-explainer">
+
+All 3 batch CSVs are loaded by `dbt seed` upfront. To make the models see them one at a time, `stg_bronze_invoices` filters to `batch_id <= current_batch`. The run script rebuilds this model at the start of each simulated run with an increasing var:
+
+```bash
+dbt run --select stg_bronze_invoices --vars '{"current_batch": 1}'   # Run 1: 3 rows
+dbt run --select stg_bronze_invoices --vars '{"current_batch": 2}'   # Run 2: 8 rows
+dbt run --select stg_bronze_invoices --vars '{"current_batch": 3}'   # Run 3: 10 rows
+```
+
+`stg_snapshot_input` uses `batch_id = current_batch` (exact match) — it shows **only the new rows arriving in this run**, which is what the snapshots should see. `scd2_invoices` reads `stg_bronze_invoices` directly (the full growing log) and uses `batch_id > MAX(batch_id) FROM this` as its incremental watermark.
+
+**Why this matters:** without the `batch_id <= current_batch` filter in `stg_bronze_invoices`, `scd2_invoices` would see all 10 rows on its first full-refresh run and immediately produce the final 7-row output. Runs 2 and 3 would find nothing new (`batch_id > 3 = empty`). The filter makes each run incremental and realistic.
+
+</RichText>
+
+<RichText id="approaches-h">
+
+### The Three Approaches at a Glance
+
+</RichText>
+
+<Table
+  id="approaches-table"
+  columns={["", "snap_invoices_ts", "snap_invoices_check", "scd2_invoices"]}
+  rows={[
+    ["Mechanism", "dbt MERGE keyed on invoice_id; change detected if updated_at > stored dbt_updated_at", "dbt MERGE keyed on invoice_id; change detected if hash(basket_id, is_active) changes", "Incremental model: LEAD() over append-only Bronze log, merge strategy keyed on scd_id"],
+    ["dbt_updated_at / valid_from source", "Source updated_at (application time) ✅", "current_timestamp() at run time ❌", "Source updated_at (application time) ✅"],
+    ["Handles per-run exact duplicate", "✅ same updated_at → row_changed=false", "✅ same cols → row_changed=false", "✅ ROW_NUMBER deduplicates before LEAD()"],
+    ["Handles two rows ±1s same batch", "⚠️ 2 open rows — broken invariant", "⚠️ 2 open rows — broken invariant", "✅ LEAD() preserves full transition"],
+    ["Handles cross-run duplicate", "✅ updated_at not newer → ignored", "✅ cols unchanged → ignored", "✅ valid_from guard prevents zero-width close"],
+    ["Handles missing false row", "✅ updated_at increases → new row", "✅ basket_id changed → new row", "✅ LEAD() closes old row at new row's timestamp"],
+    ["Point-in-time query reliable?", "✅ Yes — dbt_updated_at = source time", "❌ No — dbt_updated_at = run time", "✅ Yes — valid_from/to = source time"],
+  ]}
+/>
+
+<RichText id="ts-h">
+
+### snap_invoices_ts — Native Snapshot (timestamp strategy)
+
+</RichText>
+
+<RichText id="ts-explainer">
+
+The timestamp strategy tracks changes by comparing the source `updated_at` column against the stored `dbt_updated_at`. If `source.updated_at > dbt_updated_at`, dbt closes the current open row and inserts a new one. `dbt_updated_at` stores the **source application timestamp** — making it reliable for point-in-time queries.
+
+</RichText>
+
+<AnnotatedCode
+  id="ts-code"
+  filename="snapshots/snap_invoices_ts.sql"
+  language="sql"
+  code={"{% snapshot snap_invoices_ts %}\n\n{{\n    config(\n        unique_key='invoice_id',\n        strategy='timestamp',\n        updated_at='updated_at',\n        target_schema='main'\n    )\n}}\n\nSELECT\n    invoice_id,\n    basket_id,\n    is_active,\n    updated_at,\n    loaded_at\nFROM {{ ref('stg_snapshot_input') }}\n\n{% endsnapshot %}"}
+  annotations={[
+    {
+      lines: "5",
+      label: "unique_key",
+      note: "One open row per invoice_id at any time. The snapshot MERGE matches existing rows on dbt_scd_id, which is a hash of (unique_key + all source columns) — so if any column changes, a new scd_id is computed and a new row is inserted.",
+    },
+    {
+      lines: "6",
+      label: "strategy=timestamp",
+      note: "Change detection: if source.updated_at > existing dbt_updated_at → row_changed=true. On new row insert, dbt_updated_at = source.updated_at (application time). This makes dbt_updated_at meaningful for point-in-time queries.",
+    },
+    {
+      lines: "7",
+      label: "updated_at column",
+      note: "The source column dbt monitors. Must be monotonically increasing per unique_key — if the same updated_at re-appears in a later batch (EC3), it is silently ignored.",
+    },
+    {
+      lines: "18",
+      label: "reads stg_snapshot_input",
+      note: "This model only contains the current batch's rows (WHERE batch_id = current_batch). The snapshot itself maintains the full SCD2 history in the target table via MERGE.",
+    },
+  ]}
+/>
+
+<RichText id="check-h">
+
+### snap_invoices_check — Native Snapshot (check strategy)
+
+</RichText>
+
+<RichText id="check-explainer">
+
+The check strategy compares column values directly instead of relying on a timestamp. Change is detected when the hash of `check_cols` (here: `basket_id` + `is_active`) differs between the current source row and the stored row. This means it can detect changes even without an `updated_at` column — but at a cost: `dbt_updated_at` is set to `current_timestamp()` at run time, not to the source application time.
+
+</RichText>
+
+<AnnotatedCode
+  id="check-code"
+  filename="snapshots/snap_invoices_check.sql"
+  language="sql"
+  code={"{% snapshot snap_invoices_check %}\n\n{{\n    config(\n        unique_key='invoice_id',\n        strategy='check',\n        check_cols=['basket_id', 'is_active'],\n        target_schema='main'\n    )\n}}\n\nSELECT\n    invoice_id,\n    basket_id,\n    is_active,\n    updated_at,\n    loaded_at\nFROM {{ ref('stg_snapshot_input') }}\n\n{% endsnapshot %}"}
+  annotations={[
+    {
+      lines: "6",
+      label: "strategy=check",
+      note: "Change detection: hash(check_cols) differs between source and stored row → row_changed=true. dbt_updated_at is set to current_timestamp() — the time dbt ran, NOT the source application time. This makes dbt_valid_from unreliable for point-in-time queries.",
+    },
+    {
+      lines: "7",
+      label: "check_cols",
+      note: "The two columns whose combined hash dbt compares. If neither basket_id nor is_active changes (e.g. EC1 exact dup, or EC3 cross-run dup), row_changed=false and the row is skipped. Works for EC4 (missing-false) because basket_id changes.",
+    },
+  ]}
+/>
+
+<RichText id="scd2-h">
+
+### scd2_invoices — LEAD()-based Incremental Model
+
+</RichText>
+
+<RichText id="scd2-explainer">
+
+This model reads from the append-only Bronze log (`stg_bronze_invoices`) directly. Each incremental run finds rows with `batch_id > MAX(batch_id)` from the previous run, deduplicates exact duplicates, computes `valid_to` using `LEAD()`, and merges the results. Two guards prevent edge case failures: a `valid_from > existing.valid_from` check to prevent zero-width intervals on re-delivered duplicates (EC1/EC3), and a `scd_id NOT IN rows_to_close` filter to prevent duplicate merge keys when a cross-run duplicate arrives alongside a real successor in the same batch (EC3).
+
+</RichText>
+
+<AnnotatedCode
+  id="scd2-code"
+  filename="models/marts/scd2_invoices.sql"
+  language="sql"
+  code={"{% if is_incremental() %}\n\nWITH new_source AS (\n    SELECT DISTINCT invoice_id, basket_id, is_active, updated_at, loaded_at, batch_id\n    FROM {{ ref('stg_bronze_invoices') }}\n    WHERE batch_id > (SELECT COALESCE(MAX(batch_id), 0) FROM {{ this }})\n),\n\nnew_deduped AS (\n    SELECT * FROM (\n        SELECT *,\n            ROW_NUMBER() OVER (\n                PARTITION BY invoice_id, basket_id, updated_at\n                ORDER BY loaded_at\n            ) AS rn\n        FROM new_source\n    ) ranked\n    WHERE rn = 1\n),\n\nnew_scd AS (\n    SELECT\n        {{ dbt_utils.generate_surrogate_key(['invoice_id', 'basket_id', 'updated_at']) }} AS scd_id,\n        invoice_id, basket_id, is_active,\n        updated_at AS valid_from,\n        LEAD(updated_at) OVER (\n            PARTITION BY invoice_id ORDER BY updated_at, loaded_at\n        ) AS valid_to,\n        batch_id\n    FROM new_deduped\n),\n\nrows_to_close AS (\n    SELECT\n        existing.scd_id, existing.invoice_id, existing.basket_id,\n        existing.is_active, existing.valid_from,\n        MIN(new_scd.valid_from) AS valid_to,\n        existing.batch_id\n    FROM {{ this }} existing\n    JOIN new_scd ON existing.invoice_id = new_scd.invoice_id\n    WHERE existing.valid_to IS NULL\n      AND new_scd.valid_from > existing.valid_from\n    GROUP BY 1, 2, 3, 4, 5, 7\n)\n\nSELECT scd_id, invoice_id, basket_id, is_active, valid_from, valid_to, batch_id\nFROM rows_to_close\n\nUNION ALL\n\nSELECT scd_id, invoice_id, basket_id, is_active, valid_from, valid_to, batch_id\nFROM new_scd\nWHERE scd_id NOT IN (SELECT scd_id FROM rows_to_close)\n\n{% else %}\n-- Full-refresh branch: same LEAD() logic over all Bronze data\n{% endif %}"}
+  annotations={[
+    {
+      lines: "6",
+      label: "Incremental gate",
+      note: "Only processes batches newer than the last batch this model already has. On the very first run the table doesn't exist, so dbt executes the full-refresh branch instead.",
+    },
+    {
+      lines: "11-17",
+      label: "EC1: Exact dup dedup",
+      note: "ROW_NUMBER partitioned by (invoice_id, basket_id, updated_at) removes exact per-run duplicates before LEAD() runs. Keeping the first loaded row (ORDER BY loaded_at) is arbitrary but stable.",
+    },
+    {
+      lines: "25-28",
+      label: "LEAD() for valid_to",
+      note: "For each invoice_id, LEAD() looks at the next row in updated_at order and uses its timestamp as valid_to. If no next row exists in this batch, valid_to = NULL (row is open). This is the core SCD2 logic.",
+    },
+    {
+      lines: "39-40",
+      label: "EC1/EC3: Zero-width guard",
+      note: "Only close an existing open row if the new event is strictly later (valid_from > existing.valid_from). Without this guard, a re-delivered duplicate would close the existing row at its own timestamp — a zero-width interval.",
+    },
+    {
+      lines: "48",
+      label: "EC3: Merge key dedup",
+      note: "When a cross-run duplicate arrives alongside a real successor (EC3), both rows_to_close and new_scd compute the same scd_id with matching valid_to. Excluding the duplicate from the UNION prevents two rows with the same scd_id reaching the MERGE.",
+    },
+  ]}
+/>
+
+<RichText id="ec-h">
+
+### Edge Case Results (after all 3 simulated runs)
+
+</RichText>
+
+<Table
+  id="ec-table"
+  columns={["Edge Case", "Invoice", "snap_invoices_ts", "snap_invoices_check", "scd2_invoices"]}
+  rows={[
+    ["EC1: Per-run exact duplicate (same row twice in batch 2)", "INV-001", "✅ Still 1 open row — updated_at unchanged → ignored", "✅ Still 1 open row — cols unchanged → ignored", "✅ Still 1 open row — ROW_NUMBER removes dup before LEAD()"],
+    ["EC2: Two rows ±1s same batch (BKT-B/false at 10:30:00, BKT-D/true at 10:30:01)", "INV-002", "⚠️ 3 rows but 2 OPEN — snapshot invariant broken (DuckDB); Snowflake raises ERROR_ON_NONDETERMINISTIC_MERGE", "⚠️ 3 rows but 2 OPEN — same non-determinism; dbt_updated_at = run time not source time", "✅ 3 rows, 1 open — BKT-B/true closed at 10:30, BKT-B/false closed at 10:30:01, BKT-D/true open"],
+    ["EC3: Cross-run duplicate (batch-1 row re-arrives in batch 3)", "INV-001", "✅ Duplicate silently ignored — updated_at not newer", "✅ Duplicate silently ignored — cols unchanged", "✅ Duplicate ignored — valid_from guard; BKT-F added, BKT-A closed at 12:30"],
+    ["EC4: Missing false row (new basket without prior is_active=false)", "INV-003", "✅ Works — updated_at increases → new row, BKT-C closed", "✅ Works — basket_id changed → new row; dbt_updated_at = run time not source time", "✅ Works — LEAD() closes BKT-C at BKT-E's updated_at; all timestamps are source-accurate"],
+  ]}
+/>
+
+<RichText id="findings-h">
+
+### Key Findings
+
+</RichText>
+
+<Callout id="finding-ec2" tone="warning">
+
+**EC2 (two rows for the same invoice_id ±1s in one batch) breaks both native snapshot strategies on DuckDB.**
+
+Both rows trigger `row_changed=true` but the snapshot's MERGE is keyed on `unique_key` (`invoice_id`). DuckDB processes both rows and produces two open rows for INV-002 — the snapshot invariant (one open row per unique_key) is broken. On Snowflake, the same situation raises `ERROR_ON_NONDETERMINISTIC_MERGE` instead of silently corrupting the data.
+
+The LEAD()-based model handles this correctly because it operates on the append-only Bronze log. `LEAD()` computes `valid_to` for each row independently — BKT-B/false gets `valid_to = 10:30:01` (when BKT-D arrived), and BKT-D/true gets `valid_to = NULL` (still open). The full three-step transition is preserved.
+
+</Callout>
+
+<Callout id="finding-dbt-updated-at" tone="info">
+
+**`dbt_updated_at` means different things depending on the snapshot strategy.**
+
+With `strategy='timestamp'`, `dbt_updated_at` stores the **source `updated_at` column value** — application time. A query like "what basket was active for INV-003 on Jan 15 at 10:00?" is answerable and correct.
+
+With `strategy='check'`, `dbt_updated_at` is set to **`current_timestamp()` at the moment dbt ran** — system time. The column only tells you when dbt processed the change, not when it happened in the source system. Point-in-time queries are unreliable. In the test output, `dbt_valid_from` for Run 1 rows shows `2026-06-24 09:30:…` (today's clock), not `2024-01-15 09:00:00` (source time).
+
+</Callout>
+
+<Callout id="finding-batch-design" tone="info">
+
+**The batch simulation required a non-obvious design choice in `stg_bronze_invoices`.**
+
+All three batch CSVs are loaded by `dbt seed` upfront — there's no way to partially load seeds in dbt. Without the `WHERE batch_id <= current_batch` filter, `scd2_invoices` would see all 10 rows on its first full-refresh run and produce the entire 7-row final output immediately. Runs 2 and 3 would then find no new data (`batch_id > 3 = empty`).
+
+The fix: `stg_bronze_invoices` is rebuilt at the start of each simulated run with the appropriate `current_batch` var. This makes it behave as a growing table — 3 rows after Run 1, 8 rows after Run 2, 10 rows after Run 3 — which is what `scd2_invoices` needs for its `batch_id > MAX(batch_id)` watermark logic to work correctly.
+
+</Callout>

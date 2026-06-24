@@ -1,0 +1,7 @@
+duckdb:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "scd2_demo.duckdb"
+      schema: main

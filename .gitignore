@@ -2,6 +2,8 @@ target/
 dbt_packages/
 logs/
 profiles.yml
+!scd2_demo/profiles.yml
+.venv/
 .secrets/
 *.pyc
 __pycache__/

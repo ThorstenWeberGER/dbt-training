@@ -1,0 +1,361 @@
+=== Reset database ===
+=== Load seeds (run 'dbt deps' manually before first run if packages missing) ===
+[0m16:51:05  Running with dbt=1.10.15
+[0m16:51:06  Registered adapter: duckdb=1.10.1
+[0m16:51:06  Unable to do partial parsing because config vars, config profile, or config target have changed
+[0m16:51:08  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:51:08  
+[0m16:51:08  Concurrency: 1 threads (target='dev')
+[0m16:51:08  
+[0m16:51:09  1 of 3 START seed file main.bronze_batch_1 ..................................... [RUN]
+[0m16:51:09  1 of 3 OK loaded seed file main.bronze_batch_1 ................................. [[32mINSERT 3[0m in 0.10s]
+[0m16:51:09  2 of 3 START seed file main.bronze_batch_2 ..................................... [RUN]
+[0m16:51:09  2 of 3 OK loaded seed file main.bronze_batch_2 ................................. [[32mINSERT 5[0m in 0.03s]
+[0m16:51:09  3 of 3 START seed file main.bronze_batch_3 ..................................... [RUN]
+[0m16:51:09  3 of 3 OK loaded seed file main.bronze_batch_3 ................................. [[32mINSERT 2[0m in 0.02s]
+[0m16:51:09  
+[0m16:51:09  Finished running 3 seeds in 0 hours 0 minutes and 0.31 seconds (0.31s).
+[0m16:51:09  
+[0m16:51:09  [32mCompleted successfully[0m
+[0m16:51:09  
+[0m16:51:09  Done. PASS=3 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=3
+=== Build Bronze staging union (stg_bronze_invoices) once ===
+[0m16:51:12  Running with dbt=1.10.15
+[0m16:51:13  Registered adapter: duckdb=1.10.1
+[0m16:51:14  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:51:14  
+[0m16:51:14  Concurrency: 1 threads (target='dev')
+[0m16:51:14  
+[0m16:51:14  1 of 1 START sql table model main.stg_bronze_invoices .......................... [RUN]
+[0m16:51:14  1 of 1 OK created sql table model main.stg_bronze_invoices ..................... [[32mOK[0m in 0.12s]
+[0m16:51:14  
+[0m16:51:14  Finished running 1 table model in 0 hours 0 minutes and 0.31 seconds (0.31s).
+[0m16:51:14  
+[0m16:51:14  [32mCompleted successfully[0m
+[0m16:51:14  
+[0m16:51:14  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+
+========================================
+  RUN 1: Batch 1 — Baseline load
+========================================
+[0m16:51:18  Running with dbt=1.10.15
+[0m16:51:18  Registered adapter: duckdb=1.10.1
+[0m16:51:19  Unable to do partial parsing because config vars, config profile, or config target have changed
+[0m16:51:23  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:51:23  
+[0m16:51:23  Concurrency: 1 threads (target='dev')
+[0m16:51:23  
+[0m16:51:23  1 of 1 START sql table model main.stg_snapshot_input ........................... [RUN]
+[0m16:51:23  1 of 1 OK created sql table model main.stg_snapshot_input ...................... [[32mOK[0m in 0.16s]
+[0m16:51:23  
+[0m16:51:23  Finished running 1 table model in 0 hours 0 minutes and 0.44 seconds (0.44s).
+[0m16:51:23  
+[0m16:51:23  [32mCompleted successfully[0m
+[0m16:51:23  
+[0m16:51:23  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+[0m16:51:28  Running with dbt=1.10.15
+[0m16:51:28  Registered adapter: duckdb=1.10.1
+[0m16:51:29  Unable to do partial parsing because config vars, config profile, or config target have changed
+[0m16:51:33  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:51:33  
+[0m16:51:33  Concurrency: 1 threads (target='dev')
+[0m16:51:33  
+[0m16:51:33  1 of 2 START snapshot main.snap_invoices_check ................................. [RUN]
+[0m16:51:33  1 of 2 OK snapshotted main.snap_invoices_check ................................. [[32mOK[0m in 0.22s]
+[0m16:51:33  2 of 2 START snapshot main.snap_invoices_ts .................................... [RUN]
+[0m16:51:34  2 of 2 OK snapshotted main.snap_invoices_ts .................................... [[32mOK[0m in 0.05s]
+[0m16:51:34  
+[0m16:51:34  Finished running 2 snapshots in 0 hours 0 minutes and 0.56 seconds (0.56s).
+[0m16:51:34  
+[0m16:51:34  [32mCompleted successfully[0m
+[0m16:51:34  
+[0m16:51:34  Done. PASS=2 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=2
+[0m16:51:38  Running with dbt=1.10.15
+[0m16:51:38  Registered adapter: duckdb=1.10.1
+[0m16:51:39  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:51:39  
+[0m16:51:39  Concurrency: 1 threads (target='dev')
+[0m16:51:39  
+[0m16:51:40  1 of 1 START sql incremental model main.scd2_invoices .......................... [RUN]
+[0m16:51:40  1 of 1 OK created sql incremental model main.scd2_invoices ..................... [[32mOK[0m in 0.23s]
+[0m16:51:40  
+[0m16:51:40  Finished running 1 incremental model in 0 hours 0 minutes and 0.53 seconds (0.53s).
+[0m16:51:40  
+[0m16:51:40  [32mCompleted successfully[0m
+[0m16:51:40  
+[0m16:51:40  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+--- snap_invoices_ts after Run 1 ---
+[0m16:51:44  Running with dbt=1.10.15
+[0m16:51:44  Registered adapter: duckdb=1.10.1
+[0m16:51:45  Found 3 models, 2 snapshots, 3 seeds, 1 sql operation, 601 macros
+[0m16:51:45  
+[0m16:51:45  Concurrency: 1 threads (target='dev')
+[0m16:51:45  
+Previewing inline node:
+| invoice_id | basket_id | is_active |      dbt_valid_from | dbt_valid_to |      dbt_updated_at |
+| ---------- | --------- | --------- | ------------------- | ------------ | ------------------- |
+| INV-001    | BKT-A     |      True | 2024-01-15 09:00:00 |              | 2024-01-15 09:00:00 |
+| INV-002    | BKT-B     |      True | 2024-01-15 09:00:00 |              | 2024-01-15 09:00:00 |
+| INV-003    | BKT-C     |      True | 2024-01-15 09:00:00 |              | 2024-01-15 09:00:00 |
+
+--- snap_invoices_check after Run 1 (note dbt_updated_at = system time) ---
+[0m16:51:50  Running with dbt=1.10.15
+[0m16:51:51  Registered adapter: duckdb=1.10.1
+[0m16:51:52  Found 3 models, 2 snapshots, 3 seeds, 1 sql operation, 601 macros
+[0m16:51:52  
+[0m16:51:52  Concurrency: 1 threads (target='dev')
+[0m16:51:52  
+Previewing inline node:
+| invoice_id | basket_id | is_active |       dbt_valid_from | dbt_valid_to |       dbt_updated_at |
+| ---------- | --------- | --------- | -------------------- | ------------ | -------------------- |
+| INV-001    | BKT-A     |      True | 2026-06-23 18:51:... |              | 2026-06-23 18:51:... |
+| INV-002    | BKT-B     |      True | 2026-06-23 18:51:... |              | 2026-06-23 18:51:... |
+| INV-003    | BKT-C     |      True | 2026-06-23 18:51:... |              | 2026-06-23 18:51:... |
+
+--- scd2_invoices after Run 1 ---
+[0m16:51:57  Running with dbt=1.10.15
+[0m16:51:58  Registered adapter: duckdb=1.10.1
+[0m16:51:59  Found 3 models, 2 snapshots, 3 seeds, 1 sql operation, 601 macros
+[0m16:51:59  
+[0m16:51:59  Concurrency: 1 threads (target='dev')
+[0m16:51:59  
+Previewing inline node:
+| invoice_id | basket_id | is_active |          valid_from |            valid_to | batch_id |
+| ---------- | --------- | --------- | ------------------- | ------------------- | -------- |
+| INV-001    | BKT-A     |      True | 2024-01-15 09:00:00 | 2024-01-15 12:30:00 |        1 |
+| INV-001    | BKT-F     |      True | 2024-01-15 12:30:00 |                     |        3 |
+| INV-002    | BKT-B     |      True | 2024-01-15 09:00:00 | 2024-01-15 10:30:00 |        1 |
+| INV-002    | BKT-B     |     False | 2024-01-15 10:30:00 | 2024-01-15 10:30:01 |        2 |
+| INV-002    | BKT-D     |      True | 2024-01-15 10:30:01 |                     |        2 |
+| INV-003    | BKT-C     |      True | 2024-01-15 09:00:00 | 2024-01-15 10:45:00 |        1 |
+| INV-003    | BKT-E     |      True | 2024-01-15 10:45:00 |                     |        2 |
+
+
+========================================
+  RUN 2: Batch 2 — EC1 (exact dup), EC2 (two rows +-1s), EC4 (missing-false)
+========================================
+[0m16:52:04  Running with dbt=1.10.15
+[0m16:52:04  Registered adapter: duckdb=1.10.1
+[0m16:52:05  Unable to do partial parsing because config vars, config profile, or config target have changed
+[0m16:52:09  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:52:09  
+[0m16:52:09  Concurrency: 1 threads (target='dev')
+[0m16:52:09  
+[0m16:52:09  1 of 1 START sql table model main.stg_snapshot_input ........................... [RUN]
+[0m16:52:09  1 of 1 OK created sql table model main.stg_snapshot_input ...................... [[32mOK[0m in 0.23s]
+[0m16:52:10  
+[0m16:52:10  Finished running 1 table model in 0 hours 0 minutes and 0.51 seconds (0.51s).
+[0m16:52:10  
+[0m16:52:10  [32mCompleted successfully[0m
+[0m16:52:10  
+[0m16:52:10  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+[0m16:52:14  Running with dbt=1.10.15
+[0m16:52:14  Registered adapter: duckdb=1.10.1
+[0m16:52:15  Unable to do partial parsing because config vars, config profile, or config target have changed
+[0m16:52:19  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:52:19  
+[0m16:52:19  Concurrency: 1 threads (target='dev')
+[0m16:52:19  
+[0m16:52:19  1 of 2 START snapshot main.snap_invoices_check ................................. [RUN]
+[0m16:52:19  1 of 2 OK snapshotted main.snap_invoices_check ................................. [[32mOK[0m in 0.52s]
+[0m16:52:19  2 of 2 START snapshot main.snap_invoices_ts .................................... [RUN]
+[0m16:52:20  2 of 2 OK snapshotted main.snap_invoices_ts .................................... [[32mOK[0m in 0.19s]
+[0m16:52:20  
+[0m16:52:20  Finished running 2 snapshots in 0 hours 0 minutes and 1.00 seconds (1.00s).
+[0m16:52:20  
+[0m16:52:20  [32mCompleted successfully[0m
+[0m16:52:20  
+[0m16:52:20  Done. PASS=2 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=2
+[0m16:52:25  Running with dbt=1.10.15
+[0m16:52:25  Registered adapter: duckdb=1.10.1
+[0m16:52:26  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:52:26  
+[0m16:52:26  Concurrency: 1 threads (target='dev')
+[0m16:52:26  
+[0m16:52:26  1 of 1 START sql incremental model main.scd2_invoices .......................... [RUN]
+[0m16:52:26  1 of 1 OK created sql incremental model main.scd2_invoices ..................... [[32mOK[0m in 0.27s]
+[0m16:52:26  
+[0m16:52:26  Finished running 1 incremental model in 0 hours 0 minutes and 0.49 seconds (0.49s).
+[0m16:52:27  
+[0m16:52:27  [32mCompleted successfully[0m
+[0m16:52:27  
+[0m16:52:27  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+--- snap_invoices_ts after Run 2 ---
+[0m16:52:31  Running with dbt=1.10.15
+[0m16:52:31  Registered adapter: duckdb=1.10.1
+[0m16:52:32  Found 3 models, 2 snapshots, 3 seeds, 1 sql operation, 601 macros
+[0m16:52:32  
+[0m16:52:32  Concurrency: 1 threads (target='dev')
+[0m16:52:32  
+Previewing inline node:
+| invoice_id | basket_id | is_active |      dbt_valid_from |        dbt_valid_to |      dbt_updated_at |
+| ---------- | --------- | --------- | ------------------- | ------------------- | ------------------- |
+| INV-001    | BKT-A     |      True | 2024-01-15 09:00:00 |                     | 2024-01-15 09:00:00 |
+| INV-002    | BKT-B     |      True | 2024-01-15 09:00:00 | 2024-01-15 10:30:01 | 2024-01-15 09:00:00 |
+| INV-002    | BKT-B     |     False | 2024-01-15 10:30:00 |                     | 2024-01-15 10:30:00 |
+| INV-002    | BKT-D     |      True | 2024-01-15 10:30:01 |                     | 2024-01-15 10:30:01 |
+| INV-003    | BKT-C     |      True | 2024-01-15 09:00:00 | 2024-01-15 10:45:00 | 2024-01-15 09:00:00 |
+| INV-003    | BKT-E     |      True | 2024-01-15 10:45:00 |                     | 2024-01-15 10:45:00 |
+
+--- snap_invoices_check after Run 2 ---
+[0m16:52:36  Running with dbt=1.10.15
+[0m16:52:37  Registered adapter: duckdb=1.10.1
+[0m16:52:37  Found 3 models, 2 snapshots, 3 seeds, 1 sql operation, 601 macros
+[0m16:52:37  
+[0m16:52:37  Concurrency: 1 threads (target='dev')
+[0m16:52:37  
+Previewing inline node:
+| invoice_id | basket_id | is_active |       dbt_valid_from |         dbt_valid_to |       dbt_updated_at |
+| ---------- | --------- | --------- | -------------------- | -------------------- | -------------------- |
+| INV-001    | BKT-A     |      True | 2026-06-23 18:51:... |                      | 2026-06-23 18:51:... |
+| INV-002    | BKT-B     |      True | 2026-06-23 18:51:... | 2026-06-23 18:52:... | 2026-06-23 18:51:... |
+| INV-002    | BKT-B     |     False | 2026-06-23 18:52:... |                      | 2026-06-23 18:52:... |
+| INV-002    | BKT-D     |      True | 2026-06-23 18:52:... |                      | 2026-06-23 18:52:... |
+| INV-003    | BKT-C     |      True | 2026-06-23 18:51:... | 2026-06-23 18:52:... | 2026-06-23 18:51:... |
+| INV-003    | BKT-E     |      True | 2026-06-23 18:52:... |                      | 2026-06-23 18:52:... |
+
+--- scd2_invoices after Run 2 ---
+[0m16:52:41  Running with dbt=1.10.15
+[0m16:52:42  Registered adapter: duckdb=1.10.1
+[0m16:52:43  Found 3 models, 2 snapshots, 3 seeds, 1 sql operation, 601 macros
+[0m16:52:43  
+[0m16:52:43  Concurrency: 1 threads (target='dev')
+[0m16:52:43  
+Previewing inline node:
+| invoice_id | basket_id | is_active |          valid_from |            valid_to | batch_id |
+| ---------- | --------- | --------- | ------------------- | ------------------- | -------- |
+| INV-001    | BKT-A     |      True | 2024-01-15 09:00:00 | 2024-01-15 12:30:00 |        1 |
+| INV-001    | BKT-F     |      True | 2024-01-15 12:30:00 |                     |        3 |
+| INV-002    | BKT-B     |      True | 2024-01-15 09:00:00 | 2024-01-15 10:30:00 |        1 |
+| INV-002    | BKT-B     |     False | 2024-01-15 10:30:00 | 2024-01-15 10:30:01 |        2 |
+| INV-002    | BKT-D     |      True | 2024-01-15 10:30:01 |                     |        2 |
+| INV-003    | BKT-C     |      True | 2024-01-15 09:00:00 | 2024-01-15 10:45:00 |        1 |
+| INV-003    | BKT-E     |      True | 2024-01-15 10:45:00 |                     |        2 |
+
+
+========================================
+  RUN 3: Batch 3 — EC3 (cross-run dup) + real change INV-001 to BKT-F
+========================================
+[0m16:52:46  Running with dbt=1.10.15
+[0m16:52:47  Registered adapter: duckdb=1.10.1
+[0m16:52:47  Unable to do partial parsing because config vars, config profile, or config target have changed
+[0m16:52:50  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:52:50  
+[0m16:52:50  Concurrency: 1 threads (target='dev')
+[0m16:52:50  
+[0m16:52:50  1 of 1 START sql table model main.stg_snapshot_input ........................... [RUN]
+[0m16:52:50  1 of 1 OK created sql table model main.stg_snapshot_input ...................... [[32mOK[0m in 0.12s]
+[0m16:52:50  
+[0m16:52:50  Finished running 1 table model in 0 hours 0 minutes and 0.29 seconds (0.29s).
+[0m16:52:50  
+[0m16:52:50  [32mCompleted successfully[0m
+[0m16:52:50  
+[0m16:52:50  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+[0m16:52:54  Running with dbt=1.10.15
+[0m16:52:54  Registered adapter: duckdb=1.10.1
+[0m16:52:55  Unable to do partial parsing because config vars, config profile, or config target have changed
+[0m16:52:57  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:52:57  
+[0m16:52:57  Concurrency: 1 threads (target='dev')
+[0m16:52:57  
+[0m16:52:57  1 of 2 START snapshot main.snap_invoices_check ................................. [RUN]
+[0m16:52:57  1 of 2 OK snapshotted main.snap_invoices_check ................................. [[32mOK[0m in 0.29s]
+[0m16:52:57  2 of 2 START snapshot main.snap_invoices_ts .................................... [RUN]
+[0m16:52:57  2 of 2 OK snapshotted main.snap_invoices_ts .................................... [[32mOK[0m in 0.09s]
+[0m16:52:57  
+[0m16:52:57  Finished running 2 snapshots in 0 hours 0 minutes and 0.58 seconds (0.58s).
+[0m16:52:57  
+[0m16:52:57  [32mCompleted successfully[0m
+[0m16:52:57  
+[0m16:52:57  Done. PASS=2 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=2
+[0m16:53:01  Running with dbt=1.10.15
+[0m16:53:02  Registered adapter: duckdb=1.10.1
+[0m16:53:02  Found 3 models, 2 snapshots, 3 seeds, 601 macros
+[0m16:53:02  
+[0m16:53:02  Concurrency: 1 threads (target='dev')
+[0m16:53:02  
+[0m16:53:02  1 of 1 START sql incremental model main.scd2_invoices .......................... [RUN]
+[0m16:53:03  1 of 1 OK created sql incremental model main.scd2_invoices ..................... [[32mOK[0m in 0.26s]
+[0m16:53:03  
+[0m16:53:03  Finished running 1 incremental model in 0 hours 0 minutes and 0.46 seconds (0.46s).
+[0m16:53:03  
+[0m16:53:03  [32mCompleted successfully[0m
+[0m16:53:03  
+[0m16:53:03  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+--- snap_invoices_ts after Run 3 (final) ---
+[0m16:53:07  Running with dbt=1.10.15
+[0m16:53:07  Registered adapter: duckdb=1.10.1
+[0m16:53:08  Found 3 models, 2 snapshots, 3 seeds, 1 sql operation, 601 macros
+[0m16:53:08  
+[0m16:53:08  Concurrency: 1 threads (target='dev')
+[0m16:53:08  
+Previewing inline node:
+| invoice_id | basket_id | is_active |      dbt_valid_from |        dbt_valid_to |      dbt_updated_at |
+| ---------- | --------- | --------- | ------------------- | ------------------- | ------------------- |
+| INV-001    | BKT-A     |      True | 2024-01-15 09:00:00 | 2024-01-15 12:30:00 | 2024-01-15 09:00:00 |
+| INV-001    | BKT-F     |      True | 2024-01-15 12:30:00 |                     | 2024-01-15 12:30:00 |
+| INV-002    | BKT-B     |      True | 2024-01-15 09:00:00 | 2024-01-15 10:30:01 | 2024-01-15 09:00:00 |
+| INV-002    | BKT-B     |     False | 2024-01-15 10:30:00 |                     | 2024-01-15 10:30:00 |
+| INV-002    | BKT-D     |      True | 2024-01-15 10:30:01 |                     | 2024-01-15 10:30:01 |
+| INV-003    | BKT-C     |      True | 2024-01-15 09:00:00 | 2024-01-15 10:45:00 | 2024-01-15 09:00:00 |
+| INV-003    | BKT-E     |      True | 2024-01-15 10:45:00 |                     | 2024-01-15 10:45:00 |
+
+--- snap_invoices_check after Run 3 (final) ---
+[0m16:53:12  Running with dbt=1.10.15
+[0m16:53:12  Registered adapter: duckdb=1.10.1
+[0m16:53:13  Found 3 models, 2 snapshots, 3 seeds, 1 sql operation, 601 macros
+[0m16:53:13  
+[0m16:53:13  Concurrency: 1 threads (target='dev')
+[0m16:53:13  
+Previewing inline node:
+| invoice_id | basket_id | is_active |       dbt_valid_from |         dbt_valid_to |       dbt_updated_at |
+| ---------- | --------- | --------- | -------------------- | -------------------- | -------------------- |
+| INV-001    | BKT-A     |      True | 2026-06-23 18:51:... | 2026-06-23 18:52:... | 2026-06-23 18:51:... |
+| INV-001    | BKT-F     |      True | 2026-06-23 18:52:... |                      | 2026-06-23 18:52:... |
+| INV-002    | BKT-B     |      True | 2026-06-23 18:51:... | 2026-06-23 18:52:... | 2026-06-23 18:51:... |
+| INV-002    | BKT-B     |     False | 2026-06-23 18:52:... |                      | 2026-06-23 18:52:... |
+| INV-002    | BKT-D     |      True | 2026-06-23 18:52:... |                      | 2026-06-23 18:52:... |
+| INV-003    | BKT-C     |      True | 2026-06-23 18:51:... | 2026-06-23 18:52:... | 2026-06-23 18:51:... |
+| INV-003    | BKT-E     |      True | 2026-06-23 18:52:... |                      | 2026-06-23 18:52:... |
+
+--- scd2_invoices after Run 3 (final) ---
+[0m16:53:17  Running with dbt=1.10.15
+[0m16:53:18  Registered adapter: duckdb=1.10.1
+[0m16:53:19  Found 3 models, 2 snapshots, 3 seeds, 1 sql operation, 601 macros
+[0m16:53:19  
+[0m16:53:19  Concurrency: 1 threads (target='dev')
+[0m16:53:19  
+Previewing inline node:
+| invoice_id | basket_id | is_active |          valid_from |            valid_to | batch_id |
+| ---------- | --------- | --------- | ------------------- | ------------------- | -------- |
+| INV-001    | BKT-A     |      True | 2024-01-15 09:00:00 | 2024-01-15 12:30:00 |        1 |
+| INV-001    | BKT-F     |      True | 2024-01-15 12:30:00 |                     |        3 |
+| INV-002    | BKT-B     |      True | 2024-01-15 09:00:00 | 2024-01-15 10:30:00 |        1 |
+| INV-002    | BKT-B     |     False | 2024-01-15 10:30:00 | 2024-01-15 10:30:01 |        2 |
+| INV-002    | BKT-D     |      True | 2024-01-15 10:30:01 |                     |        2 |
+| INV-003    | BKT-C     |      True | 2024-01-15 09:00:00 | 2024-01-15 10:45:00 |        1 |
+| INV-003    | BKT-E     |      True | 2024-01-15 10:45:00 |                     |        2 |
+
+
+========================================
+  FINAL: Side-by-side row count comparison
+========================================
+[0m16:53:23  Running with dbt=1.10.15
+[0m16:53:23  Registered adapter: duckdb=1.10.1
+[0m16:53:24  Found 3 models, 2 snapshots, 3 seeds, 1 sql operation, 601 macros
+[0m16:53:24  
+[0m16:53:24  Concurrency: 1 threads (target='dev')
+[0m16:53:24  
+Previewing inline node:
+| model      | invoice_id | rows |
+| ---------- | ---------- | ---- |
+| scd2       | INV-001    |    2 |
+| snap_check | INV-001    |    2 |
+| snap_ts    | INV-001    |    2 |
+| scd2       | INV-002    |    3 |
+| snap_check | INV-002    |    3 |
+| snap_ts    | INV-002    |    3 |
+| scd2       | INV-003    |    2 |
+| snap_check | INV-003    |    2 |
+| snap_ts    | INV-003    |    2 |
+
