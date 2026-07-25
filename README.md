@@ -1,4 +1,4 @@
-# dbt Training — Data Team
+# dbt Training — Data Team 
 
 This repo is a structured, hands-on dbt Core training curriculum built on a Snowflake + medallion architecture stack. It covers 12 built modules across two tiers, with a third tier planned.
 
