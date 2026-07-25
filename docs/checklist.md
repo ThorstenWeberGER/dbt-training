@@ -1,8 +1,8 @@
 # dbt Project Checklist
 
-This file is a configuration reference for new dbt projects on the Bloomwell Snowflake stack.
-It captures every non-obvious pattern wired up in `hs-tickets-v2` — infrastructure routing,
-data quality, Bloomwell naming conventions, and testing architecture — so you don't have to
+This file is a configuration reference for new dbt projects on a Snowflake stack.
+It captures every non-obvious pattern wired up in a real production project — infrastructure
+routing, data quality, naming conventions, and testing architecture — so you don't have to
 rediscover it from scratch.
 
 ---
@@ -26,7 +26,7 @@ rediscover it from scratch.
 | 13 | dbt native unit tests | YAML mock-input / expected-output tests isolated in a dedicated `unit_tests` schema |
 | 14 | `packages.yml` — dbt_utils + dbt_expectations | Standard test packages; must be pinned and committed |
 | 15 | `transient: false` | Ensures Snowflake uses permanent tables with full Time Travel on Bronze/Silver/Gold |
-| 16 | Bloomwell naming charter | snake_case, layer-in-schema-not-name, `dim_`/`fct_`/`mrt_` prefixes, `_key` vs `_id` columns |
+| 16 | Naming charter | snake_case, layer-in-schema-not-name, `dim_`/`fct_`/`mrt_` prefixes, `_key` vs `_id` columns |
 | 17 | Silver/Gold grain + column docs | Every Silver/Gold model requires a grain statement and all-column descriptions (CI gate) |
 | 18 | Generic custom tests | Reusable test macros in `tests/generic/` (`not_in_future`, `non_negative_milliseconds`, etc.) |
 | 19 | Singular assertion tests | Cross-model sanity checks in `tests/*.sql` that don't fit a single model's schema YAML |
@@ -188,7 +188,7 @@ models:
 
 Snowflake does not enforce PK/FK constraints — they are metadata for ER diagram tools and Cortex AI. Add them via `post_hook` after every full-refresh.
 
-#### Option A — In the SQL model file (current hs-tickets-v2 pattern for most models)
+#### Option A — In the SQL model file (current production pattern for most models)
 
 ```sql
 -- models/2_silver/fct_ticket_status_history.sql
@@ -210,7 +210,7 @@ Snowflake does not enforce PK/FK constraints — they are metadata for ER diagra
 }}
 ```
 
-#### Option B — In `config.yml` (preferred Bloomwell standard — keeps SQL clean)
+#### Option B — In `config.yml` (preferred standard — keeps SQL clean)
 
 ```yaml
 # models/2_silver/config.yml
@@ -328,7 +328,7 @@ version: 2
 
 sources:
   - name: hubspot_raw
-    database: bloomwell_staging
+    database: analytics_staging
     schema: hubspot___ticket
     tables:
       - name: stg_tickets
@@ -421,7 +421,7 @@ Without this, Snowflake creates transient tables by default for dbt-managed obje
 
 ---
 
-### 16 — Bloomwell Naming Charter
+### 16 — Naming Charter
 
 #### Schema organisation
 
@@ -605,7 +605,7 @@ from {{ ref('dim_team') }} where team_name is null having count(*) > 0
     dev:
       type: snowflake
       account: <ACCOUNT_LOCATOR>
-      user: <USER>@bloomwell.de
+      user: <USER>@company.com
       role: ANALYTICS_SERVICE_ROLE
       warehouse: DBT_WH
       database: STAGING_DEV       # fallback only — generate_database_name overrides per model
@@ -615,7 +615,7 @@ from {{ ref('dim_team') }} where team_name is null having count(*) > 0
     prod:
       type: snowflake
       account: <ACCOUNT_LOCATOR>
-      user: <USER>@bloomwell.de
+      user: <USER>@company.com
       role: ANALYTICS_SERVICE_ROLE
       warehouse: DBT_WH
       database: STAGING            # fallback only — generate_database_name overrides per model

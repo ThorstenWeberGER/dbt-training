@@ -4,7 +4,7 @@
 > **Goal:** Get everyone productive in dbt — able to read, write, test, and maintain models confidently
 > **Levels:** 🟢 Beginner · 🟡 Intermediate · 🔴 Advanced
 
-**NOTE:** Any updates need to be synchronised with [Confluence](https://bloomwellgroup.atlassian.net/wiki/spaces/DA/pages/2093809665/dbt+Training+-+Roadmap)
+**NOTE:** Keep this in sync with the team's internal roadmap doc.
 
 ---
 
