@@ -77,7 +77,7 @@ dbt build --select state:modified+ --defer --state ./prod-artifacts
 ```bash
 dbt build                          # full project build against PROD
 dbt docs generate                  # regenerate docs from PROD manifest
-aws s3 sync ./target/docs s3://bloomwell-dbt-docs/  # publish
+aws s3 sync ./target/docs s3://company-dbt-docs/  # publish
 ```
 
 The merge pipeline runs the full project — not slim — because it is updating production. It also regenerates and publishes the dbt docs site so the team always has an up-to-date lineage graph.
@@ -222,7 +222,7 @@ jobs:
       - name: Download production manifest
         run: |
           mkdir -p ./prod-artifacts
-          aws s3 cp s3://bloomwell-dbt-artifacts/prod/manifest.json ./prod-artifacts/manifest.json
+          aws s3 cp s3://company-dbt-artifacts/prod/manifest.json ./prod-artifacts/manifest.json
         env:
           AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -285,7 +285,7 @@ jobs:
       - name: Upload manifest to S3 (for next Slim CI run)
         run: |
           aws s3 cp ./target/manifest.json \
-            s3://bloomwell-dbt-artifacts/prod/manifest.json
+            s3://company-dbt-artifacts/prod/manifest.json
         env:
           AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -294,7 +294,7 @@ jobs:
       - name: Publish dbt docs to S3
         run: |
           aws s3 sync ./target/ \
-            s3://bloomwell-dbt-docs/ \
+            s3://company-dbt-docs/ \
             --include "*.html" --include "*.json" --include "*.js"
         env:
           AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -468,7 +468,7 @@ jobs:
       - name: Download production manifest
         run: |
           mkdir -p ./prod-artifacts
-          aws s3 cp s3://bloomwell-dbt-artifacts/prod/manifest.json ./prod-artifacts/manifest.json
+          aws s3 cp s3://company-dbt-artifacts/prod/manifest.json ./prod-artifacts/manifest.json
         env:
           AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

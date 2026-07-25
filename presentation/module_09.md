@@ -420,7 +420,7 @@ SELECT * FROM source
 <!--
 Two messages here: what surrogate keys are for, and where to put the call.
 
-On why: the HubSpot contact_id is just a string assigned by HubSpot. If Bloomwell ever migrates CRM systems or merges duplicate contacts, those IDs change. A surrogate key based on the ID is stable for joins but doesn't carry CRM-system dependency. For Power BI, the surrogate key is the dimension's primary key — it's what the relationship manager sees.
+On why: the HubSpot contact_id is just a string assigned by HubSpot. If the company ever migrates CRM systems or merges duplicate contacts, those IDs change. A surrogate key based on the ID is stable for joins but doesn't carry CRM-system dependency. For Power BI, the surrogate key is the dimension's primary key — it's what the relationship manager sees.
 
 On where: the question "should generate_surrogate_key be a shared macro?" comes up. The answer is no — it's already a macro (from dbt_utils). Wrapping it in another macro adds a layer of indirection for no benefit. Put the call in the source CTE. That's the canonical location in this project.
 

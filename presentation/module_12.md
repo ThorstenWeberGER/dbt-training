@@ -215,7 +215,7 @@ Use v-click to reveal each step — let the audience read each one before moving
 
 Key question after revealing the merge steps: "Why does the deploy job upload manifest.json to S3 at the end?" → So the next PR's Slim CI can compare against the latest production state. The manifest from this run becomes the baseline for the next comparison.
 
-The docs upload means the team always has a current lineage graph. After every merge, bloomwell-dbt-docs reflects the latest state of production.
+The docs upload means the team always has a current lineage graph. After every merge, company-dbt-docs reflects the latest state of production.
 -->
 
 ---
@@ -430,7 +430,7 @@ jobs:
       - name: Download production manifest
         run: |
           mkdir -p ./prod-artifacts
-          aws s3 cp s3://bloomwell-dbt-artifacts/prod/manifest.json \
+          aws s3 cp s3://company-dbt-artifacts/prod/manifest.json \
             ./prod-artifacts/manifest.json
       - run: dbt deps
       - name: dbt build — slim CI
@@ -636,7 +636,7 @@ jobs:
       - name: Download production manifest
         run: |
           mkdir -p ./prod-artifacts
-          aws s3 cp s3://bloomwell-dbt-artifacts/prod/manifest.json ./prod-artifacts/manifest.json
+          aws s3 cp s3://company-dbt-artifacts/prod/manifest.json ./prod-artifacts/manifest.json
       - run: dbt deps
       - name: dbt build — slim CI
         run: |

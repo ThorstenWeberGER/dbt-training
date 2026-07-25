@@ -37,9 +37,9 @@
       { id: "adv_testing", label: "Advanced\nTesting", sublabel: "store_failures · dbt-expectations · unit tests", x: 870, y: 400, r: 34, type: "advanced" },
       { id: "custom_macros", label: "Custom\nMacros", sublabel: "dispatch · run-operation · scd2_merge deep dive", x: 830, y: 640, r: 34, type: "advanced" },
       { id: "governance", label: "Governance\n& Contracts", sublabel: "contracts · access levels · versions · PK/FK", x: 580, y: 570, r: 34, type: "advanced" },
-      { id: "medallion", label: "Bronze·Silver\n·Gold", sublabel: "Bloomwell medallion architecture", x: 365, y: 300, r: 28, type: "bloomwell" },
-      { id: "hubspot", label: "HubSpot\nPipelines", sublabel: "Lambda ingestion → Bronze", x: 430, y: 490, r: 28, type: "bloomwell" },
-      { id: "snowflake", label: "Snowflake", sublabel: "Target warehouse · clustering · tasks", x: 620, y: 310, r: 28, type: "bloomwell" },
+      { id: "medallion", label: "Bronze·Silver\n·Gold", sublabel: "Medallion architecture", x: 365, y: 300, r: 28, type: "stack" },
+      { id: "hubspot", label: "HubSpot\nPipelines", sublabel: "Lambda ingestion → Bronze", x: 430, y: 490, r: 28, type: "stack" },
+      { id: "snowflake", label: "Snowflake", sublabel: "Target warehouse · clustering · tasks", x: 620, y: 310, r: 28, type: "stack" },
     ];
 
     const EDGES = [
@@ -65,7 +65,7 @@
       beginner:     { bg: "#0f2a1a", border: "#22c55e", text: "#dcfce7", glow: "#22c55e", label: "Foundations" },
       intermediate: { bg: "#1a1a0f", border: "#eab308", text: "#fef9c3", glow: "#eab308", label: "Intermediate" },
       advanced:     { bg: "#1a0f1a", border: "#a855f7", text: "#f3e8ff", glow: "#a855f7", label: "Advanced" },
-      bloomwell:    { bg: "#0f1a2a", border: "#38bdf8", text: "#bae6fd", glow: "#0ea5e9", label: "Bloomwell" },
+      stack:        { bg: "#0f1a2a", border: "#38bdf8", text: "#bae6fd", glow: "#0ea5e9", label: "Data Stack" },
     };
 
     function getNode(id) { return NODES.find(n => n.id === id); }
@@ -89,7 +89,7 @@
       return (
         <div style={{ width:"100%", minHeight:"100vh", background:"#050a14", fontFamily:"'JetBrains Mono','Fira Code','Courier New',monospace", display:"flex", flexDirection:"column", alignItems:"center", overflow:"hidden", position:"relative" }}>
           <div style={{ zIndex:10, textAlign:"center", paddingTop:28, paddingBottom:4, opacity:mounted?1:0, transition:"opacity 0.8s ease" }}>
-            <div style={{ fontSize:11, letterSpacing:"0.25em", color:"#38bdf8", textTransform:"uppercase", marginBottom:6 }}>Bloomwell · Data &amp; Analytics</div>
+            <div style={{ fontSize:11, letterSpacing:"0.25em", color:"#38bdf8", textTransform:"uppercase", marginBottom:6 }}>Data &amp; Analytics</div>
             <h1 style={{ margin:0, fontSize:22, fontWeight:700, color:"#f0f9ff", letterSpacing:"0.05em" }}>dbt Training — Concept Map</h1>
           </div>
           <div style={{ display:"flex", gap:20, marginTop:12, marginBottom:4, zIndex:10, opacity:mounted?1:0, transition:"opacity 1s ease 0.3s" }}>

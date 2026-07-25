@@ -19,9 +19,9 @@ Steps:
 * create new dbt project, select warehouse, schema (explain that is fallback)
 * edit profiles.yml
 	* explain what they see
-	* add user: your.email@bloomwell.de
-	* change database/schema: bloomwell_staging.dev_schema
-	* add prod environment bloomwell_staging.prod_schema
+	* add user: your.email@company.com
+	* change database/schema: analytics_staging.dev_schema
+	* add prod environment analytics_staging.prod_schema
 * run it in dev
 	* look at output
 	* look at results in compiled -> a sql file
@@ -85,7 +85,7 @@ Three bugs have been planted in the scaffold — presented as "code submitted by
 ### What participants do
 
 Download repo in their workspace.
-* add user, change dev to bloomwell_staging, schema: dev_tweber, dev_a...., dev_lastname
+* add user, change dev to analytics_staging, schema: dev_yourname, dev_a...., dev_lastname
 
 
 1. Read `dbt_project.yml` and answer four questions

@@ -396,7 +396,7 @@ Look through the existing staging or Silver models. Find one place where a looku
 - [dbt variables docs](https://docs.getdbt.com/docs/build/project-variables)
 - [dbt `var()` function reference](https://docs.getdbt.com/reference/dbt-jinja-functions/var)
 - [`dbt seed` command reference](https://docs.getdbt.com/reference/commands/seed)
-- Internal: `bloomwell-conventions` skill — covers when lookup data belongs in seeds vs. dim tables
+- Internal: `conventions` skill — covers when lookup data belongs in seeds vs. dim tables
 
 ---
 

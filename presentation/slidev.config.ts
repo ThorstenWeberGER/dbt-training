@@ -1,6 +1,6 @@
 import { defineConfig } from 'slidev'
 
 export default defineConfig({
-  title: 'Bloomwell dbt Training',
+  title: 'dbt Training',
   theme: 'default',
 })

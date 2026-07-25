@@ -154,7 +154,7 @@ If anyone has used dbt Cloud before, flag that their muscle memory around the sc
 ### dbt is the T in ELT: Extract, Load, Transform, Lambda handles E+L
 
 <div class="h-full flex items-center justify-center mt-2">
-  <img src="./resources/dbt_in_datastack.png" alt="dbt in the Bloomwell data stack" class="max-h-80 object-contain" />
+  <img src="./resources/dbt_in_datastack.png" alt="dbt in the data stack" class="max-h-80 object-contain" />
 </div>
 
 <!--
@@ -307,7 +307,7 @@ After the demo, ask:
   <span class="text-amber-500 text-lg font-bold leading-none mt-0.5">!</span>
   <div class="text-sm text-amber-800">
     <strong>Before you start:</strong> clone the training repo <strong>and</strong> branch your personal workspace.
-    <code class="block mt-1 bg-amber-100 rounded px-2 py-1 text-xs font-mono">https://https://github.com/data-bloomwell/dbt-training</code>
+    <code class="block mt-1 bg-amber-100 rounded px-2 py-1 text-xs font-mono">https://github.com/ThorstenWeberGER/dbt-training</code>
   </div>
 </div>
 

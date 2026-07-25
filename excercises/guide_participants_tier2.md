@@ -799,7 +799,7 @@ jobs:
       - name: Download production manifest
         run: |
           mkdir -p ./prod-artifacts
-          aws s3 cp s3://bloomwell-dbt-artifacts/prod/manifest.json ./prod-artifacts/manifest.json
+          aws s3 cp s3://company-dbt-artifacts/prod/manifest.json ./prod-artifacts/manifest.json
         env:
           AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
